@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    card_view:cardCornerRadius="10dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    card_view:cardUseCompatPadding="true"
+    android:elevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tv_booking_avatar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/circle_gray"
+            android:text="N"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textSize="18sp"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginLeft="12dp">
+
+            <TextView android:id="@+id/tv_booking_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nguyễn Văn A" android:textStyle="bold" android:textSize="16sp"/>
+            <TextView android:id="@+id/tv_booking_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="15:30 - 01/10/2025" android:textSize="13sp" android:textColor="@color/muted"/>
+            <TextView android:id="@+id/tv_booking_note" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Xem phòng tại Phòng trọ A" android:layout_marginTop="6dp" android:textSize="14sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
+            <Button android:id="@+id/btn_booking_accept" android:layout_width="86dp" android:layout_height="36dp" android:text="Chấp nhận" android:background="#10B981" android:textColor="@color/white"/>
+            <Button android:id="@+id/btn_booking_reject" android:layout_width="86dp" android:layout_height="36dp" android:text="Từ chối" android:layout_marginTop="8dp" android:background="@color/danger" android:textColor="@color/white"/>
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

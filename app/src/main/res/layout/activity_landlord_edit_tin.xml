@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="0dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar_edit"
+        android:layout_width="match_parent"
+        android:layout_height="88dp"
+        android:background="@color/primary"
+        android:title=""
+        android:paddingTop="18dp"
+        android:elevation="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingLeft="12dp">
+
+            <ImageButton
+                android:id="@+id/btn_back_edit"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_media_previous"
+                app:tint="@color/white"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tạo tin đăng mới"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="12dp"/>
+        </LinearLayout>
+    </androidx.appcompat.widget.Toolbar>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Tiêu đề -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Tiêu đề tin đăng" android:textStyle="bold"/>
+            <EditText
+                android:id="@+id/edt_tieude"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="6dp"
+                android:background="@color/white"
+                android:hint="VD: Phòng trọ cao cấp Quận 1"
+                android:paddingLeft="12dp"/>
+
+            <!-- Giá -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Giá cho thuê (VND/tháng)" android:textStyle="bold" android:layout_marginTop="12dp"/>
+            <EditText
+                android:id="@+id/edt_gia"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="6dp"
+                android:inputType="number"
+                android:background="@color/white"
+                android:paddingLeft="12dp"
+                android:hint="3000000"/>
+
+            <!-- Mô tả -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Mô tả chi tiết" android:textStyle="bold" android:layout_marginTop="12dp"/>
+            <EditText
+                android:id="@+id/edt_mota"
+                android:layout_width="match_parent"
+                android:layout_height="140dp"
+                android:layout_marginTop="6dp"
+                android:background="@color/white"
+                android:padding="12dp"
+                android:gravity="top"
+                android:hint="Mô tả về phòng, khu vực, tiện ích..."/>
+
+            <!-- Hình ảnh -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Hình ảnh" android:textStyle="bold" android:layout_marginTop="12dp"/>
+            <LinearLayout
+                android:id="@+id/area_pick_image"
+                android:layout_width="match_parent"
+                android:layout_height="160dp"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical"
+                android:background="@color/white"
+                android:gravity="center"
+                android:padding="12dp">
+
+                <TextView
+                    android:id="@+id/tv_pick_hint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Nhấn để tải ảnh lên"
+                    android:textColor="#9CA3AF"/>
+
+                <ImageView
+                    android:id="@+id/img_preview"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:visibility="gone"
+                    android:scaleType="centerCrop"/>
+            </LinearLayout>
+
+            <!-- Tiện nghi (checkboxes simple) -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Tiện nghi" android:textStyle="bold" android:layout_marginTop="12dp"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="6dp">
+                <CheckBox android:id="@+id/cb_ac" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Máy lạnh"/>
+                <CheckBox android:id="@+id/cb_wc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="WC riêng" android:layout_marginLeft="12dp"/>
+            </LinearLayout>
+
+            <!-- Save -->
+            <Button
+                android:id="@+id/btn_save_tin"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Lưu và Đăng tin"
+                android:textStyle="bold"
+                android:layout_marginTop="18dp"
+                android:backgroundTint="@color/primary"
+                android:textColor="@color/white"/>
+
+            <View android:layout_width="match_parent" android:layout_height="60dp"/>
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

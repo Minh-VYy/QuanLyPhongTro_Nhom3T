@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/mau_xanh_chinh</item>
+        <item name="colorPrimaryDark">@color/mau_xanh_dam</item>
+        <item name="colorAccent">@color/mau_xanh_nhe</item>
+    </style>
+</resources>

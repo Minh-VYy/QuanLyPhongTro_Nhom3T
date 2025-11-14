@@ -1,0 +1,50 @@
+<resources>
+    <string name="app_name">QuanLyPhongTro_ChuTro</string>
+
+    <!-- Tenant Features -->
+    <string name="filter_advanced">Bộ lọc nâng cao</string>
+    <string name="clear_filter">Xoá bộ lọc</string>
+    <string name="price_range">Giá phòng (triệu/tháng)</string>
+    <string name="area_district">Khu vực / Quận</string>
+    <string name="distance">Khoảng cách / Gần bạn</string>
+    <string name="room_type">Loại phòng</string>
+    <string name="amenities">Tiện nghi</string>
+    <string name="cancel">Huỷ</string>
+    <string name="apply">Áp dụng</string>
+
+    <!-- Booking -->
+    <string name="booking_create_title">Đặt lịch xem phòng</string>
+    <string name="select_date">Chọn ngày xem phòng</string>
+    <string name="time_slot">Khung giờ</string>
+    <string name="tenant_info">Thông tin người thuê</string>
+    <string name="full_name">Họ và tên</string>
+    <string name="phone_number">Số điện thoại</string>
+    <string name="note_for_landlord">Ghi chú cho chủ trọ</string>
+    <string name="allow_call">Cho phép chủ trọ gọi điện cho tôi</string>
+    <string name="confirm_booking">XÁC NHẬN ĐẶT LỊCH</string>
+    <string name="booking_notice">Bạn sẽ nhận thông báo khi chủ trọ xác nhận</string>
+
+    <!-- Profile -->
+    <string name="edit_profile">Chỉnh sửa</string>
+    <string name="activity">Hoạt động</string>
+    <string name="saved_rooms">Tin đã lưu</string>
+    <string name="my_bookings">Lịch hẹn của tôi</string>
+    <string name="account">Tài khoản</string>
+    <string name="personal_info">Thông tin cá nhân</string>
+    <string name="settings">Cài đặt</string>
+    <string name="support">Hỗ trợ</string>
+    <string name="help_faq">Trợ giúp &amp; Hỏi đáp</string>
+    <string name="terms_of_use">Điều khoản sử dụng</string>
+    <string name="logout">Đăng xuất</string>
+
+    <!-- Notifications -->
+    <string name="notifications">Thông báo</string>
+    <string name="mark_all_read">Đánh dấu tất cả đã đọc</string>
+    <string name="no_notifications">Chưa có thông báo</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_booking">Đặt lịch</string>
+    <string name="nav_notification">Thông báo</string>
+    <string name="nav_profile">Tôi</string>
+</resources>
