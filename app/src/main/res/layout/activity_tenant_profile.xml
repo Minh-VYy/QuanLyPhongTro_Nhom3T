@@ -76,17 +76,22 @@
                     android:id="@+id/btnEditProfile"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="4dp"
                     android:background="@drawable/button_edit_profile"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:paddingStart="20dp"
                     android:paddingTop="8dp"
                     android:paddingEnd="20dp"
+                    android:paddingBottom="8dp"
                     android:paddingBottom="8dp"
                     android:text="Chỉnh sửa thông tin"
                     android:textColor="@android:color/white"
                     android:textSize="13sp"
                     android:textStyle="bold"
+
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.55"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/profileContact" />
 

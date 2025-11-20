@@ -50,6 +50,7 @@
         <activity android:name=".ui.tenant.SavedRoomsActivity" />
         <activity android:name=".ui.tenant.NotificationsActivity" />
         <activity android:name=".ui.tenant.ProfileActivity" />
+        <activity android:name=".ui.tenant.EditProfileActivity" />
 
     </application>
 
