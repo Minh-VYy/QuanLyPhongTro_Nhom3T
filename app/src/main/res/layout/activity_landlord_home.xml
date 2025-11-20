@@ -24,9 +24,7 @@
             android:paddingLeft="12dp"
             android:paddingRight="12dp">
 
-            <!-- Top row: back, search box, help, messages -->
-
-            <!-- Profile row -->
+            <!-- thanh tìm kếm, hỗ trợ, tin nhắn -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -93,6 +91,7 @@
                     app:tint="@color/white" />
             </LinearLayout>
 
+            <!--Chủ trọ-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="58dp"
@@ -291,7 +290,7 @@
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"/>
 
-                <!-- padding bottom so last item not hidden by bottom nav -->
+                <!--đệm dưới cùng để mục cuối cùng không bị ẩn bởi thanh điều hướng dưới cùng -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="80dp"/>
@@ -355,7 +354,7 @@
         </ScrollView>
     </FrameLayout>
 
-    <!-- FAB -->
+    <!-- Dấu cộng -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_tao_tin"
         android:layout_width="56dp"
@@ -368,7 +367,7 @@
         app:layout_anchor="@id/frame_noi_dung"
         app:layout_anchorGravity="bottom|end"/>
 
-    <!-- Bottom navigation (simple linear layout) -->
+    <!-- Thanh điều hướng -->
     <LinearLayout
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"

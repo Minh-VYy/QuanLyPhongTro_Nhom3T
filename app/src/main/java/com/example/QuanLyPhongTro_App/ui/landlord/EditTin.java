@@ -41,6 +41,7 @@ public class EditTin extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landlord_edit_tin);
 
+        //ánh xạ đến layout
         btnBack = findViewById(R.id.btn_back_edit);
         edtTieuDe = findViewById(R.id.edt_tieude);
         edtGia = findViewById(R.id.edt_gia);
@@ -78,6 +79,7 @@ public class EditTin extends AppCompatActivity {
         });
     }
 
+    //Hàm chọn ảnh
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

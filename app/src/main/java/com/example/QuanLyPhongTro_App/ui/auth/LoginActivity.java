@@ -1,4 +1,3 @@
-// app/src/main/java/com/example/QuanLyPhongTro_App/ui/auth/LoginActivity.java
 package com.example.QuanLyPhongTro_App.ui.auth;
 
 import android.content.Intent;

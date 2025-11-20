@@ -77,13 +77,13 @@ public class TrangChu extends AppCompatActivity {
         ListingsAdapter adapter = new ListingsAdapter(data);
         rvGridListings.setAdapter(adapter);
 
-        // FAB -> mở EditTin
+        // Nút tạo tin mới
         fabTaoTin.setOnClickListener(v -> {
             Intent it = new Intent(TrangChu.this, EditTin.class);
             startActivity(it);
         });
 
-        // header actions
+        // Các nút header
         btnHelp.setOnClickListener(v -> {
             Intent it = new Intent(TrangChu.this, TroGiup.class);
             startActivity(it);
@@ -111,6 +111,7 @@ public class TrangChu extends AppCompatActivity {
         });
     }
 
+    //Hiển thị tab tương ứng và đổi màu nút đang chọn
     private void hienThiTab(String tab) {
         int mauChinh = ContextCompat.getColor(this, R.color.primary);
         int mauKhong = Color.parseColor("#6B7280");
@@ -139,14 +140,14 @@ public class TrangChu extends AppCompatActivity {
         }
     }
 
-    // DATA model
+    // MODEL DỮ LIỆU TIN ĐĂNG
     static class Tin {
         String tieuDe, gia, trangThai;
         boolean isActive;
         Tin(String t, String g, String tt, boolean a) { tieuDe = t; gia = g; trangThai = tt; isActive = a; }
     }
 
-    // ADAPTER
+    // ADAPTER CHO RECYCLERVIEW
     static class ListingsAdapter extends RecyclerView.Adapter<ListingsAdapter.VH> {
         private final List<Tin> items;
         ListingsAdapter(List<Tin> list) { items = list; }

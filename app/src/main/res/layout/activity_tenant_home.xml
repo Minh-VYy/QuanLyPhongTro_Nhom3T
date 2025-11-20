@@ -37,7 +37,6 @@
                 android:layout_marginEnd="12dp" />
 
             <!-- Dropdown: Người thuê / Chủ trọ -->
-            <!-- Reusable Role Switcher Component -->
             <include
                 android:id="@+id/roleSwitcher"
                 layout="@layout/view_role_switcher"
@@ -92,7 +91,7 @@
 
     </LinearLayout>
 
-    <!-- Filter Bar - Horizontal Scroll -->
+    <!-- Bộ lọc-->
     <HorizontalScrollView
         android:id="@+id/filterScroll"
         android:layout_width="match_parent"
@@ -207,7 +206,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!-- RecyclerView thay thế GridView -->
+            <!-- Danh mục sản phẩm -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/roomRecyclerView"
                 android:layout_width="match_parent"
@@ -220,7 +219,7 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Bottom Navigation - 4 Items -->
+    <!-- Bottom Navigation -->
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
