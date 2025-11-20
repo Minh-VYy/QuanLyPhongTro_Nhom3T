@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/bg">
 
-    <!-- Header -->
+    <!-- HEADER TOOLBAR (Thanh tiêu đề) -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar_trogiup"
         android:layout_width="match_parent"
@@ -15,6 +16,7 @@
         android:title=""
         android:elevation="4dp">
 
+        <!-- Layout chứa nút quay lại + tiêu đề -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -22,6 +24,7 @@
             android:gravity="center_vertical"
             android:paddingLeft="12dp">
 
+            <!-- Nút quay lại -->
             <ImageButton
                 android:id="@+id/btn_back_trogiup"
                 android:layout_width="36dp"
@@ -30,6 +33,7 @@
                 android:src="@android:drawable/ic_media_previous"
                 app:tint="@color/white"/>
 
+            <!-- Tiêu đề màn hình -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -41,6 +45,7 @@
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
 
+    <!-- SCROLL MAIN CONTENT (Nội dung) -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -53,7 +58,7 @@
             android:orientation="vertical"
             android:spacing="8dp">
 
-            <!-- FAQ Card -->
+            <!-- CARD 1: Danh sách câu hỏi thường gặp (FAQ) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -63,6 +68,7 @@
                 android:elevation="2dp"
                 android:layout_marginBottom="12dp">
 
+                <!-- Title -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -70,12 +76,14 @@
                     android:textStyle="bold"
                     android:textSize="16sp"/>
 
+                <!-- Danh sách câu hỏi -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:layout_marginTop="12dp">
 
+                    <!-- Q1 -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -91,6 +99,7 @@
 
                     <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEE"/>
 
+                    <!-- Q2 -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -106,6 +115,7 @@
 
                     <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEE"/>
 
+                    <!-- Q3 + tag HOT -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -124,6 +134,7 @@
 
                     <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEE"/>
 
+                    <!-- Q4 -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -139,6 +150,7 @@
 
                 </LinearLayout>
 
+                <!-- Nút xem thêm FAQ -->
                 <TextView
                     android:id="@+id/tv_xem_them"
                     android:layout_width="wrap_content"
@@ -149,7 +161,8 @@
                     android:layout_marginTop="12dp"/>
             </LinearLayout>
 
-            <!-- Contact Card -->
+
+            <!-- CARD 2: Liên hệ hỗ trợ (chat / gọi tổng đài)     -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -158,6 +171,7 @@
                 android:padding="16dp"
                 android:elevation="2dp">
 
+                <!-- Title -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -166,6 +180,7 @@
                     android:textSize="16sp"
                     android:layout_marginBottom="12dp"/>
 
+                <!-- Mục chat -->
                 <LinearLayout
                     android:id="@+id/row_chat"
                     android:layout_width="match_parent"
@@ -179,8 +194,10 @@
                     <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_arrow_forward"/>
                 </LinearLayout>
 
+                <!-- Divider -->
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEE"/>
 
+                <!-- Mục gọi tổng đài -->
                 <LinearLayout
                     android:id="@+id/row_call"
                     android:layout_width="match_parent"
@@ -199,6 +216,7 @@
 
             </LinearLayout>
 
+            <!-- Khoảng trống cuối trang -->
             <View android:layout_width="match_parent" android:layout_height="40dp"/>
 
         </LinearLayout>

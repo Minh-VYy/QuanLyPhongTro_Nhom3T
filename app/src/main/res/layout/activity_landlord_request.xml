@@ -79,6 +79,7 @@
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
 
+    <!--Tab-->
     <LinearLayout
         android:id="@+id/row_tabs_yeucau"
         android:layout_width="match_parent"
@@ -126,6 +127,7 @@
         android:layout_height="2dp"
         android:background="@color/primary"/>
 
+    <!--Item-->
     <FrameLayout
         android:id="@+id/frame_yeucau_content"
         android:layout_width="match_parent"
@@ -157,6 +159,7 @@
             android:clipToPadding="false"
             android:paddingBottom="80dp"/>
     </FrameLayout>
+
 
     <LinearLayout
         android:id="@+id/bottom_nav_yeucau"

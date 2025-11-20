@@ -19,13 +19,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+            <!-- header -->
 
+            <!-- Phần danh mục hoạt động-->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/header_gradient"
                 android:paddingTop="50dp"
                 android:paddingBottom="30dp">
+
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardAvatar"
                     android:layout_width="100dp"
@@ -37,6 +40,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
 
+                    <!-- Ảnh đại diện người dùng -->
                     <ImageView
                         android:id="@+id/profileAvatar"
                         android:layout_width="match_parent"
@@ -47,6 +51,7 @@
                         app:tint="#4a90e2" />
                 </androidx.cardview.widget.CardView>
 
+                <!-- Tên người dùng -->
                 <TextView
                     android:id="@+id/profileName"
                     android:layout_width="wrap_content"
@@ -60,6 +65,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/cardAvatar" />
 
+                <!-- Số điện thoại -->
                 <TextView
                     android:id="@+id/profileContact"
                     android:layout_width="wrap_content"
@@ -72,7 +78,8 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/profileName" />
 
-                <TextView
+                <!-- Nút chỉnh sửa thông tin -->
+                <Button
                     android:id="@+id/btnEditProfile"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -113,6 +120,7 @@
                     android:orientation="vertical"
                     android:paddingVertical="12dp">
 
+                    <!-- Tiêu đề -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -125,6 +133,7 @@
                         android:textStyle="bold"
                         android:textAllCaps="true"/>
 
+                    <!-- Mục "Tin đã lưu" -->
                     <LinearLayout
                         android:id="@+id/menuSavedRooms"
                         android:layout_width="match_parent"
@@ -171,6 +180,7 @@
                         android:layout_marginStart="68dp"
                         android:background="#F3F4F6"/>
 
+                    <!-- Mục "Lịch hẹn của tôi" -->
                     <LinearLayout
                         android:id="@+id/menuBookings"
                         android:layout_width="match_parent"
@@ -214,6 +224,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!--Thẻ tài khoản-->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -242,6 +253,7 @@
                         android:textStyle="bold"
                         android:textAllCaps="true"/>
 
+                    <!-- Mục Thông tin cá nhân -->
                     <LinearLayout
                         android:id="@+id/menuPersonalInfo"
                         android:layout_width="match_parent"
@@ -275,6 +287,7 @@
 
                     <View android:layout_width="match_parent" android:layout_height="0.5dp" android:layout_marginStart="68dp" android:background="#F3F4F6"/>
 
+                    <!-- Mục Cài đặt -->
                     <LinearLayout
                         android:id="@+id/menuSettings"
                         android:layout_width="match_parent"
@@ -308,6 +321,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- Thẻ hỗ trợ-->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -336,6 +350,8 @@
                         android:textStyle="bold"
                         android:textAllCaps="true"/>
 
+
+                    <!-- Mục Hỏi đáp -->
                     <LinearLayout
                         android:id="@+id/menuHelp"
                         android:layout_width="match_parent"
@@ -369,6 +385,7 @@
 
                     <View android:layout_width="match_parent" android:layout_height="0.5dp" android:layout_marginStart="68dp" android:background="#F3F4F6"/>
 
+                    <!-- Mục Đăng xuất -->
                     <LinearLayout
                         android:id="@+id/menuLogout"
                         android:layout_width="match_parent"
@@ -401,7 +418,7 @@
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
+    <!--BOTTOM NAVIGATION-->
     <include
         android:id="@+id/bottomNav"
         layout="@layout/layout_bottom_navigation"
