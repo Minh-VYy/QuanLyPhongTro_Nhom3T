@@ -160,30 +160,33 @@
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/badge_rating_background"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="6dp">
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:layout_marginEnd="4dp"
-                            android:src="@drawable/ic_star"
-                            app:tint="@color/white" />
-
-                        <TextView
+                        <!-- ĐÁNH GIÁ RIÊNG CỦA PHÒNG -->
+                        <LinearLayout
+                            android:id="@+id/roomRatingContainer"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="4.5 (12)"
-                            android:textColor="@color/white"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
+                            android:background="@drawable/badge_rating_background"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp">
+
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_marginEnd="4dp"
+                                android:src="@drawable/ic_star"
+                                app:tint="@color/white" />
+
+                            <TextView
+                                android:id="@+id/roomRatingText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="4.5 (8)"
+                                android:textColor="@color/white"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
                 </LinearLayout>
 
                 <!-- Vị trí + Diện tích -->
@@ -280,7 +283,9 @@
                             android:textSize="16sp"
                             android:textStyle="bold" />
 
+                        <!-- ĐÁNH GIÁ TỔNG CỦA CHỦ TRỌ -->
                         <LinearLayout
+                            android:id="@+id/landlordRatingContainer"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
@@ -294,9 +299,10 @@
                                 app:tint="#ffc107" />
 
                             <TextView
+                                android:id="@+id/landlordRatingText"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="4.5 (12 đánh giá)"
+                                android:text="4.8 (25 đánh giá)"
                                 android:textColor="#666"
                                 android:textSize="12sp" />
                         </LinearLayout>
