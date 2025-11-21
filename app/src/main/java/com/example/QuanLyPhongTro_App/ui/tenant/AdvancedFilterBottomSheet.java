@@ -53,6 +53,7 @@ public class AdvancedFilterBottomSheet extends BottomSheetDialogFragment {
 
         initViews(view);
         setupSpinner();
+        updatePriceRangeText(); // Set initial text
         setupListeners();
 
         return view;
@@ -78,16 +79,23 @@ public class AdvancedFilterBottomSheet extends BottomSheetDialogFragment {
         areaSpinner.setAdapter(adapter);
     }
 
+    private void updatePriceRangeText() {
+        List<Float> values = priceRangeSlider.getValues();
+        priceRangeText.setText(String.format("Từ %.1f - %.1f triệu", values.get(0), values.get(1)));
+    }
+
     private void setupListeners() {
         // Price range slider
         priceRangeSlider.addOnChangeListener((slider, value, fromUser) -> {
-            List<Float> values = slider.getValues();
-            priceRangeText.setText(String.format("Từ %.1f - %.1f triệu", values.get(0), values.get(1)));
+            updatePriceRangeText(); // Update text on change
         });
 
         // Clear filter
         btnClearFilter.setOnClickListener(v -> {
-            priceRangeSlider.setValues(0.5f, 10.0f);
+            // Reset to default values. Hardcoding is safer than resource parsing here.
+            priceRangeSlider.setValues(1.5f, 5.0f);
+            updatePriceRangeText();
+
             areaSpinner.setSelection(0);
             distanceRadioGroup.check(R.id.distanceAny);
             roomTypeChipGroup.clearCheck();

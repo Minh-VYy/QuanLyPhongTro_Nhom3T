@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="user_roles">
-        <item>Người Thuê</item>
-        <item>Chủ Trọ</item>
-    </string-array>
+    <array name="initial_range_slider_values">
+        <item>1.5</item>
+        <item>5.0</item>
+    </array>
 </resources>

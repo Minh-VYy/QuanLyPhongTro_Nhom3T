@@ -47,8 +47,7 @@
     <!-- ==================== 3. Nội dung cuộn (ScrollView) ==================== -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         android:scrollbars="none">
 
         <LinearLayout
@@ -72,6 +71,7 @@
                 android:layout_height="wrap_content"
                 android:valueFrom="0.5"
                 android:valueTo="10.0"
+                app:values="@array/initial_range_slider_values"
                 android:stepSize="0.5"
                 app:thumbColor="#7c3aed"
                 app:trackColorActive="#7c3aed"
@@ -82,7 +82,7 @@
                 android:id="@+id/priceRangeText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Từ 1.5 - 3.5 triệu"
+                android:text=""
                 android:textColor="@color/text_secondary"
                 android:textSize="13sp"
                 android:layout_marginBottom="20dp" />
