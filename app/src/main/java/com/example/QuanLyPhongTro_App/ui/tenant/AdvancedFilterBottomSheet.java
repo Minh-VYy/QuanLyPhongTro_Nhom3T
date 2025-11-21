@@ -36,20 +36,14 @@ public class AdvancedFilterBottomSheet extends BottomSheetDialogFragment {
 
     private FilterListener filterListener;
 
-    // Interface to send data back to the calling activity/fragment
+    // Interface to send data back
     public interface FilterListener {
         void onFilterApplied(Bundle filters);
     }
 
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        // Ensure that the host activity implements the listener
-        try {
-            filterListener = (FilterListener) getParentFragment(); // Or `(FilterListener) getActivity()`
-        } catch (ClassCastException e) {
-            throw new ClassCastException("Calling fragment must implement FilterListener");
-        }
+    // Method to set the listener from the calling fragment/activity
+    public void setFilterListener(FilterListener listener) {
+        this.filterListener = listener;
     }
 
     @Nullable
@@ -120,8 +114,12 @@ public class AdvancedFilterBottomSheet extends BottomSheetDialogFragment {
 
             // Distance
             int selectedDistanceId = distanceRadioGroup.getCheckedRadioButtonId();
-            RadioButton selectedDistance = getView().findViewById(selectedDistanceId);
-            filters.putString("distance", selectedDistance.getText().toString());
+            if (selectedDistanceId != -1) {
+                RadioButton selectedDistance = distanceRadioGroup.findViewById(selectedDistanceId);
+                if (selectedDistance != null) {
+                    filters.putString("distance", selectedDistance.getText().toString());
+                }
+            }
 
             // Room types
             ArrayList<String> roomTypes = new ArrayList<>();

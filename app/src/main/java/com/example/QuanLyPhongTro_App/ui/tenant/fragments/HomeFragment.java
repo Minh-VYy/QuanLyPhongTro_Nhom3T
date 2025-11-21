@@ -2,10 +2,12 @@ package com.example.QuanLyPhongTro_App.ui.tenant.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,12 +22,23 @@ import com.example.QuanLyPhongTro_App.ui.tenant.RoomDetailActivity;
 
 import java.util.ArrayList;
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements AdvancedFilterBottomSheet.FilterListener {
 
     private RecyclerView roomRecyclerView;
     private RoomAdapter roomAdapter;
     private ArrayList<Room> roomList;
     private Button btnFilter;
+
+    @Override
+    public void onFilterApplied(Bundle filters) {
+        float minPrice = filters.getFloat("minPrice");
+
+        String area = filters.getString("area", "Tất cả");
+        ArrayList<String> roomTypes = filters.getStringArrayList("roomTypes");
+        Log.d("FILTER_DEBUG", "Min Price: " + minPrice + ", Area: " + area);
+        Toast.makeText(getContext(), "Đã nhận bộ lọc: " + area ,Toast.LENGTH_SHORT).show();
+    }
+
 
     @Nullable
     @Override
@@ -67,8 +80,8 @@ public class HomeFragment extends Fragment {
     private void setupFilterButton() {
         btnFilter.setOnClickListener(v -> {
             AdvancedFilterBottomSheet filterSheet = AdvancedFilterBottomSheet.newInstance();
-            filterSheet.show(getParentFragmentManager(), "AdvancedFilter");
+            filterSheet.setFilterListener(this);
+            filterSheet.show(getChildFragmentManager(), "AdvancedFilter");
         });
     }
 }
-
