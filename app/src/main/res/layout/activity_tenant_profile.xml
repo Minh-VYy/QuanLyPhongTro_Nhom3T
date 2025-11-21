@@ -91,7 +91,6 @@
                     android:paddingTop="8dp"
                     android:paddingEnd="20dp"
                     android:paddingBottom="8dp"
-                    android:paddingBottom="8dp"
                     android:text="Chỉnh sửa thông tin"
                     android:textColor="@android:color/white"
                     android:textSize="13sp"

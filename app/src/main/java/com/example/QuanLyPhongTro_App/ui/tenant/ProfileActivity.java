@@ -51,11 +51,6 @@ public class ProfileActivity extends AppCompatActivity {
         menuPersonalInfo = findViewById(R.id.menuPersonalInfo);
         menuSettings = findViewById(R.id.menuSettings);
         menuHelp = findViewById(R.id.menuHelp);
-<<<<<<< HEAD
-=======
-        //xóa phần này do ko thấy bên layout
-        //menuTerms = findViewById(R.id.menuTerms);
->>>>>>> 2afd1944e4ccf6f3e6c7fda069478681b56648ad
         menuLogout = findViewById(R.id.menuLogout);
     }
 
@@ -93,14 +88,6 @@ public class ProfileActivity extends AppCompatActivity {
             Toast.makeText(this, "Trợ giúp & Hỏi đáp", Toast.LENGTH_SHORT).show();
         });
 
-<<<<<<< HEAD
-=======
-        //xóa phần này do ko thấy bên layout
-        /*menuTerms.setOnClickListener(v -> {
-            Toast.makeText(this, "Điều khoản sử dụng", Toast.LENGTH_SHORT).show();
-        });*/
-
->>>>>>> 2afd1944e4ccf6f3e6c7fda069478681b56648ad
         menuLogout.setOnClickListener(v -> {
             // Đăng xuất
             sessionManager.logout();
