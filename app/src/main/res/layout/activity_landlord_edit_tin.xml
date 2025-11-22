@@ -2,50 +2,66 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:padding="0dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg">
+    android:background="#f5f5f5">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar_edit"
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar_edit"
         android:layout_width="match_parent"
-        android:layout_height="88dp"
-        android:background="@color/primary"
-        android:title=""
-        android:paddingTop="18dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/header_gradient"
         android:elevation="4dp">
 
         <LinearLayout
+            android:id="@+id/toolbar_edit"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
+            android:paddingStart="15dp"
+            android:paddingEnd="15dp"
+            android:paddingTop="48dp"
+            android:paddingBottom="12dp"
             android:gravity="center_vertical"
-            android:paddingLeft="12dp">
-
+            android:orientation="horizontal"
+            app:layout_scrollFlags="noScroll">
             <ImageButton
                 android:id="@+id/btn_back_edit"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:background="@android:color/transparent"
-                android:src="@android:drawable/ic_media_previous"
-                app:tint="@color/white"/>
+                android:src="@drawable/ic_arrow_back"
+                app:tint="@color/white"
+                android:contentDescription="Quay lại"
+                android:layout_marginEnd="12dp"/>
 
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/tv_title_edit"
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:text="Tạo tin đăng mới"
                 android:textColor="@color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginLeft="12dp"/>
+                android:textSize="20sp"
+                android:textStyle="bold"/>
+
+            <ImageView
+                android:id="@+id/btn_help_edit"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_help_outline"
+                app:tint="@color/white"
+                android:contentDescription="Trợ giúp"/>
         </LinearLayout>
-    </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="12dp">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:layout_margin="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -53,7 +69,7 @@
             android:orientation="vertical">
 
             <!-- Tiêu đề -->
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Tiêu đề tin đăng" android:textStyle="bold"/>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Tiêu đề tin đăng" android:textStyle="bold" android:layout_marginTop="10dp"/>
             <EditText
                 android:id="@+id/edt_tieude"
                 android:layout_width="match_parent"

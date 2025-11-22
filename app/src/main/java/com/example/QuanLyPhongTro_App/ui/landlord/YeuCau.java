@@ -1,12 +1,10 @@
 package com.example.QuanLyPhongTro_App.ui.landlord;
 
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,34 +12,21 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.utils.LandlordBottomNavigationHelper;
 
 import java.util.ArrayList;
 
 public class YeuCau extends AppCompatActivity {
 
+    private static final String TAG = "YeuCau";
     private Button btnDatLich, btnTinNhan, btnThanhToan;
     private RecyclerView rvBookings, rvMessages, rvPayments;
-    private ImageButton btnBack, btnHelp, btnChat, btnBell;
-    private ImageView imgAvatar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landlord_request);
-
-        // header
-        btnBack = findViewById(R.id.btn_back_yeucau);
-        btnHelp = findViewById(R.id.btn_help_yeucau);
-        btnChat = findViewById(R.id.btn_chat_yeucau);
-        btnBell = findViewById(R.id.btn_bell_yeucau);
-        imgAvatar = findViewById(R.id.img_avatar_yeucau);
-
-        btnBack.setOnClickListener(v -> finish());
-        btnHelp.setOnClickListener(v -> startActivity(new Intent(this, TroGiup.class)));
-        btnChat.setOnClickListener(v -> Toast.makeText(this, "Mở Chat (chưa implement)", Toast.LENGTH_SHORT).show());
-        btnBell.setOnClickListener(v -> Toast.makeText(this, "Thông báo (chưa implement)", Toast.LENGTH_SHORT).show());
 
         // tabs
         btnDatLich = findViewById(R.id.btn_tab_datlich);
@@ -51,6 +36,7 @@ public class YeuCau extends AppCompatActivity {
         rvBookings = findViewById(R.id.rv_bookings);
         rvMessages = findViewById(R.id.rv_messages);
         rvPayments = findViewById(R.id.rv_payments);
+
 
         // setup recyclers
         rvBookings.setLayoutManager(new LinearLayoutManager(this));
@@ -84,15 +70,21 @@ public class YeuCau extends AppCompatActivity {
         btnTinNhan.setOnClickListener(v -> showTab("tinnhan"));
         btnThanhToan.setOnClickListener(v -> showTab("thanhtoan"));
 
-        // bottom nav actions (reuse ids)
-        findViewById(R.id.nav_home).setOnClickListener(v -> {
-            Intent it = new Intent(this, TrangChu.class);
-            startActivity(it);
-            finish();
-        });
-        findViewById(R.id.nav_requests).setOnClickListener(v -> Toast.makeText(this, "Bạn đang ở Yêu cầu", Toast.LENGTH_SHORT).show());
+        // Setup bottom navigation
+        setupBottomNavigation();
+
         // default show Tin nhắn
         showTab("tinnhan");
+    }
+
+    private void setupBottomNavigation() {
+        LandlordBottomNavigationHelper.setupBottomNavigation(this, "requests");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        LandlordBottomNavigationHelper.setupBottomNavigation(this, "requests");
     }
 
     private void showTab(String tab) {
