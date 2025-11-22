@@ -36,10 +36,11 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
     public void onBindViewHolder(@NonNull BookingViewHolder holder, int position) {
         Booking booking = bookingList.get(position);
 
-        holder.roomName.setText(booking.getRoomName());
+        holder.roomName.setText(booking.getTitle());
         holder.roomPrice.setText(booking.getPrice());
-        holder.bookingDateTime.setText(booking.getDateTime());
-        holder.roomAddress.setText(booking.getAddress());
+        holder.bookingDateTime.setText(booking.getDate() + " - " + booking.getTimeSlot());
+        holder.roomAddress.setText(booking.getLocation());
+
 
         // Set status badge
         String status = booking.getStatus();
@@ -67,11 +68,11 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
         }
 
         holder.btnDetail.setOnClickListener(v -> {
-            Toast.makeText(context, "Xem chi tiết: " + booking.getRoomName(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Xem chi tiết: " + booking.getTitle(), Toast.LENGTH_SHORT).show();
         });
 
         holder.btnCancel.setOnClickListener(v -> {
-            Toast.makeText(context, "Huỷ lịch: " + booking.getRoomName(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Huỷ lịch: " + booking.getTitle(), Toast.LENGTH_SHORT).show();
             // TODO: Implement cancel booking
         });
     }

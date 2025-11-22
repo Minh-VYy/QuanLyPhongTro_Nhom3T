@@ -1,9 +1,10 @@
 package com.example.QuanLyPhongTro_App.ui.tenant;
 
 import android.os.Bundle;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.QuanLyPhongTro_App.R;
@@ -24,7 +25,6 @@ public class BookingListActivity extends AppCompatActivity {
 
         initViews();
         setupToolbar();
-        setupBottomNavigation();
         setupViewPager();
     }
 
@@ -34,8 +34,11 @@ public class BookingListActivity extends AppCompatActivity {
     }
 
     private void setupToolbar() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        LinearLayout toolbarLayout = findViewById(R.id.toolbar);
+        ImageView btnBack = toolbarLayout.findViewById(R.id.btnBack);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
     }
 
     private void setupBottomNavigation() {
@@ -59,5 +62,10 @@ public class BookingListActivity extends AppCompatActivity {
                 }
         ).attach();
     }
-}
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setupBottomNavigation();
+    }
+}

@@ -1,3 +1,4 @@
+
 package com.example.QuanLyPhongTro_App.ui.tenant;
 
 import android.content.Intent;
@@ -9,16 +10,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 
 import com.example.QuanLyPhongTro_App.R;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
+
 
 public class ProfileActivity extends AppCompatActivity {
 
     private ImageView profileAvatar;
     private TextView profileName, profileContact;
     private TextView btnEditProfile;
+    private TextView profileName;
+    private CardView btnEditProfile;
     private LinearLayout menuSavedRooms, menuBookings, menuPersonalInfo, menuSettings;
     private LinearLayout menuHelp, menuLogout;
     private SessionManager sessionManager;
@@ -33,6 +38,7 @@ public class ProfileActivity extends AppCompatActivity {
         initViews();
         setupBottomNavigation();
         setupListeners(); // Toàn bộ sự kiện click được gọi từ đây
+        setupListeners();
         loadUserData();
     }
 
@@ -43,7 +49,6 @@ public class ProfileActivity extends AppCompatActivity {
     private void initViews() {
         profileAvatar = findViewById(R.id.profileAvatar);
         profileName = findViewById(R.id.profileName);
-        profileContact = findViewById(R.id.profileContact);
         btnEditProfile = findViewById(R.id.btnEditProfile);
 
         menuSavedRooms = findViewById(R.id.menuSavedRooms);
@@ -63,30 +68,47 @@ public class ProfileActivity extends AppCompatActivity {
             // Intent intent = new Intent(this, EditProfileActivity.class);
             // startActivity(intent);
         });
+        try {
+            if (btnEditProfile != null) {
+                btnEditProfile.setOnClickListener(v -> {
+                    Toast.makeText(this, "Chỉnh sửa thông tin", Toast.LENGTH_SHORT).show();
+                });
+            }
 
-        menuSavedRooms.setOnClickListener(v -> {
-            Intent intent = new Intent(this, SavedRoomsActivity.class);
-            startActivity(intent);
-        });
+            if (menuSavedRooms != null) {
+                menuSavedRooms.setOnClickListener(v -> {
+                    startActivity(new Intent(this, SavedRoomsActivity.class));
+                });
+            }
 
-        menuBookings.setOnClickListener(v -> {
-            Intent intent = new Intent(this, BookingListActivity.class);
-            startActivity(intent);
-        });
+            if (menuBookings != null) {
+                menuBookings.setOnClickListener(v -> {
+                    startActivity(new Intent(this, BookingListActivity.class));
+                });
+            }
 
         // 💡 ĐÂY LÀ PHẦN SỬA LỖI: Gắn sự kiện chuyển trang cho mục menu chính
         menuPersonalInfo.setOnClickListener(v -> {
             Intent intent = new Intent(this, EditProfileActivity.class);
             startActivity(intent);
         });
+            if (menuPersonalInfo != null) {
+                menuPersonalInfo.setOnClickListener(v -> {
+                    Toast.makeText(this, "Thông tin cá nhân", Toast.LENGTH_SHORT).show();
+                });
+            }
 
-        menuSettings.setOnClickListener(v -> {
-            Toast.makeText(this, "Cài đặt", Toast.LENGTH_SHORT).show();
-        });
+            if (menuSettings != null) {
+                menuSettings.setOnClickListener(v -> {
+                    Toast.makeText(this, "Cài đặt", Toast.LENGTH_SHORT).show();
+                });
+            }
 
-        menuHelp.setOnClickListener(v -> {
-            Toast.makeText(this, "Trợ giúp & Hỏi đáp", Toast.LENGTH_SHORT).show();
-        });
+            if (menuHelp != null) {
+                menuHelp.setOnClickListener(v -> {
+                    Toast.makeText(this, "Trợ giúp", Toast.LENGTH_SHORT).show();
+                });
+            }
 
         menuLogout.setOnClickListener(v -> {
             // Đăng xuất
@@ -112,5 +134,51 @@ public class ProfileActivity extends AppCompatActivity {
         } else {
             profileContact.setText("Chưa cập nhật");
         }
+    }
+}
+            if (menuTerms != null) {
+                menuTerms.setOnClickListener(v -> {
+                    Toast.makeText(this, "Điều khoản", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            if (menuLogout != null) {
+                menuLogout.setOnClickListener(v -> {
+                    sessionManager.logout();
+                    Toast.makeText(this, "Đã đăng xuất", Toast.LENGTH_SHORT).show();
+
+                    // Quay về MainActivity (Guest mode)
+                    Intent intent = new Intent(this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                });
+            }
+        } catch (Exception e) {
+            android.util.Log.e("ProfileActivity", "Error in setupListeners: " + e.getMessage(), e);
+        }
+    }
+
+    private void loadUserData() {
+        try {
+            // Load từ SessionManager
+            String userName = sessionManager.getUserName();
+
+            if (profileName != null) {
+                if (userName != null && !userName.isEmpty()) {
+                    profileName.setText(userName);
+                } else {
+                    profileName.setText("Người dùng");
+                }
+            }
+        } catch (Exception e) {
+            android.util.Log.e("ProfileActivity", "Error in loadUserData: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setupBottomNavigation();
     }
 }
