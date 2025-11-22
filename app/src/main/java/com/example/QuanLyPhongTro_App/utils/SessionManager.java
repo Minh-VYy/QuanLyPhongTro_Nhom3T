@@ -13,6 +13,8 @@ public class SessionManager {
     private static final String KEY_USER_TYPE = "userType";
     private static final String KEY_IS_LANDLORD = "isLandlord";
     private static final String KEY_DISPLAY_ROLE = "displayRole";
+    private static final String KEY_TOKEN = "token";
+    private static final String KEY_REFRESH_TOKEN = "refreshToken";
 
     private SharedPreferences pref;
     private SharedPreferences.Editor editor;
@@ -72,6 +74,39 @@ public class SessionManager {
     public String getUserType() {
         return pref.getString(KEY_USER_TYPE, null);
     }
+
+    // ==================== TOKEN MANAGEMENT ====================
+
+    public String getToken() {
+        return pref.getString(KEY_TOKEN, null);
+    }
+
+    public void saveToken(String token) {
+        editor.putString(KEY_TOKEN, token);
+        editor.apply();
+    }
+
+    public String getRefreshToken() {
+        return pref.getString(KEY_REFRESH_TOKEN, null);
+    }
+
+    public void saveRefreshToken(String refreshToken) {
+        editor.putString(KEY_REFRESH_TOKEN, refreshToken);
+        editor.apply();
+    }
+
+    public void saveTokens(String token, String refreshToken) {
+        editor.putString(KEY_TOKEN, token);
+        editor.putString(KEY_REFRESH_TOKEN, refreshToken);
+        editor.apply();
+    }
+
+    public boolean hasValidToken() {
+        String token = getToken();
+        return token != null && !token.isEmpty();
+    }
+
+    // ==================== LOGOUT ====================
 
     public void logout() {
         editor.clear();

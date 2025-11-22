@@ -18,74 +18,79 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Header with Gradient -->
-            <RelativeLayout
+            <!-- Header -->
+            <LinearLayout
+                android:id="@+id/toolbar_me"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
                 android:background="@drawable/header_gradient"
-                android:paddingTop="40dp"
-                android:paddingBottom="20dp">
+                android:paddingStart="15dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="48dp"
+                android:paddingBottom="16dp"
+                android:orientation="vertical">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <RelativeLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:orientation="vertical"
-                    android:gravity="center">
+                    android:layout_gravity="center_horizontal">
 
+                    <!-- 1. Ảnh đại diện (Nằm dưới cùng) -->
                     <androidx.cardview.widget.CardView
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        app:cardCornerRadius="50dp"
-                        app:cardElevation="4dp"
+                        android:id="@+id/avatarCard"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        app:cardCornerRadius="40dp"
+                        app:cardElevation="2dp"
                         app:cardBackgroundColor="@android:color/white">
 
                         <ImageView
                             android:id="@+id/profileAvatar"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
+                            android:padding="20dp"
+                            android:scaleType="centerCrop"
                             android:src="@drawable/ic_user"
-                            android:padding="24dp"
-                            app:tint="#4a90e2"
-                            android:scaleType="centerCrop" />
+                            app:tint="#4a90e2" />
 
                     </androidx.cardview.widget.CardView>
 
-                    <TextView
-                        android:id="@+id/profileName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Nguyễn Văn A"
-                        android:textColor="@android:color/white"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:layout_marginTop="12dp" />
-
-                    <TextView
-                        android:id="@+id/profileContact"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0123456789"
-                        android:textColor="#E3F2FD"
-                        android:textSize="14sp"
-                        android:layout_marginTop="4dp" />
-
-                    <Button
+                    <!-- 2. Nút sửa (Nằm đè lên trên) -->
+                    <!-- Dùng elevation cao hơn để chắc chắn nó nổi lên -->
+                    <androidx.cardview.widget.CardView
                         android:id="@+id/btnEditProfile"
-                        android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:text="Chỉnh sửa"
-                        android:textColor="#4a90e2"
-                        android:textSize="13sp"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp"
-                        android:background="@drawable/button_white_outline"
-                        android:layout_marginTop="8dp"
-                        style="?android:attr/borderlessButtonStyle" />
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_alignEnd="@id/avatarCard"
+                        android:layout_alignBottom="@id/avatarCard"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="6dp"
+                        app:cardBackgroundColor="@color/primary">
 
-                </LinearLayout>
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_edit"
+                            app:tint="#FAFAFA" />
 
-            </RelativeLayout>
+                    </androidx.cardview.widget.CardView>
+
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/profileName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="8dp"
+                    android:text="Nguyễn Văn A"
+                    android:textColor="@android:color/white"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
 
             <!-- Activity Section -->
             <LinearLayout
@@ -127,7 +132,7 @@
                             android:layout_width="18dp"
                             android:layout_height="18dp"
                             android:src="@drawable/ic_heart"
-                            app:tint="#7c3aed" />
+                            app:tint="#EB0951" />
 
                     </LinearLayout>
 
@@ -161,7 +166,7 @@
                     <LinearLayout
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:background="@drawable/circle_background_blue_light"
+                        android:background="@drawable/circle_background_purple_light"
                         android:gravity="center">
 
                         <ImageView
@@ -224,14 +229,14 @@
                     <LinearLayout
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:background="@drawable/circle_background_gray"
+                        android:background="@drawable/circle_background_purple_light"
                         android:gravity="center">
 
                         <ImageView
                             android:layout_width="18dp"
                             android:layout_height="18dp"
                             android:src="@drawable/ic_person"
-                            app:tint="@color/text_secondary" />
+                            app:tint="@color/primary"/>
 
                     </LinearLayout>
 
@@ -265,14 +270,14 @@
                     <LinearLayout
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:background="@drawable/circle_background_gray"
+                        android:background="@drawable/circle_background_purple_light"
                         android:gravity="center">
 
                         <ImageView
                             android:layout_width="18dp"
                             android:layout_height="18dp"
                             android:src="@drawable/ic_settings"
-                            app:tint="@color/text_secondary" />
+                            app:tint="#F59E0B" />
 
                     </LinearLayout>
 
@@ -328,14 +333,14 @@
                     <LinearLayout
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:background="@drawable/circle_background_gray"
+                        android:background="@drawable/circle_background_purple_light"
                         android:gravity="center">
 
                         <ImageView
                             android:layout_width="18dp"
                             android:layout_height="18dp"
                             android:src="@drawable/ic_help_outline"
-                            app:tint="@color/text_secondary" />
+                            app:tint="#3B82F6"/>
 
                     </LinearLayout>
 
@@ -369,14 +374,14 @@
                     <LinearLayout
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:background="@drawable/circle_background_gray"
+                        android:background="@drawable/circle_background_purple_light"
                         android:gravity="center">
 
                         <ImageView
                             android:layout_width="18dp"
                             android:layout_height="18dp"
                             android:src="@drawable/ic_security"
-                            app:tint="@color/text_secondary" />
+                            app:tint="@color/primary_dark" />
 
                     </LinearLayout>
 
@@ -423,7 +428,7 @@
                     <LinearLayout
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:background="@drawable/circle_background_gray"
+                        android:background="@drawable/circle_background_purple_light"
                         android:gravity="center">
 
                         <ImageView
@@ -460,4 +465,3 @@
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-

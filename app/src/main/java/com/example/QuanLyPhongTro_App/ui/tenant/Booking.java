@@ -1,40 +1,40 @@
 package com.example.QuanLyPhongTro_App.ui.tenant;
 
 public class Booking {
-    private String roomName;
+    // Fields
+    private String id;
+    private String title;
     private String price;
-    private String dateTime;
-    private String address;
+    private String date;
+    private String timeSlot;
     private String status;
+    private String customerName;
+    private String location;
 
-    public Booking(String roomName, String price, String dateTime, String address, String status) {
-        this.roomName = roomName;
+    // Constructor
+    public Booking(String id, String title, String price, String date,
+                   String timeSlot, String status, String customerName, String location) {
+        this.id = id;
+        this.title = title;
         this.price = price;
-        this.dateTime = dateTime;
-        this.address = address;
+        this.date = date;
+        this.timeSlot = timeSlot;
         this.status = status;
+        this.customerName = customerName;
+        this.location = location;
     }
 
-    public String getRoomName() {
-        return roomName;
-    }
+    // Getters
+    public String getId() { return id; }
+    public String getTitle() { return title; }
+    public String getPrice() { return price; }
+    public String getDate() { return date; }
+    public String getTimeSlot() { return timeSlot; }
+    public String getStatus() { return status; }
+    public String getCustomerName() { return customerName; }
+    public String getLocation() { return location; }
 
-    public String getPrice() {
-        return price;
-    }
-
-    public String getDateTime() {
-        return dateTime;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
+    // Setters
     public void setStatus(String status) {
         this.status = status;
     }
