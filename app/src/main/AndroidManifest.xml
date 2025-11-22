@@ -78,6 +78,28 @@
         <activity android:name=".ui.landlord.EditTin" />
         <activity android:name=".ui.landlord.TroGiup" />
 
+        <!--
+             ===========================================================
+             LANDLORD ACTIVITIES (ĐANG BẬT CHẾ ĐỘ TEST)
+             ===========================================================
+        -->
+
+        <!-- Thêm exported="true" và intent-filter vào đây để chạy trước -->
+        <activity
+            android:name=".ui.landlord.LandlordHomeActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".ui.landlord.LandlordStatsActivity" />
+        <activity android:name=".ui.landlord.LandlordProfileActivity" />
+        <activity android:name=".ui.landlord.YeuCau" />
+        <activity android:name=".ui.landlord.EditTin" />
+        <activity android:name=".ui.landlord.TroGiup" />
+
     </application>
 
 </manifest>
