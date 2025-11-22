@@ -8,7 +8,6 @@
     android:background="#f5f5f5"
     tools:context=".ui.tenant.MainActivity">
 
-    <!-- 1. HEADER -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
@@ -16,8 +15,6 @@
         android:background="@drawable/header_gradient"
         app:elevation="0dp">
 
-        <!-- Phần 1: Hàng Icon (Menu, Role Switcher...) -->
-        <!-- SỬA LỖI QUAN TRỌNG: Thêm paddingTop="48dp" để tránh Camera/Status Bar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -29,7 +26,6 @@
             android:paddingEnd="15dp"
             app:layout_scrollFlags="noScroll">
 
-            <!-- Menu Icon -->
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -37,7 +33,6 @@
                 app:tint="@color/white"
                 android:layout_marginEnd="12dp" />
 
-            <!-- Dropdown: Người thuê / Chủ trọ -->
             <include
                 android:id="@+id/roleSwitcher"
                 layout="@layout/view_role_switcher"
@@ -45,7 +40,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
-            <!-- Message Icon -->
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -56,8 +50,6 @@
 
         </LinearLayout>
 
-        <!-- Phần 2: Thanh Tìm Kiếm -->
-        <!-- Không đặt scrollFlags để nó luôn dính lại trên đỉnh -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="40dp"
@@ -92,7 +84,6 @@
                 app:tint="@color/white" />
         </RelativeLayout>
 
-        <!-- Phần 3: Bộ Lọc (Đưa vào trong AppBarLayout để dính liền Header) -->
         <HorizontalScrollView
             android:id="@+id/filterScroll"
             android:layout_width="match_parent"
@@ -100,26 +91,6 @@
             android:scrollbars="none"
             android:background="@color/white">
 
-    <!-- Bộ lọc-->
-    <HorizontalScrollView
-        android:id="@+id/filterScroll"
-        android:layout_width="match_parent"
-        android:layout_height="45dp"
-        android:scrollbars="none"
-        android:background="@color/white"
-        app:layout_constraintTop_toBottomOf="@+id/header">
-
-        <LinearLayout
-            android:id="@+id/filterContainer"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:gravity="center_vertical">
-
-            <Button
-                android:id="@+id/btnFilter"
             <LinearLayout
                 android:id="@+id/filterContainer"
                 android:layout_width="wrap_content"
@@ -204,8 +175,6 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-
-    <!-- 2. MAIN CONTENT -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/mainContent"
         android:layout_width="match_parent"
@@ -230,7 +199,6 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!-- Danh mục sản phẩm -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/roomRecyclerView"
                 android:layout_width="match_parent"
@@ -243,7 +211,6 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <!-- 3. BOTTOM NAVIGATION -->
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
@@ -253,7 +220,6 @@
         android:orientation="horizontal"
         android:elevation="8dp">
 
-        <!-- Trang chủ -->
         <LinearLayout
             android:id="@+id/navHome"
             android:layout_width="0dp"
@@ -282,7 +248,6 @@
                 android:layout_marginTop="2dp" />
         </LinearLayout>
 
-        <!-- Đặt lịch -->
         <LinearLayout
             android:id="@+id/navBooking"
             android:layout_width="0dp"
@@ -310,7 +275,6 @@
                 android:layout_marginTop="2dp" />
         </LinearLayout>
 
-        <!-- Thông báo -->
         <LinearLayout
             android:id="@+id/navNotification"
             android:layout_width="0dp"
@@ -338,7 +302,6 @@
                 android:layout_marginTop="2dp" />
         </LinearLayout>
 
-        <!-- Tôi -->
         <LinearLayout
             android:id="@+id/navProfile"
             android:layout_width="0dp"
