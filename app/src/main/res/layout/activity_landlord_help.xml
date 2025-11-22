@@ -1,64 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/bg">
+    android:background="#f5f5f5">
 
-    <!-- HEADER TOOLBAR (Thanh tiêu đề) -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar_trogiup"
+    <!-- HEADER TOOLBAR -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/header"
         android:layout_width="match_parent"
-        android:layout_height="88dp"
-        android:background="@color/primary"
-        android:paddingTop="18dp"
-        android:title=""
-        android:elevation="4dp">
+        android:layout_height="wrap_content"
+        android:background="@drawable/header_gradient"
+        app:elevation="4dp">
 
-        <!-- Layout chứa nút quay lại + tiêu đề -->
-        <LinearLayout
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar_trogiup"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingLeft="12dp">
+            android:layout_height="wrap_content"
+            android:background="@drawable/header_gradient"
+            android:minHeight="56dp"
+            android:paddingStart="15dp"
+            android:paddingEnd="15dp"
+            android:paddingTop="48dp"
+            android:paddingBottom="12dp">
 
-            <!-- Nút quay lại -->
-            <ImageButton
-                android:id="@+id/btn_back_trogiup"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="@android:color/transparent"
-                android:src="@android:drawable/ic_media_previous"
-                app:tint="@color/white"/>
-
-            <!-- Tiêu đề màn hình -->
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Trung tâm Hỗ trợ"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginLeft="12dp"/>
-        </LinearLayout>
-    </androidx.appcompat.widget.Toolbar>
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-    <!-- SCROLL MAIN CONTENT (Nội dung) -->
+                <ImageButton
+                    android:id="@+id/btn_back_trogiup"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="@color/white"
+                    android:contentDescription="Quay lại" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Trung tâm Hỗ trợ"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="12dp"/>
+
+            </LinearLayout>
+
+        </androidx.appcompat.widget.Toolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- SCROLL MAIN CONTENT -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="88dp"
-        android:padding="12dp">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:padding="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:spacing="8dp">
+            android:orientation="vertical">
 
-            <!-- CARD 1: Danh sách câu hỏi thường gặp (FAQ) -->
+            <!-- CARD 1: FAQ -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -68,7 +78,6 @@
                 android:elevation="2dp"
                 android:layout_marginBottom="12dp">
 
-                <!-- Title -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -76,7 +85,6 @@
                     android:textStyle="bold"
                     android:textSize="16sp"/>
 
-                <!-- Danh sách câu hỏi -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -92,12 +100,23 @@
                         android:paddingTop="8dp"
                         android:paddingBottom="8dp">
 
-                        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
-                            android:text="[Đăng tin] Làm thế nào để tin đăng hiệu quả?" android:textSize="14sp"/>
-                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_arrow_forward"/>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="[Đăng tin] Làm thế nào để tin đăng hiệu quả?"
+                            android:textSize="14sp"/>
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_arrow_forward"/>
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEE"/>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#EEE"/>
 
                     <!-- Q2 -->
                     <LinearLayout
@@ -108,14 +127,25 @@
                         android:paddingTop="8dp"
                         android:paddingBottom="8dp">
 
-                        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
-                            android:text="[Thanh toán] Tôi không nhận được tiền từ người thuê" android:textSize="14sp"/>
-                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_arrow_forward"/>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="[Thanh toán] Tôi không nhận được tiền từ người thuê"
+                            android:textSize="14sp"/>
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_arrow_forward"/>
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEE"/>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#EEE"/>
 
-                    <!-- Q3 + tag HOT -->
+                    <!-- Q3 + HOT tag -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -124,15 +154,33 @@
                         android:paddingTop="8dp"
                         android:paddingBottom="8dp">
 
-                        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
-                            android:text="[Thông tin] Làm sao để liên hệ Người thuê?  " android:textSize="14sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="HOT"
-                            android:background="#FEE2E2" android:padding="6dp" android:textColor="#BE123C" android:textSize="12sp"
-                            android:layout_marginRight="8dp"/>
-                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_arrow_forward"/>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="[Thông tin] Làm sao để liên hệ Người thuê?"
+                            android:textSize="14sp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="HOT"
+                            android:background="#FEE2E2"
+                            android:padding="6dp"
+                            android:textColor="#BE123C"
+                            android:textSize="12sp"
+                            android:layout_marginEnd="8dp"/>
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_arrow_forward"/>
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEE"/>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#EEE"/>
 
                     <!-- Q4 -->
                     <LinearLayout
@@ -143,14 +191,21 @@
                         android:paddingTop="8dp"
                         android:paddingBottom="8dp">
 
-                        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
-                            android:text="[Lỗi] Tại sao tôi không thể đăng nhập?" android:textSize="14sp"/>
-                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_arrow_forward"/>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="[Lỗi] Tại sao tôi không thể đăng nhập?"
+                            android:textSize="14sp"/>
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_arrow_forward"/>
                     </LinearLayout>
 
                 </LinearLayout>
 
-                <!-- Nút xem thêm FAQ -->
                 <TextView
                     android:id="@+id/tv_xem_them"
                     android:layout_width="wrap_content"
@@ -161,17 +216,14 @@
                     android:layout_marginTop="12dp"/>
             </LinearLayout>
 
-
-            <!-- CARD 2: Liên hệ hỗ trợ (chat / gọi tổng đài)     -->
+            <!-- CARD 2: Liên hệ hỗ trợ -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="@color/white"
-                android:padding="16dp"
-                android:elevation="2dp">
+                android:background="@drawable/card_background"
+                android:padding="16dp">
 
-                <!-- Title -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -180,7 +232,7 @@
                     android:textSize="16sp"
                     android:layout_marginBottom="12dp"/>
 
-                <!-- Mục chat -->
+                <!-- Chat -->
                 <LinearLayout
                     android:id="@+id/row_chat"
                     android:layout_width="match_parent"
@@ -189,15 +241,32 @@
                     android:gravity="center_vertical"
                     android:padding="8dp">
 
-                    <ImageView android:layout_width="36dp" android:layout_height="36dp" android:src="@android:drawable/ic_dialog_email" app:tint="@color/primary"/>
-                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Trò chuyện với chúng tôi" android:layout_marginLeft="12dp" android:textSize="15sp"/>
-                    <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_arrow_forward"/>
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@android:drawable/ic_dialog_email"
+                        app:tint="@color/primary"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Trò chuyện với chúng tôi"
+                        android:layout_marginStart="12dp"
+                        android:textSize="15sp"/>
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_arrow_forward"/>
                 </LinearLayout>
 
-                <!-- Divider -->
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEE"/>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#EEE"/>
 
-                <!-- Mục gọi tổng đài -->
+                <!-- Call -->
                 <LinearLayout
                     android:id="@+id/row_call"
                     android:layout_width="match_parent"
@@ -206,18 +275,44 @@
                     android:gravity="center_vertical"
                     android:padding="8dp">
 
-                    <ImageView android:layout_width="36dp" android:layout_height="36dp" android:src="@android:drawable/ic_menu_call" app:tint="@color/primary"/>
-                    <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginLeft="12dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Gọi tổng đài" android:textSize="15sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Miễn phí" android:textSize="12sp" android:textColor="#10B981"/>
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@android:drawable/ic_menu_call"
+                        app:tint="@color/primary"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginStart="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Gọi tổng đài"
+                            android:textSize="15sp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Miễn phí"
+                            android:textSize="12sp"
+                            android:textColor="#10B981"/>
                     </LinearLayout>
-                    <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_arrow_forward"/>
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_arrow_forward"/>
                 </LinearLayout>
 
             </LinearLayout>
 
-            <!-- Khoảng trống cuối trang -->
-            <View android:layout_width="match_parent" android:layout_height="40dp"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="40dp"/>
 
         </LinearLayout>
     </ScrollView>

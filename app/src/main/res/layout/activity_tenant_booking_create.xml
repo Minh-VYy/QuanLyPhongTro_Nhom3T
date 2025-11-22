@@ -27,7 +27,6 @@
             android:orientation="horizontal"
             app:layout_scrollFlags="noScroll">
 
-            <!-- Nút Back -->
             <ImageView
                 android:id="@+id/btnBack"
                 android:layout_width="24dp"
@@ -38,7 +37,6 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Quay lại" />
 
-            <!-- Tiêu đề -->
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -50,7 +48,6 @@
                 android:textStyle="bold" />
 
         </LinearLayout>
-
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -66,7 +63,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Thẻ thông tin phòng -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -135,7 +131,6 @@
 
             </androidx.cardview.widget.CardView>
 
-            <!-- Chọn ngày và giờ -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -174,17 +169,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:singleSelection="true"
-                app:chipSpacing="12dp"
+                app:chipSpacingHorizontal="8dp"
                 android:layout_marginBottom="20dp">
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipMorning"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:text="Sáng (8-12h)"
-                    android:textAlignment="center"
                     app:chipBackgroundColor="@color/chip_background_selector"
                     app:chipStrokeColor="@color/gray_border"
                     app:chipStrokeWidth="1dp"
@@ -193,11 +186,9 @@
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipAfternoon"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:text="Chiều (13-17h)"
-                    android:textAlignment="center"
                     app:chipBackgroundColor="@color/chip_background_selector"
                     app:chipStrokeColor="@color/gray_border"
                     app:chipStrokeWidth="1dp"
@@ -206,11 +197,9 @@
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipEvening"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:text="Tối (18-20h)"
-                    android:textAlignment="center"
                     app:chipBackgroundColor="@color/chip_background_selector"
                     app:chipStrokeColor="@color/gray_border"
                     app:chipStrokeWidth="1dp"
@@ -218,7 +207,6 @@
 
             </com.google.android.material.chip.ChipGroup>
 
-            <!-- Thông tin người thuê nhà -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -228,7 +216,6 @@
                 android:textStyle="bold"
                 android:layout_marginBottom="12dp" />
 
-            <!--Họ tên-->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -247,7 +234,6 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!--Số điên thoại-->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -266,7 +252,6 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!--Ghi chú-->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -288,7 +273,6 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Tùy chọn liên hệ-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -318,7 +302,6 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Button Đặt lịch -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -348,18 +331,5 @@
             android:layout_marginTop="8dp" />
 
     </LinearLayout>
-
-    <!-- Tiêu đề -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@drawable/header_gradient"
-        app:layout_anchor="@+id/appBarLayout2"
-        app:layout_anchorGravity="center"
-        app:navigationIcon="@drawable/ic_arrow_back"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:title="Đặt lịch xem phòng"
-        app:titleTextColor="@android:color/white" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
