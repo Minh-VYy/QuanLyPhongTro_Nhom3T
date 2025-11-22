@@ -19,15 +19,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QuanLyPhongTro_ChuTro">
 
-        <!-- Splash Screen - Launcher -->
+        <!--
+             ===========================================================
+             TẠM ẨN SPLASH SCREEN ĐỂ TEST CHỦ TRỌ
+             ===========================================================
+        -->
         <activity
             android:name=".ui.auth.SplashActivity"
-            android:exported="true"
+            android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar">
+            <!--
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            -->
         </activity>
 
         <activity android:name=".ui.auth.LoginActivity" />
@@ -38,12 +44,10 @@
             android:exported="false" />
 
         <!-- Auth Activities -->
-
-         <activity android:name=".ui.auth.DangKyNguoiThueActivity" />
+        <activity android:name=".ui.auth.DangKyNguoiThueActivity" />
         <activity android:name=".ui.auth.DangKyChuTroActivity" />
 
         <!-- Tenant Activities -->
-
         <activity android:name=".ui.tenant.RoomDetailActivity" />
         <activity android:name=".ui.tenant.BookingCreateActivity" />
         <activity android:name=".ui.tenant.BookingListActivity" />
@@ -51,6 +55,28 @@
         <activity android:name=".ui.tenant.NotificationsActivity" />
         <activity android:name=".ui.tenant.ProfileActivity" />
         <activity android:name=".ui.tenant.EditProfileActivity" />
+
+        <!--
+             ===========================================================
+             LANDLORD ACTIVITIES (ĐANG BẬT CHẾ ĐỘ TEST)
+             ===========================================================
+        -->
+
+        <!-- Thêm exported="true" và intent-filter vào đây để chạy trước -->
+        <activity
+            android:name=".ui.landlord.LandlordHomeActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".ui.landlord.LandlordStatsActivity" />
+        <activity android:name=".ui.landlord.LandlordProfileActivity" />
+        <activity android:name=".ui.landlord.YeuCau" />
+        <activity android:name=".ui.landlord.EditTin" />
+        <activity android:name=".ui.landlord.TroGiup" />
 
     </application>
 

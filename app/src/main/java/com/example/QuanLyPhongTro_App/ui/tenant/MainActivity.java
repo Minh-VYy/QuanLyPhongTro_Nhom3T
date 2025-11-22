@@ -12,6 +12,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.data.MockData;
+import com.example.QuanLyPhongTro_App.ui.auth.DangKyNguoiThueActivity;
+import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
+import com.example.QuanLyPhongTro_App.utils.SessionManager;
+import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
+
+import java.util.ArrayList;
+import java.util.List;
 import com.example.QuanLyPhongTro_App.ui.auth.DangKyNguoiThueActivity;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
@@ -37,6 +45,11 @@ public class MainActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
 
+        // Auto-login as guest for demo
+        if (!sessionManager.isLoggedIn()) {
+            sessionManager.createLoginSession("guest_user", "Khách", "guest@example.com", "tenant");
+        }
+
         initRoomList();
         initViews();
         setupRoleDropdown();
@@ -46,13 +59,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initRoomList() {
-        roomList = new ArrayList<>();
-        roomList.add(new Room("Phòng trọ đẹp, gần ĐH Bách Khoa", "2.5 triệu/tháng", "Quận 10, TP.HCM", R.drawable.tro));
-        roomList.add(new Room("Chung cư mini full nội thất", "3.2 triệu/tháng", "Quận 1, TP.HCM", R.drawable.tro));
-        roomList.add(new Room("Phòng trọ mới xây", "1.8 triệu/tháng", "Quận Tân Bình, TP.HCM", R.drawable.tro));
-        roomList.add(new Room("Studio cao cấp", "4.5 triệu/tháng", "Quận 3, TP.HCM", R.drawable.tro));
-        roomList.add(new Room("Phòng trọ giá rẻ", "1.5 triệu/tháng", "Quận Bình Thạnh, TP.HCM", R.drawable.tro));
-        roomList.add(new Room("Nhà nguyên căn", "5.0 triệu/tháng", "Quận 7, TP.HCM", R.drawable.tro));
+        // Load data từ MockData thay vì hardcode
+        roomList = new ArrayList<>(MockData.getRooms());
     }
 
     private void initViews() {
@@ -77,7 +85,11 @@ public class MainActivity extends AppCompatActivity {
                         } else if (which == 1) {
                             if (landlordAccount) {
                                 sessionManager.setDisplayRole("landlord");
-                                applyRoleUI();
+                                // Switch to landlord home
+                                Intent intent = new Intent(this, com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                                finish();
                             } else {
                                 Intent i = new Intent(this, LoginActivity.class);
                                 i.putExtra("targetRole", "landlord");
@@ -165,7 +177,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        BottomNavigationHelper.setupBottomNavigation(this, "home");
         applyRoleUI();
     }
 }

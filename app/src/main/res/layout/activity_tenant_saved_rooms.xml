@@ -7,21 +7,46 @@
     android:background="#f5f5f5"
     tools:context=".ui.tenant.SavedRoomsActivity">
 
-    <!-- ==================== 1. AppBar + Toolbar ==================== -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-        <androidx.appcompat.widget.Toolbar
+        <LinearLayout
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
             android:background="@drawable/header_gradient"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            app:title="Tin đã lưu"
-            app:titleTextColor="@android:color/white"
-            app:navigationIcon="@drawable/ic_arrow_back" />
+            android:paddingStart="15dp"
+            android:paddingEnd="15dp"
+            android:paddingTop="48dp"
+            android:paddingBottom="12dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_scrollFlags="noScroll">
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="@android:color/white"
+                android:padding="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Quay lại" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:text="Tin đã lưu"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
 

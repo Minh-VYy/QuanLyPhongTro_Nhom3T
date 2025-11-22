@@ -87,10 +87,16 @@ public class LoginActivity extends AppCompatActivity {
         sessionManager.createLoginSession(userId, userName, email, userType);
         boolean isLandlord = "landlord".equals(userType);
         sessionManager.setLandlordStatus(isLandlord);
+        sessionManager.setDisplayRole(userType);
 
         Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
 
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent;
+        if (isLandlord) {
+            intent = new Intent(this, com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class);
+        } else {
+            intent = new Intent(this, MainActivity.class);
+        }
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish();

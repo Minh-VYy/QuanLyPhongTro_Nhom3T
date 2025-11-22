@@ -54,18 +54,22 @@ public class BookingListFragment extends Fragment {
     }
 
     private List<Booking> getBookingList() {
-        // TODO: Load from database based on bookingType
         List<Booking> bookings = new ArrayList<>();
 
-        if ("upcoming".equals(bookingType)) {
-            // Add sample upcoming bookings
-            bookings.add(new Booking("Phòng trọ cao cấp", "2.5 triệu", "21/08/2024 - Sáng", "Quận 1, TP.HCM", "pending"));
-            bookings.add(new Booking("Phòng trọ giá rẻ", "1.8 triệu", "22/08/2024 - Chiều", "Quận 3, TP.HCM", "confirmed"));
+        if ("pending".equals(bookingType)) {
+            bookings.addAll(com.example.QuanLyPhongTro_App.data.MockData.getPendingBookings());
+        } else if ("confirmed".equals(bookingType)) {
+            bookings.addAll(com.example.QuanLyPhongTro_App.data.MockData.getConfirmedBookings());
+        } else if ("completed".equals(bookingType)) {
+            bookings.addAll(com.example.QuanLyPhongTro_App.data.MockData.getCompletedBookings());
+        } else if ("cancelled".equals(bookingType)) {
+            bookings.addAll(com.example.QuanLyPhongTro_App.data.MockData.getCancelledBookings());
         } else {
-            // Add sample past bookings
-            bookings.add(new Booking("Phòng gần trường", "2.0 triệu", "15/08/2024 - Sáng", "Quận 5, TP.HCM", "completed"));
-            bookings.add(new Booking("Phòng VIP", "3.5 triệu", "10/08/2024 - Tối", "Quận 7, TP.HCM", "cancelled"));
+            // "all" - load all bookings
+            bookings.addAll(com.example.QuanLyPhongTro_App.data.MockData.getPendingBookings());
+            bookings.addAll(com.example.QuanLyPhongTro_App.data.MockData.getConfirmedBookings());
         }
+
 
         return bookings;
     }
