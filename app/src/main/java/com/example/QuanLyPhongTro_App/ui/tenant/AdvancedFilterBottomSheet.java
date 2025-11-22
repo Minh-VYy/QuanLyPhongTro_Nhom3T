@@ -1,11 +1,13 @@
 package com.example.QuanLyPhongTro_App.ui.tenant;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -16,9 +18,11 @@ import androidx.annotation.Nullable;
 
 import com.example.QuanLyPhongTro_App.R;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.slider.RangeSlider;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AdvancedFilterBottomSheet extends BottomSheetDialogFragment {
@@ -30,6 +34,18 @@ public class AdvancedFilterBottomSheet extends BottomSheetDialogFragment {
     private ChipGroup roomTypeChipGroup, amenitiesChipGroup;
     private Button btnCancel, btnApply;
 
+    private FilterListener filterListener;
+
+    // Interface to send data back
+    public interface FilterListener {
+        void onFilterApplied(Bundle filters);
+    }
+
+    // Method to set the listener from the calling fragment/activity
+    public void setFilterListener(FilterListener listener) {
+        this.filterListener = listener;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -37,6 +53,7 @@ public class AdvancedFilterBottomSheet extends BottomSheetDialogFragment {
 
         initViews(view);
         setupSpinner();
+        updatePriceRangeText(); // Set initial text
         setupListeners();
 
         return view;
@@ -57,21 +74,28 @@ public class AdvancedFilterBottomSheet extends BottomSheetDialogFragment {
     private void setupSpinner() {
         String[] areas = {"Chọn quận/khu vực", "Quận 1", "Quận 2", "Quận 3", "Quận 5", "Quận 7", "Quận 10"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
-            android.R.layout.simple_spinner_item, areas);
+                android.R.layout.simple_spinner_item, areas);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         areaSpinner.setAdapter(adapter);
+    }
+
+    private void updatePriceRangeText() {
+        List<Float> values = priceRangeSlider.getValues();
+        priceRangeText.setText(String.format("Từ %.1f - %.1f triệu", values.get(0), values.get(1)));
     }
 
     private void setupListeners() {
         // Price range slider
         priceRangeSlider.addOnChangeListener((slider, value, fromUser) -> {
-            List<Float> values = slider.getValues();
-            priceRangeText.setText(String.format("Từ %.1f - %.1f triệu", values.get(0), values.get(1)));
+            updatePriceRangeText(); // Update text on change
         });
 
         // Clear filter
         btnClearFilter.setOnClickListener(v -> {
-            priceRangeSlider.setValues(0.5f, 10.0f);
+            // Reset to default values. Hardcoding is safer than resource parsing here.
+            priceRangeSlider.setValues(1.5f, 5.0f);
+            updatePriceRangeText();
+
             areaSpinner.setSelection(0);
             distanceRadioGroup.check(R.id.distanceAny);
             roomTypeChipGroup.clearCheck();
@@ -84,7 +108,46 @@ public class AdvancedFilterBottomSheet extends BottomSheetDialogFragment {
 
         // Apply
         btnApply.setOnClickListener(v -> {
-            // TODO: Apply filters and return to MainActivity
+            Bundle filters = new Bundle();
+
+            // Price
+            List<Float> priceValues = priceRangeSlider.getValues();
+            filters.putFloat("minPrice", priceValues.get(0));
+            filters.putFloat("maxPrice", priceValues.get(1));
+
+            // Area
+            if (areaSpinner.getSelectedItemPosition() > 0) {
+                filters.putString("area", areaSpinner.getSelectedItem().toString());
+            }
+
+            // Distance
+            int selectedDistanceId = distanceRadioGroup.getCheckedRadioButtonId();
+            if (selectedDistanceId != -1) {
+                RadioButton selectedDistance = distanceRadioGroup.findViewById(selectedDistanceId);
+                if (selectedDistance != null) {
+                    filters.putString("distance", selectedDistance.getText().toString());
+                }
+            }
+
+            // Room types
+            ArrayList<String> roomTypes = new ArrayList<>();
+            for (int id : roomTypeChipGroup.getCheckedChipIds()) {
+                Chip chip = roomTypeChipGroup.findViewById(id);
+                roomTypes.add(chip.getText().toString());
+            }
+            filters.putStringArrayList("roomTypes", roomTypes);
+
+            // Amenities
+            ArrayList<String> amenities = new ArrayList<>();
+            for (int id : amenitiesChipGroup.getCheckedChipIds()) {
+                Chip chip = amenitiesChipGroup.findViewById(id);
+                amenities.add(chip.getText().toString());
+            }
+            filters.putStringArrayList("amenities", amenities);
+
+            if (filterListener != null) {
+                filterListener.onFilterApplied(filters);
+            }
             Toast.makeText(requireContext(), "Đã áp dụng bộ lọc", Toast.LENGTH_SHORT).show();
             dismiss();
         });
@@ -94,4 +157,3 @@ public class AdvancedFilterBottomSheet extends BottomSheetDialogFragment {
         return new AdvancedFilterBottomSheet();
     }
 }
-

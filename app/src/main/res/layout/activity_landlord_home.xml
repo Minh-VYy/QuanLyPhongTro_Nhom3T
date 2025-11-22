@@ -27,7 +27,6 @@
             android:gravity="center_vertical"
             app:layout_scrollFlags="noScroll">
 
-            <!-- Top Row: Menu, Role Switcher, Message -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -35,6 +34,7 @@
                 android:gravity="center_vertical"
                 android:layout_marginBottom="12dp"
                 app:layout_scrollFlags="scroll|enterAlways">
+
                 <!-- Menu Icon -->
                 <ImageView
                     android:id="@+id/btn_menu"
@@ -379,28 +379,33 @@
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false" />
 
+            <!-- Bottom padding -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="80dp"/>
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
 
-    <!-- FAB -->
+    <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_tao_tin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="122dp"
+        android:layout_marginBottom="72dp"
         android:src="@android:drawable/ic_input_add"
         app:backgroundTint="@color/primary"
         app:tint="@color/white" />
 
     <!-- Bottom Navigation -->
     <include
+        android:id="@+id/bottom_nav"
         layout="@layout/layout_landlord_bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:layout_gravity="bottom"
-        android:layout_alignParentBottom="true" />
+        android:layout_gravity="bottom" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

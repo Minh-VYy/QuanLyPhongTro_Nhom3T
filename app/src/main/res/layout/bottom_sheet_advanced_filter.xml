@@ -7,7 +7,7 @@
     android:background="@android:color/white"
     android:padding="20dp">
 
-    <!-- Handle Bar -->
+    <!-- ==================== 1. Thanh kéo (Handle) của Bottom Sheet ==================== -->
     <View
         android:layout_width="40dp"
         android:layout_height="4dp"
@@ -15,7 +15,7 @@
         android:layout_marginBottom="16dp"
         android:background="@drawable/bottom_sheet_handle" />
 
-    <!-- Header -->
+    <!-- ==================== 2. Tiêu đề + Nút Xóa bộ lọc ==================== -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -44,10 +44,10 @@
 
     </RelativeLayout>
 
+    <!-- ==================== 3. Nội dung cuộn (ScrollView) ==================== -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         android:scrollbars="none">
 
         <LinearLayout
@@ -55,7 +55,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Price Range -->
+            <!-- 3.1 Khoảng giá thuê -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -71,6 +71,7 @@
                 android:layout_height="wrap_content"
                 android:valueFrom="0.5"
                 android:valueTo="10.0"
+                app:values="@array/initial_range_slider_values"
                 android:stepSize="0.5"
                 app:thumbColor="#7c3aed"
                 app:trackColorActive="#7c3aed"
@@ -81,12 +82,12 @@
                 android:id="@+id/priceRangeText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Từ 1.5 - 3.5 triệu"
+                android:text=""
                 android:textColor="@color/text_secondary"
                 android:textSize="13sp"
                 android:layout_marginBottom="20dp" />
 
-            <!-- Area Selection -->
+            <!-- 3.2 Chọn khu vực / quận -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -104,7 +105,7 @@
                 android:padding="12dp"
                 android:layout_marginBottom="20dp" />
 
-            <!-- Distance -->
+            <!-- 3.3 Khoảng cách từ vị trí hiện tại -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -136,7 +137,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="&lt; 3km"
+                    android:text="3km"
                     android:textSize="13sp"
                     android:buttonTint="#7c3aed" />
 
@@ -145,13 +146,13 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="&lt; 5km"
+                    android:text="5km"
                     android:textSize="13sp"
                     android:buttonTint="#7c3aed" />
 
             </RadioGroup>
 
-            <!-- Room Type -->
+            <!-- 3.4 Loại phòng (Nguyên căn, Phòng riêng, Ở ghép) -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -204,7 +205,7 @@
 
             </com.google.android.material.chip.ChipGroup>
 
-            <!-- Amenities -->
+            <!-- 3.5 Tiện nghi (Máy lạnh, Wi-Fi, Giữ xe, WC riêng...) -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -269,10 +270,9 @@
             </com.google.android.material.chip.ChipGroup>
 
         </LinearLayout>
-
     </ScrollView>
 
-    <!-- Action Buttons -->
+    <!-- ==================== 4. Nút hành động: Huỷ & Áp dụng ==================== -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -308,4 +308,3 @@
     </LinearLayout>
 
 </LinearLayout>
-

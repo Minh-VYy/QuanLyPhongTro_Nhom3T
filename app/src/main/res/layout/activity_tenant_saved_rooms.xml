@@ -50,13 +50,15 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+
+    <!-- ==================== 2. Nội dung chính (cuộn theo AppBar) ==================== -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Sort Options -->
+        <!-- 2.1 Thanh sắp xếp (Sort) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="48dp"
@@ -85,7 +87,7 @@
 
         </LinearLayout>
 
-        <!-- Saved Rooms List -->
+        <!-- 2.2 Danh sách phòng đã lưu (RecyclerView chính) -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/savedRoomsRecyclerView"
             android:layout_width="match_parent"
@@ -95,7 +97,7 @@
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/item_tenant_saved_room" />
 
-        <!-- Empty State -->
+        <!-- 2.3 Trạng thái trống (khi chưa lưu phòng nào) -->
         <LinearLayout
             android:id="@+id/emptyState"
             android:layout_width="match_parent"
@@ -137,4 +139,3 @@
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-

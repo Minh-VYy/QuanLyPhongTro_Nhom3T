@@ -7,7 +7,7 @@
     android:background="#f8f9fa"
     tools:context=".ui.tenant.RoomDetailActivity">
 
-    <!-- Fixed Search Bar Header -->
+    <!-- ==================== 1. Thanh Search cố định ở trên cùng ==================== -->
     <LinearLayout
         android:id="@+id/searchHeaderLayout"
         android:layout_width="match_parent"
@@ -73,7 +73,7 @@
 
     </LinearLayout>
 
-    <!-- AppBar with Collapsing Image -->
+    <!-- ==================== 2. AppBar + Ảnh phòng thu gọn khi scroll ==================== -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
@@ -98,7 +98,7 @@
                 android:src="@drawable/tro"
                 app:layout_collapseMode="parallax" />
 
-            <!-- Badge New -->
+            <!-- Badge "MỚI" trên ảnh -->
             <TextView
                 android:id="@+id/imageBadge"
                 android:layout_width="wrap_content"
@@ -115,14 +115,12 @@
                 android:visibility="gone" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
-
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Main Scrollable Content -->
+    <!-- ==================== 3. Nội dung chính có thể cuộn ==================== -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/appBarLayout"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -130,7 +128,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Room Title & Price -->
+            <!-- 3.1 Tiêu đề phòng + Giá + Rating -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -165,35 +163,36 @@
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/badge_rating_background"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="6dp">
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:layout_marginEnd="4dp"
-                            android:src="@drawable/ic_star"
-                            app:tint="@color/white" />
-
-                        <TextView
+                        <!-- ĐÁNH GIÁ RIÊNG CỦA PHÒNG -->
+                        <LinearLayout
+                            android:id="@+id/roomRatingContainer"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="4.5 (12)"
-                            android:textColor="@color/white"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
+                            android:background="@drawable/badge_rating_background"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp">
 
-                    </LinearLayout>
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_marginEnd="4dp"
+                                android:src="@drawable/ic_star"
+                                app:tint="@color/white" />
 
+                            <TextView
+                                android:id="@+id/roomRatingText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="4.5 (8)"
+                                android:textColor="@color/white"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
                 </LinearLayout>
 
-                <!-- Location & Area -->
+                <!-- Vị trí + Diện tích -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -232,12 +231,10 @@
                         android:text="20m²"
                         android:textColor="#666"
                         android:textSize="14sp" />
-
                 </LinearLayout>
-
             </LinearLayout>
 
-            <!-- Landlord Info Card -->
+            <!-- 3.2 Thông tin chủ trọ -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -289,7 +286,9 @@
                             android:textSize="16sp"
                             android:textStyle="bold" />
 
+                        <!-- ĐÁNH GIÁ TỔNG CỦA CHỦ TRỌ -->
                         <LinearLayout
+                            android:id="@+id/landlordRatingContainer"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
@@ -303,14 +302,13 @@
                                 app:tint="#ffc107" />
 
                             <TextView
+                                android:id="@+id/landlordRatingText"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="4.5 (12 đánh giá)"
+                                android:text="4.8 (25 đánh giá)"
                                 android:textColor="#666"
                                 android:textSize="12sp" />
-
                         </LinearLayout>
-
                     </LinearLayout>
 
                     <Button
@@ -324,12 +322,10 @@
                         android:textAllCaps="false"
                         android:textColor="@color/white"
                         android:textSize="13sp" />
-
                 </LinearLayout>
-
             </LinearLayout>
 
-            <!-- Description -->
+            <!-- 3.3 Mô tả chi tiết phòng -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -357,10 +353,9 @@
                     android:text="Phòng trọ mới xây, sạch sẽ, thoáng mát. Có cửa sổ lớn, ánh sáng tự nhiên. Khu vực an ninh, gần chợ, siêu thị và các tiện ích khác. Phù hợp cho sinh viên và người đi làm."
                     android:textColor="#666"
                     android:textSize="14sp" />
-
             </LinearLayout>
 
-            <!-- Amenities Grid -->
+            <!-- 3.4 Danh sách tiện nghi (Grid) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -388,10 +383,9 @@
                     app:spanCount="3"
                     tools:itemCount="6"
                     tools:listitem="@layout/item_tenant_amenity" />
-
             </LinearLayout>
 
-            <!-- Location -->
+            <!-- 3.5 Bản đồ vị trí -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -432,7 +426,6 @@
                         android:layout_gravity="center"
                         android:src="@drawable/ic_map"
                         app:tint="#999" />
-
                 </FrameLayout>
 
                 <LinearLayout
@@ -465,12 +458,10 @@
                         android:textAllCaps="false"
                         android:textColor="#4a90e2"
                         android:textSize="13sp" />
-
                 </LinearLayout>
-
             </LinearLayout>
 
-            <!-- Contact Info -->
+            <!-- 3.6 Thông tin liên hệ (số điện thoại, giờ) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -510,7 +501,6 @@
                         android:text="0123.456.789"
                         android:textColor="#666"
                         android:textSize="14sp" />
-
                 </LinearLayout>
 
                 <LinearLayout
@@ -532,12 +522,10 @@
                         android:text="Giờ liên hệ: 8:00 - 22:00"
                         android:textColor="#666"
                         android:textSize="14sp" />
-
                 </LinearLayout>
-
             </LinearLayout>
 
-            <!-- Suggested Rooms Section -->
+            <!-- 3.7 Gợi ý phòng trọ khác -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -564,19 +552,17 @@
                     app:spanCount="2"
                     tools:itemCount="4"
                     tools:listitem="@layout/item_tenant_room_grid" />
-
             </LinearLayout>
 
-            <!-- Bottom padding for button -->
+            <!-- Khoảng trống dưới cùng để nút cố định không che nội dung -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="80dp" />
 
         </LinearLayout>
-
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Fixed Action Buttons Footer -->
+    <!-- ==================== 4. Thanh nút hành động cố định ở dưới cùng ==================== -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -610,7 +596,6 @@
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="16sp" />
-
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

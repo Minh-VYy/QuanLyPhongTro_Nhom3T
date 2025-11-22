@@ -31,10 +31,12 @@ public class DangKyNguoiThueActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tenant_register);
 
+        // Ẩn ActionBar
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
 
+        //Ánh xạ từ layout
         hoTenThue = findViewById(R.id.ho_ten_thue);
         emailThue = findViewById(R.id.email_thue);
         sdtThue = findViewById(R.id.sdt_thue);
@@ -46,14 +48,17 @@ public class DangKyNguoiThueActivity extends AppCompatActivity {
         chuyenChuTroDangKyThue = findViewById(R.id.chuyen_chu_tro_dang_ky_thue);
         dangNhapThue = findViewById(R.id.dang_nhap_thue);
 
+        // Nút ĐĂNG KÝ → Kiểm tra dữ liệu và xử lý đăng ký
         btnDangKyThue.setOnClickListener(v -> xuLyDangKy());
 
+        // Chuyển sang màn hình đăng ký dành cho CHỦ TRỌ
         chuyenChuTroDangKyThue.setOnClickListener(v -> {
             Intent intent = new Intent(DangKyNguoiThueActivity.this, DangKyChuTroActivity.class);
             startActivity(intent);
             finish();
         });
 
+        // Chuyển về màn hình ĐĂNG NHẬP (nếu người dùng đã có tài khoản)
         dangNhapThue.setOnClickListener(v -> {
             Intent intent = new Intent(DangKyNguoiThueActivity.this, LoginActivity.class);
             intent.putExtra("targetRole", "tenant");
@@ -62,6 +67,7 @@ public class DangKyNguoiThueActivity extends AppCompatActivity {
         });
     }
 
+    //Xử lý logic đăng ký người thuê
     private void xuLyDangKy() {
         String hoTen = hoTenThue.getText().toString().trim();
         String email = emailThue.getText().toString().trim();
@@ -123,6 +129,7 @@ public class DangKyNguoiThueActivity extends AppCompatActivity {
 
         Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
 
+        // Chuyển về màn hình Splash hoặc Login sau khi đăng ký thành công
         Intent intent = new Intent(DangKyNguoiThueActivity.this, SplashActivity.class);
         startActivity(intent);
         finish();

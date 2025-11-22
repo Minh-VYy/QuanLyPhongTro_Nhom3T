@@ -36,8 +36,6 @@ public class DangKyChuTroActivity extends AppCompatActivity {
     private TextView chuyenNguoiThueDangKyChuTro;
     private TextView dangNhapChuTro;
     private SessionManager sessionManager;
-
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int REQUEST_IMAGE_PICK = 2;
     private Uri hinhGiayToUri;
 
@@ -103,6 +101,7 @@ public class DangKyChuTroActivity extends AppCompatActivity {
         startActivityForResult(intent, REQUEST_IMAGE_PICK);
     }
 
+    //Hàm nhận lại ảnh giấy tờ mà người dùng vừa chọn từ thư viện ảnh, rồi hiển thị lên màn hình để xác nhận
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

@@ -2,6 +2,7 @@ package com.example.QuanLyPhongTro_App.ui.tenant;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -17,7 +18,7 @@ import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
 public class ProfileActivity extends AppCompatActivity {
 
     private ImageView profileAvatar;
-    private TextView profileName;
+    private TextView profileName, profileContact;
     private CardView btnEditProfile;
     private LinearLayout menuSavedRooms, menuBookings, menuPersonalInfo, menuSettings;
     private LinearLayout menuHelp, menuTerms, menuLogout;
@@ -31,6 +32,7 @@ public class ProfileActivity extends AppCompatActivity {
         sessionManager = new SessionManager(this);
 
         initViews();
+        setupBottomNavigation();
         setupListeners();
         loadUserData();
     }
@@ -42,6 +44,7 @@ public class ProfileActivity extends AppCompatActivity {
     private void initViews() {
         profileAvatar = findViewById(R.id.profileAvatar);
         profileName = findViewById(R.id.profileName);
+        profileContact = findViewById(R.id.profileContact);
         btnEditProfile = findViewById(R.id.btnEditProfile);
 
         menuSavedRooms = findViewById(R.id.menuSavedRooms);
@@ -57,7 +60,8 @@ public class ProfileActivity extends AppCompatActivity {
         try {
             if (btnEditProfile != null) {
                 btnEditProfile.setOnClickListener(v -> {
-                    Toast.makeText(this, "Chỉnh sửa thông tin", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(this, EditProfileActivity.class);
+                    startActivity(intent);
                 });
             }
 
@@ -75,7 +79,8 @@ public class ProfileActivity extends AppCompatActivity {
 
             if (menuPersonalInfo != null) {
                 menuPersonalInfo.setOnClickListener(v -> {
-                    Toast.makeText(this, "Thông tin cá nhân", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(this, EditProfileActivity.class);
+                    startActivity(intent);
                 });
             }
 
@@ -102,7 +107,6 @@ public class ProfileActivity extends AppCompatActivity {
                     sessionManager.logout();
                     Toast.makeText(this, "Đã đăng xuất", Toast.LENGTH_SHORT).show();
 
-                    // Quay về MainActivity (Guest mode)
                     Intent intent = new Intent(this, MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
@@ -116,14 +120,22 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void loadUserData() {
         try {
-            // Load từ SessionManager
             String userName = sessionManager.getUserName();
+            String userEmail = sessionManager.getUserEmail();
 
             if (profileName != null) {
                 if (userName != null && !userName.isEmpty()) {
                     profileName.setText(userName);
                 } else {
                     profileName.setText("Người dùng");
+                }
+            }
+
+            if (profileContact != null) {
+                if (userEmail != null && !userEmail.isEmpty()) {
+                    profileContact.setText(userEmail);
+                } else {
+                    profileContact.setText("Chưa cập nhật");
                 }
             }
         } catch (Exception e) {
