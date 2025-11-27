@@ -51,8 +51,7 @@ public class ProfileActivity extends AppCompatActivity {
         menuBookings = findViewById(R.id.menuBookings);
         menuPersonalInfo = findViewById(R.id.menuPersonalInfo);
         menuSettings = findViewById(R.id.menuSettings);
-        menuHelp = findViewById(R.id.menuHelp);
-        //menuTerms = findViewById(R.id.menuTerms);
+        menuHelp = findViewById(R.id.menuHelp);//menuTerms = findViewById(R.id.menuTerms);
         menuLogout = findViewById(R.id.menuLogout);
     }
 
