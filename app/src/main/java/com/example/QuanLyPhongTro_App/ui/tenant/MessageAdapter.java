@@ -60,8 +60,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         // 1. CHỨC NĂNG XEM CHI TIẾT (CLICK)
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, MessageDetailActivity.class);
-            // Giả sử Message model có phương thức getId()
             intent.putExtra("message_id", message.getId());
+
+            // QUAN TRỌNG: Thêm cờ FLAG_ACTIVITY_NEW_TASK nếu Context bạn dùng là Application Context
+            // Nếu Context là Activity Context, KHÔNG cần thêm dòng này.
+            // Nếu bạn không chắc, HÃY THỬ thêm dòng này:
+            // intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
             context.startActivity(intent);
         });
 
