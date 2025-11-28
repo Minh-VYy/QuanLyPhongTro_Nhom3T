@@ -19,8 +19,9 @@ public class LoginActivity extends AppCompatActivity {
 
     private TextInputEditText edtEmail, edtPassword;
     private Button btnLogin;
-    private TextView txtForgotPassword, txtGotoRegister;
+    private TextView txtForgotPassword, txtGotoRegister, txtTargetRole;
     private SessionManager sessionManager;
+    private String targetRole = "tenant"; // Mặc định là người thuê
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,12 +30,18 @@ public class LoginActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
 
+        // Lấy targetRole từ Intent (nếu có)
+        if (getIntent().hasExtra("targetRole")) {
+            targetRole = getIntent().getStringExtra("targetRole");
+        }
+
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
 
         initViews();
         setupListeners();
+        updateRoleUI();
     }
 
     private void initViews() {
@@ -43,6 +50,7 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btn_login);
         txtForgotPassword = findViewById(R.id.txt_forgot_password);
         txtGotoRegister = findViewById(R.id.txt_goto_register);
+        txtTargetRole = findViewById(R.id.txt_target_role);
     }
 
     private void setupListeners() {
@@ -74,12 +82,23 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-                // Password complexity validation should be performed server-side.
-        // The client only checks for minimum length for user experience.
         // TODO: Gọi API đăng nhập thực tế
         // Database sẽ trả về thông tin user và role (tenant/landlord)
-        // Giả lập đăng nhập thành công
-                loginSuccess(emailPhone, "user123", "Nguyễn Văn A", "tenant");
+
+        // DEMO ACCOUNT:
+        // Người thuê: tenant@demo.com / password123
+        // Chủ trọ: landlord@demo.com / password123
+
+        if (emailPhone.equals("tenant@demo.com") && password.equals("password123")) {
+            loginSuccess(emailPhone, "tenant_001", "Nguyễn Văn A", "tenant");
+        } else if (emailPhone.equals("landlord@demo.com") && password.equals("password123")) {
+            loginSuccess(emailPhone, "landlord_001", "Trần Thị B", "landlord");
+        } else {
+            // Giả lập đăng nhập theo targetRole cho demo
+            String userName = targetRole.equals("landlord") ? "Chủ Trọ Demo" : "Người Thuê Demo";
+            String userId = targetRole.equals("landlord") ? "landlord_demo" : "tenant_demo";
+            loginSuccess(emailPhone, userId, userName, targetRole);
+        }
     }
 
     private void loginSuccess(String email, String userId, String userName, String userType) {
@@ -113,5 +132,15 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
         builder.show();
+    }
+
+    /**
+     * Cập nhật UI hiển thị role đang đăng nhập
+     */
+    private void updateRoleUI() {
+        if (txtTargetRole != null) {
+            String roleText = targetRole.equals("landlord") ? "Đăng nhập với vai trò: Chủ Trọ" : "Đăng nhập với vai trò: Người Thuê";
+            txtTargetRole.setText(roleText);
+        }
     }
 }

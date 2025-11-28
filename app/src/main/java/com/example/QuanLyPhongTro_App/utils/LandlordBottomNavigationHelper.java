@@ -29,88 +29,113 @@ public class LandlordBottomNavigationHelper {
      * @param activeItem Which item should be highlighted (home, requests, stats, profile)
      */
     public static void setupBottomNavigation(Activity activity, String activeItem) {
-        View bottomNav = activity.findViewById(R.id.bottomNav);
+        try {
+            // Find the bottom navigation container
+            View bottomNav = activity.findViewById(R.id.bottomNav);
 
-        if (bottomNav == null) {
-            Log.e(TAG, "Bottom navigation view not found in layout!");
-            return;
+            if (bottomNav == null) {
+                Log.e(TAG, "Bottom navigation view not found in layout!");
+                return;
+            }
+
+            // Find all navigation items
+            LinearLayout navHome = bottomNav.findViewById(R.id.navHome);
+            LinearLayout navRequests = bottomNav.findViewById(R.id.navRequests);
+            LinearLayout navStats = bottomNav.findViewById(R.id.navStats);
+            LinearLayout navProfile = bottomNav.findViewById(R.id.navProfile);
+
+            ImageView iconHome = bottomNav.findViewById(R.id.navHomeIcon);
+            ImageView iconRequests = bottomNav.findViewById(R.id.navRequestsIcon);
+            ImageView iconStats = bottomNav.findViewById(R.id.navStatsIcon);
+            ImageView iconProfile = bottomNav.findViewById(R.id.navProfileIcon);
+
+            TextView textHome = bottomNav.findViewById(R.id.navHomeText);
+            TextView textRequests = bottomNav.findViewById(R.id.navRequestsText);
+            TextView textStats = bottomNav.findViewById(R.id.navStatsText);
+            TextView textProfile = bottomNav.findViewById(R.id.navProfileText);
+
+            // Null checks for navigation items
+            if (navHome == null || navRequests == null || navStats == null || navProfile == null) {
+                Log.e(TAG, "One or more navigation items not found!");
+                return;
+            }
+
+            // Null checks for icons
+            if (iconHome == null || iconRequests == null || iconStats == null || iconProfile == null) {
+                Log.e(TAG, "One or more navigation icons not found!");
+                return;
+            }
+
+            // Null checks for texts
+            if (textHome == null || textRequests == null || textStats == null || textProfile == null) {
+                Log.e(TAG, "One or more navigation texts not found!");
+                return;
+            }
+
+            // Reset all to inactive state
+            setNavItemState(iconHome, textHome, false);
+            setNavItemState(iconRequests, textRequests, false);
+            setNavItemState(iconStats, textStats, false);
+            setNavItemState(iconProfile, textProfile, false);
+
+            // Set active item
+            switch (activeItem.toLowerCase()) {
+                case "home":
+                    setNavItemState(iconHome, textHome, true);
+                    break;
+                case "requests":
+                    setNavItemState(iconRequests, textRequests, true);
+                    break;
+                case "stats":
+                    setNavItemState(iconStats, textStats, true);
+                    break;
+                case "profile":
+                    setNavItemState(iconProfile, textProfile, true);
+                    break;
+            }
+
+            // Setup click listeners
+            navHome.setOnClickListener(v -> {
+                if (!activeItem.equalsIgnoreCase("home")) {
+                    Intent intent = new Intent(activity, LandlordHomeActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    activity.startActivity(intent);
+                    activity.overridePendingTransition(0, 0);
+                }
+            });
+
+            navRequests.setOnClickListener(v -> {
+                if (!activeItem.equalsIgnoreCase("requests")) {
+                    Intent intent = new Intent(activity, YeuCau.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    activity.startActivity(intent);
+                    activity.overridePendingTransition(0, 0);
+                }
+            });
+
+            navStats.setOnClickListener(v -> {
+                if (!activeItem.equalsIgnoreCase("stats")) {
+                    Intent intent = new Intent(activity, LandlordStatsActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    activity.startActivity(intent);
+                    activity.overridePendingTransition(0, 0);
+                }
+            });
+
+            navProfile.setOnClickListener(v -> {
+                if (!activeItem.equalsIgnoreCase("profile")) {
+                    Intent intent = new Intent(activity, LandlordProfileActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    activity.startActivity(intent);
+                    activity.overridePendingTransition(0, 0);
+                }
+            });
+
+            Log.d(TAG, "Bottom navigation setup completed for: " + activeItem);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting up bottom navigation", e);
         }
-
-        LinearLayout navHome = bottomNav.findViewById(R.id.navHome);
-        LinearLayout navRequests = bottomNav.findViewById(R.id.navRequests);
-        LinearLayout navStats = bottomNav.findViewById(R.id.navStats);
-        LinearLayout navProfile = bottomNav.findViewById(R.id.navProfile);
-
-        ImageView iconHome = bottomNav.findViewById(R.id.navHomeIcon);
-        ImageView iconRequests = bottomNav.findViewById(R.id.navRequestsIcon);
-        ImageView iconStats = bottomNav.findViewById(R.id.navStatsIcon);
-        ImageView iconProfile = bottomNav.findViewById(R.id.navProfileIcon);
-
-        TextView textHome = bottomNav.findViewById(R.id.navHomeText);
-        TextView textRequests = bottomNav.findViewById(R.id.navRequestsText);
-        TextView textStats = bottomNav.findViewById(R.id.navStatsText);
-        TextView textProfile = bottomNav.findViewById(R.id.navProfileText);
-
-        // Reset all to inactive state
-        setNavItemState(iconHome, textHome, false);
-        setNavItemState(iconRequests, textRequests, false);
-        setNavItemState(iconStats, textStats, false);
-        setNavItemState(iconProfile, textProfile, false);
-
-        // Set active item
-        switch (activeItem.toLowerCase()) {
-            case "home":
-                setNavItemState(iconHome, textHome, true);
-                break;
-            case "requests":
-                setNavItemState(iconRequests, textRequests, true);
-                break;
-            case "stats":
-                setNavItemState(iconStats, textStats, true);
-                break;
-            case "profile":
-                setNavItemState(iconProfile, textProfile, true);
-                break;
-        }
-
-        // Setup click listeners
-        navHome.setOnClickListener(v -> {
-            if (!activeItem.equalsIgnoreCase("home")) {
-                Intent intent = new Intent(activity, LandlordHomeActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                activity.startActivity(intent);
-                activity.overridePendingTransition(0, 0);
-            }
-        });
-
-        navRequests.setOnClickListener(v -> {
-            if (!activeItem.equalsIgnoreCase("requests")) {
-                Intent intent = new Intent(activity, YeuCau.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                activity.startActivity(intent);
-                activity.overridePendingTransition(0, 0);
-            }
-        });
-
-        navStats.setOnClickListener(v -> {
-            if (!activeItem.equalsIgnoreCase("stats")) {
-                Intent intent = new Intent(activity, LandlordStatsActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                activity.startActivity(intent);
-                activity.overridePendingTransition(0, 0);
-            }
-        });
-
-        navProfile.setOnClickListener(v -> {
-            if (!activeItem.equalsIgnoreCase("profile")) {
-                Intent intent = new Intent(activity, LandlordProfileActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                activity.startActivity(intent);
-                activity.overridePendingTransition(0, 0);
-            }
-        });
-
-        Log.d(TAG, "Bottom navigation setup completed for: " + activeItem);
     }
 
     /**
@@ -120,11 +145,6 @@ public class LandlordBottomNavigationHelper {
         int color = isActive ? COLOR_ACTIVE : COLOR_INACTIVE;
         icon.setColorFilter(color);
         text.setTextColor(color);
-        if (isActive) {
-            text.setTypeface(null, android.graphics.Typeface.BOLD);
-        } else {
-            text.setTypeface(null, android.graphics.Typeface.NORMAL);
-        }
+        text.setTypeface(null, isActive ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
     }
 }
-

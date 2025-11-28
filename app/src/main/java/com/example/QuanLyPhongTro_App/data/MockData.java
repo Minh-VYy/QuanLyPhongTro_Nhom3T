@@ -311,5 +311,124 @@ public class MockData {
             return listings;
         }
     }
+    // ==================== UTILITY ITEMS DATA ====================
+
+    /**
+     * Model class cho các tiện ích trong danh sách
+     */
+    public static class UtilityItem {
+        private int icon;
+        private String title;
+        private String description;
+        private Class<?> targetActivity;
+
+        public UtilityItem(int icon, String title, String description, Class<?> targetActivity) {
+            this.icon = icon;
+            this.title = title;
+            this.description = description;
+            this.targetActivity = targetActivity;
+        }
+
+        // Getters
+        public int getIcon() { return icon; }
+        public String getTitle() { return title; }
+        public String getDescription() { return description; }
+        public Class<?> getTargetActivity() { return targetActivity; }
+    }
+
+    /**
+     * Lấy danh sách các tiện ích cho chủ trọ
+     */
+    public static List<UtilityItem> getLandlordUtilities() {
+        List<UtilityItem> utilities = new ArrayList<>();
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_add,
+                "Thêm tin trọ",
+                "Đăng tin cho thuê phòng trọ mới",
+                com.example.QuanLyPhongTro_App.ui.landlord.EditTin.class
+        ));
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_edit,
+                "Chỉnh sửa trọ",
+                "Quản lý và chỉnh sửa thông tin phòng trọ",
+                com.example.QuanLyPhongTro_App.ui.landlord.EditTin.class
+        ));
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_list,
+                "Danh sách tin đăng",
+                "Xem và quản lý tất cả tin đăng của bạn",
+                com.example.QuanLyPhongTro_App.ui.landlord.AllListingsActivity.class
+        ));
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_analytics,
+                "Thống kê",
+                "Xem báo cáo và thống kê tin đăng",
+                com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class
+        ));
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_request,
+                "Yêu cầu thuê",
+                "Quản lý yêu cầu thuê từ người dùng",
+                com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class
+        ));
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_message,
+                "Tin nhắn",
+                "Quản lý tin nhắn với người thuê",
+                com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class
+        ));
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_settings,
+                "Cài đặt",
+                "Cài đặt tài khoản và ứng dụng",
+                com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class
+        ));
+
+        return utilities;
+    }
+
+    /**
+     * Lấy danh sách các tiện ích cho người thuê
+     */
+    public static List<UtilityItem> getTenantUtilities() {
+        List<UtilityItem> utilities = new ArrayList<>();
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_search,
+                "Tìm phòng trọ",
+                "Tìm kiếm phòng trọ phù hợp",
+                com.example.QuanLyPhongTro_App.ui.tenant.MainActivity.class
+        ));
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_saved,
+                "Phòng đã lưu",
+                "Xem lại các phòng trọ đã lưu",
+                com.example.QuanLyPhongTro_App.ui.tenant.MainActivity.class
+        ));
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_booking,
+                "Lịch hẹn xem phòng",
+                "Quản lý lịch hẹn xem phòng",
+                com.example.QuanLyPhongTro_App.ui.tenant.MainActivity.class
+        ));
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_notification,
+                "Thông báo",
+                "Xem thông báo và cập nhật",
+                com.example.QuanLyPhongTro_App.ui.tenant.MainActivity.class
+        ));
+
+        return utilities;
+    }
 }
 

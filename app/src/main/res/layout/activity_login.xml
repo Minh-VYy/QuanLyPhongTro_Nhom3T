@@ -47,7 +47,18 @@
             android:text="Đăng nhập để tiếp tục"
             android:textSize="14sp"
             android:textColor="@color/mau_xam_dam"
-            android:layout_marginBottom="32dp" />
+            android:layout_marginBottom="8dp" />
+
+        <!-- Hiển thị role đang đăng nhập -->
+        <TextView
+            android:id="@+id/txt_target_role"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đăng nhập với vai trò: Người Thuê"
+            android:textSize="12sp"
+            android:textColor="@color/mau_xanh_chinh"
+            android:textStyle="italic"
+            android:layout_marginBottom="24dp" />
 
         <!-- Email/SĐT -->
         <com.google.android.material.textfield.TextInputLayout
