@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.data.MockData;
 import com.example.QuanLyPhongTro_App.utils.LandlordBottomNavigationHelper;
 import java.util.List;
 
