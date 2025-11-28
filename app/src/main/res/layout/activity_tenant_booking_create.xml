@@ -151,7 +151,7 @@
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:drawableEnd="@drawable/ic_calendar"
-                android:background="@drawable/edit_text_border"
+                android:background="@drawable/button_primary"
                 android:layout_marginBottom="16dp"
                 style="?android:attr/borderlessButtonStyle" />
 
@@ -216,6 +216,7 @@
                 android:textStyle="bold"
                 android:layout_marginBottom="12dp" />
 
+            <!-- Họ và tên -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -232,6 +233,7 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Số điện thoại -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -248,11 +250,13 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Ghi chú cho chủ trọ -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/inputNote"
@@ -262,7 +266,7 @@
                     android:inputType="textMultiLine"
                     android:minLines="3"
                     android:maxLines="5"
-                    android:gravity="top"
+                    android:gravity="top|start"
                     android:textSize="14sp" />
 
             </com.google.android.material.textfield.TextInputLayout>

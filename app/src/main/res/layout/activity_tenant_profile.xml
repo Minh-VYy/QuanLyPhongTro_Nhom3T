@@ -317,7 +317,7 @@
                                 android:layout_width="20dp"
                                 android:layout_height="20dp"
                                 android:src="@drawable/ic_settings"
-                                app:tint="#FF5722" />
+                                app:tint="#3F51B5" />
                         </LinearLayout>
 
                         <TextView

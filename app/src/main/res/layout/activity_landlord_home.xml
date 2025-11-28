@@ -13,14 +13,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/header_gradient"
-        app:elevation="4dp"
-        android:fitsSystemWindows="true">
+        app:elevation="4dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="52dp"
             android:orientation="vertical"
+            android:paddingTop="48dp"
             android:paddingStart="15dp"
             android:paddingEnd="15dp"
             android:paddingBottom="12dp"

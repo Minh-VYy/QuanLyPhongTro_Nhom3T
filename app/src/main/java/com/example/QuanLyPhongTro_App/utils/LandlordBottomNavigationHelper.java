@@ -128,6 +128,7 @@ public class LandlordBottomNavigationHelper {
             });
 
             Log.d(TAG, "Bottom navigation setup completed for: " + activeItem);
+
         } catch (Exception e) {
             Log.e(TAG, "Error setting up bottom navigation", e);
         }
@@ -140,11 +141,6 @@ public class LandlordBottomNavigationHelper {
         int color = isActive ? COLOR_ACTIVE : COLOR_INACTIVE;
         icon.setColorFilter(color);
         text.setTextColor(color);
-        if (isActive) {
-            text.setTypeface(null, android.graphics.Typeface.BOLD);
-        } else {
-            text.setTypeface(null, android.graphics.Typeface.NORMAL);
-        }
+        text.setTypeface(null, isActive ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
     }
 }
-

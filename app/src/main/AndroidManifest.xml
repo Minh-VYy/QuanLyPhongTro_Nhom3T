@@ -65,6 +65,7 @@
         <activity android:name=".ui.landlord.YeuCau" />
         <activity android:name=".ui.landlord.EditTin" />
         <activity android:name=".ui.landlord.TroGiup" />
+        <activity android:name=".ui.landlord.AllListingsActivity" />
 
     </application>
 

@@ -95,7 +95,6 @@ public class ProfileActivity extends AppCompatActivity {
                 });
             }
 
-
             if (menuLogout != null) {
                 menuLogout.setOnClickListener(v -> {
                     sessionManager.logout();
@@ -118,19 +117,11 @@ public class ProfileActivity extends AppCompatActivity {
             String userEmail = sessionManager.getUserEmail();
 
             if (profileName != null) {
-                if (userName != null && !userName.isEmpty()) {
-                    profileName.setText(userName);
-                } else {
-                    profileName.setText("Người dùng");
-                }
+                profileName.setText((userName != null && !userName.isEmpty()) ? userName : "Người dùng");
             }
 
             if (profileContact != null) {
-                if (userEmail != null && !userEmail.isEmpty()) {
-                    profileContact.setText(userEmail);
-                } else {
-                    profileContact.setText("Chưa cập nhật");
-                }
+                profileContact.setText((userEmail != null && !userEmail.isEmpty()) ? userEmail : "Chưa cập nhật");
             }
         } catch (Exception e) {
             android.util.Log.e("ProfileActivity", "Error in loadUserData: " + e.getMessage(), e);
