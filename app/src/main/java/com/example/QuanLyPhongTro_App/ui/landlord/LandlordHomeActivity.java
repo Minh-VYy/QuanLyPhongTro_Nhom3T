@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
 import com.example.QuanLyPhongTro_App.data.MockData;
+import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
 import com.example.QuanLyPhongTro_App.ui.tenant.MainActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.LandlordBottomNavigationHelper;
@@ -33,6 +35,9 @@ public class LandlordHomeActivity extends AppCompatActivity {
     private View roleSwitcher;
     private TextView txtRolePrimary;
     private ImageView iconRole;
+    private View btnQuickAdd, btnQuickRequests, btnQuickStats;
+    private ImageView btnMenu, btnMessages;
+    private TextView btnViewAll;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,15 +46,21 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         
-        // Auto-login as guest landlord for demo
-        if (!sessionManager.isLoggedIn()) {
-            sessionManager.createLoginSession("guest_landlord", "Chủ Trọ Demo", "landlord@example.com", "landlord");
-            sessionManager.setLandlordStatus(true);
+        // Kiểm tra đăng nhập - Chỉ cho phép landlord vào
+        if (!sessionManager.isLoggedIn() || !"landlord".equals(sessionManager.getUserRole())) {
+            Toast.makeText(this, "Vui lòng đăng nhập với tài khoản Chủ Trọ", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(this, LoginActivity.class);
+            intent.putExtra("targetRole", "landlord");
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+            return;
         }
 
         initViews();
         setupRoleSwitcher();
         setupListings();
+        setupQuickActions();
         setupBottomNavigation();
         setupFAB();
     }
@@ -60,6 +71,16 @@ public class LandlordHomeActivity extends AppCompatActivity {
         roleSwitcher = findViewById(R.id.roleSwitcher);
         txtRolePrimary = roleSwitcher.findViewById(R.id.txtRolePrimary);
         iconRole = roleSwitcher.findViewById(R.id.iconRole);
+
+        // Quick action buttons
+        btnQuickAdd = findViewById(R.id.btn_quick_add);
+        btnQuickRequests = findViewById(R.id.btn_quick_requests);
+        btnQuickStats = findViewById(R.id.btn_quick_stats);
+
+        // Header buttons
+        btnMenu = findViewById(R.id.btn_menu);
+        btnMessages = findViewById(R.id.btn_messages);
+        btnViewAll = findViewById(R.id.btn_view_all);
     }
 
     private void setupRoleSwitcher() {
@@ -101,6 +122,51 @@ public class LandlordHomeActivity extends AppCompatActivity {
             startActivity(intent);
         });
         rvListings.setAdapter(adapter);
+    }
+
+    private void setupQuickActions() {
+        if (btnQuickAdd != null) {
+            btnQuickAdd.setOnClickListener(v -> {
+                Intent intent = new Intent(this, EditTin.class);
+                startActivity(intent);
+            });
+        }
+
+        if (btnQuickRequests != null) {
+            btnQuickRequests.setOnClickListener(v -> {
+                Intent intent = new Intent(this, YeuCau.class);
+                startActivity(intent);
+            });
+        }
+
+        if (btnQuickStats != null) {
+            btnQuickStats.setOnClickListener(v -> {
+                Intent intent = new Intent(this, LandlordStatsActivity.class);
+                startActivity(intent);
+            });
+        }
+
+        // Header buttons
+        if (btnMenu != null) {
+            btnMenu.setOnClickListener(v -> {
+                Toast.makeText(this, "Menu - Chức năng đang phát triển", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (btnMessages != null) {
+            btnMessages.setOnClickListener(v -> {
+                // Navigate to messages tab in YeuCau
+                Intent intent = new Intent(this, YeuCau.class);
+                intent.putExtra("defaultTab", "tinnhan");
+                startActivity(intent);
+            });
+        }
+
+        if (btnViewAll != null) {
+            btnViewAll.setOnClickListener(v -> {
+                Toast.makeText(this, "Xem tất cả tin đăng", Toast.LENGTH_SHORT).show();
+            });
+        }
     }
 
     private void setupBottomNavigation() {
