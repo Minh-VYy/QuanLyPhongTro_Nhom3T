@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
-    android:background="@drawable/card_background"
-    android:padding="16dp"
-    android:layout_margin="8dp"
+    android:background="@android:color/white"
+    android:padding="12dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground">
 
     <ImageView
         android:id="@+id/utility_icon"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:padding="12dp"
-        android:background="@drawable/circle_primary"
-        android:layout_marginEnd="16dp"
-        app:tint="@color/white" />
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="8dp"
+        android:background="#2196F3"
+        android:layout_marginEnd="12dp"
+        app:tint="@android:color/white" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -31,24 +30,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Tiêu đề"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="@color/black" />
+            android:textColor="@android:color/black" />
 
         <TextView
             android:id="@+id/utility_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Mô tả"
-            android:textSize="14sp"
+            android:textSize="12sp"
             android:textColor="#666"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="2dp" />
 
     </LinearLayout>
 
     <ImageView
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
         android:src="@drawable/ic_chevron_right"
         android:layout_gravity="center_vertical"
         app:tint="#999" />

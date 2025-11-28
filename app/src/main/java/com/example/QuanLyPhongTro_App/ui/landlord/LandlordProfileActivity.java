@@ -19,8 +19,8 @@ public class LandlordProfileActivity extends AppCompatActivity {
 
     private SessionManager sessionManager;
     private TextView tvUserName, tvUserEmail;
-    private LinearLayout btnEditProfile, btnSettings, btnHelp, btnLogout;
-    private ImageView imgAvatar;
+    private LinearLayout btnEditProfile, btnSettings, btnHelp, btnPrivacyPolicy, btnLogout;
+    private ImageView imgAvatar, btnHeaderMessages, btnHeaderNotifications;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +42,10 @@ public class LandlordProfileActivity extends AppCompatActivity {
         btnEditProfile = findViewById(R.id.btn_edit_profile);
         btnSettings = findViewById(R.id.btn_settings);
         btnHelp = findViewById(R.id.btn_help);
+        btnPrivacyPolicy = findViewById(R.id.btn_privacy_policy);
         btnLogout = findViewById(R.id.btn_logout);
+        btnHeaderMessages = findViewById(R.id.btn_header_messages);
+        btnHeaderNotifications = findViewById(R.id.btn_header_notifications);
     }
 
     private void loadUserInfo() {
@@ -77,6 +80,11 @@ public class LandlordProfileActivity extends AppCompatActivity {
             startActivity(new Intent(this, TroGiup.class));
         });
 
+        btnPrivacyPolicy.setOnClickListener(v -> {
+            // TODO: Open privacy policy
+            showComingSoon();
+        });
+
         btnLogout.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Đăng xuất")
@@ -90,6 +98,15 @@ public class LandlordProfileActivity extends AppCompatActivity {
                     })
                     .setNegativeButton("Hủy", null)
                     .show();
+        });
+
+        btnHeaderMessages.setOnClickListener(v -> {
+            Intent intent = new Intent(this, YeuCau.class);
+            startActivity(intent);
+        });
+
+        btnHeaderNotifications.setOnClickListener(v -> {
+            showComingSoon();
         });
     }
 

@@ -18,10 +18,12 @@ import java.util.List;
 public class UtilityAdapter extends RecyclerView.Adapter<UtilityAdapter.ViewHolder> {
     private Context context;
     private List<MockData.UtilityItem> utilityItems;
+    private UtilityDialog dialog;
 
-    public UtilityAdapter(Context context, List<MockData.UtilityItem> utilityItems) {
+    public UtilityAdapter(Context context, List<MockData.UtilityItem> utilityItems, UtilityDialog dialog) {
         this.context = context;
         this.utilityItems = utilityItems;
+        this.dialog = dialog;
     }
 
     @NonNull
@@ -42,6 +44,11 @@ public class UtilityAdapter extends RecyclerView.Adapter<UtilityAdapter.ViewHold
 
         holder.itemView.setOnClickListener(v -> {
             if (item.getTargetActivity() != null) {
+                // Đóng dialog trước
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+                // Mở activity
                 Intent intent = new Intent(context, item.getTargetActivity());
                 context.startActivity(intent);
             }

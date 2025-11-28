@@ -270,4 +270,35 @@ public class MockData {
         utilities.add(new UtilityItem(R.drawable.ic_search, "Tìm phòng trọ", "Tìm kiếm phòng trọ phù hợp", com.example.QuanLyPhongTro_App.ui.tenant.MainActivity.class));
         return utilities;
     }
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_add,
+                "Thêm tin trọ",
+                "Đăng tin cho thuê phòng trọ mới",
+                com.example.QuanLyPhongTro_App.ui.landlord.EditTin.class
+        ));
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_list,
+                "Danh sách tin đăng",
+                "Xem và quản lý tất cả tin đăng",
+                com.example.QuanLyPhongTro_App.ui.landlord.AllListingsActivity.class
+        ));
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_edit,
+                "Chỉnh sửa trọ",
+                "Quản lý và chỉnh sửa thông tin phòng trọ",
+                com.example.QuanLyPhongTro_App.ui.landlord.EditTin.class
+        ));
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_analytics,
+                "Thống kê",
+                "Xem báo cáo và thống kê tin đăng",
+                com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class
+        ));
+
+        return utilities;
+    }
 }
