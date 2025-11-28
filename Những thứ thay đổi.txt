@@ -1,5 +1,0 @@
-- Thêm các ghi chú cho dễ hiểu 
-- Comment lại các chức năng của các
-- Xóa phần điều khoản ứng dụng trong file ProfileActivity.java vì trong file layout ko có phần này gây lỗi
-- Trong file activity_tenant_profile.xml nút chỉnh sửa thông tin đổi từ Textview sang Button vì gây lỗi cho file java
-- Xóa 2 file java NotificationFragment.java và ProfileFragment.java vì thấy thừa.

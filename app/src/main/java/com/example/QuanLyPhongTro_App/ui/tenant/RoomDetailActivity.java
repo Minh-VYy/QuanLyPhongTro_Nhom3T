@@ -17,6 +17,9 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.ui.auth.DangKyNguoiThueActivity;
+import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
+import com.example.QuanLyPhongTro_App.utils.SessionManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,16 +46,23 @@ public class RoomDetailActivity extends AppCompatActivity {
     private Button contactButton, saveButton, bookButton, viewMapButton, getDirectionsButton;
     private RecyclerView amenitiesRecyclerView, suggestedRoomsRecyclerView;
 
+    // ========== SESSION & DATA ==========
+    private SessionManager sessionManager;
+    private Room currentRoom; // Lưu room hiện tại để truyền sang BookingCreateActivity
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tenant_room_detail);
 
+        // Khởi tạo SessionManager
+        sessionManager = new SessionManager(this);
+
         // Lấy đối tượng Room từ Intent
-        Room room = (Room) getIntent().getSerializableExtra("room");
+        currentRoom = (Room) getIntent().getSerializableExtra("room");
 
         initViews();
-        setupData(room);
+        setupData(currentRoom);
         setupClickListeners();
     }
 
@@ -225,9 +235,9 @@ public class RoomDetailActivity extends AppCompatActivity {
         moreButtonHeader.setOnClickListener(v -> showMoreMenu());
         backButton.setOnClickListener(v -> onBackPressed());
 
-        contactButton.setOnClickListener(v -> showLoginPrompt("liên hệ với chủ trọ"));
-        saveButton.setOnClickListener(v -> showLoginPrompt("lưu tin"));
-        bookButton.setOnClickListener(v -> showLoginPrompt("đặt lịch xem phòng"));
+        contactButton.setOnClickListener(v -> handleContactClick());
+        saveButton.setOnClickListener(v -> handleSaveClick());
+        bookButton.setOnClickListener(v -> handleBookingClick());
 
         viewMapButton.setOnClickListener(v -> showMap());
         getDirectionsButton.setOnClickListener(v -> getDirections());
@@ -317,6 +327,96 @@ public class RoomDetailActivity extends AppCompatActivity {
 
     private void showImageFullScreen() {
         Toast.makeText(this, "Nhấn giữ để phóng to ảnh", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Xử lý khi nhấn nút Liên hệ
+     */
+    private void handleContactClick() {
+        if (!sessionManager.isLoggedIn()) {
+            showLoginDialog("liên hệ với chủ trọ");
+            return;
+        }
+
+        // Đã đăng nhập → Cho phép liên hệ
+        showContactOptions();
+    }
+
+    /**
+     * Xử lý khi nhấn nút Lưu tin
+     */
+    private void handleSaveClick() {
+        if (!sessionManager.isLoggedIn()) {
+            showLoginDialog("lưu tin");
+            return;
+        }
+
+        // Đã đăng nhập → Lưu vào danh sách yêu thích
+        // TODO: Lưu vào database
+        Toast.makeText(this, "Đã lưu tin vào danh sách yêu thích", Toast.LENGTH_SHORT).show();
+        saveButton.setText("Đã lưu");
+        saveButton.setEnabled(false);
+    }
+
+    /**
+     * Xử lý khi nhấn nút Đặt lịch xem phòng
+     */
+    private void handleBookingClick() {
+        if (!sessionManager.isLoggedIn()) {
+            showLoginDialog("đặt lịch xem phòng");
+            return;
+        }
+
+        // Đã đăng nhập → Mở BookingCreateActivity
+        Intent intent = new Intent(this, BookingCreateActivity.class);
+        intent.putExtra("room", currentRoom);
+        startActivity(intent);
+    }
+
+    /**
+     * Hiển thị dialog yêu cầu đăng nhập
+     */
+    private void showLoginDialog(String feature) {
+        new AlertDialog.Builder(this)
+                .setTitle("Yêu cầu đăng nhập")
+                .setMessage("Bạn cần đăng nhập để " + feature)
+                .setPositiveButton("Đăng nhập", (dialog, which) -> {
+                    Intent intent = new Intent(this, LoginActivity.class);
+                    intent.putExtra("targetRole", "tenant");
+                    startActivity(intent);
+                })
+                .setNegativeButton("Đăng ký", (dialog, which) -> {
+                    Intent intent = new Intent(this, DangKyNguoiThueActivity.class);
+                    startActivity(intent);
+                })
+                .setNeutralButton("Hủy", null)
+                .show();
+    }
+
+    /**
+     * Hiển thị các tùy chọn liên hệ
+     */
+    private void showContactOptions() {
+        new AlertDialog.Builder(this)
+                .setTitle("Liên hệ chủ trọ")
+                .setItems(new String[]{"Gọi điện", "Nhắn tin", "Chat trong app"}, (dialog, which) -> {
+                    switch (which) {
+                        case 0: // Gọi điện
+                            Intent callIntent = new Intent(Intent.ACTION_DIAL);
+                            callIntent.setData(Uri.parse("tel:0123456789"));
+                            startActivity(callIntent);
+                            break;
+                        case 1: // Nhắn tin
+                            Intent smsIntent = new Intent(Intent.ACTION_VIEW);
+                            smsIntent.setData(Uri.parse("sms:0123456789"));
+                            startActivity(smsIntent);
+                            break;
+                        case 2: // Chat
+                            Toast.makeText(this, "Tính năng chat đang phát triển", Toast.LENGTH_SHORT).show();
+                            break;
+                    }
+                })
+                .show();
     }
 
     private void showLoginPrompt(String feature) {

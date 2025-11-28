@@ -7,8 +7,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
+import com.example.QuanLyPhongTro_App.ui.auth.DangKyNguoiThueActivity;
 import com.example.QuanLyPhongTro_App.ui.tenant.BookingListActivity;
 import com.example.QuanLyPhongTro_App.ui.tenant.MainActivity;
 import com.example.QuanLyPhongTro_App.ui.tenant.NotificationsActivity;
@@ -101,6 +104,9 @@ public class BottomNavigationHelper {
 
             navBooking.setOnClickListener(v -> {
                 if (!activeItem.equalsIgnoreCase("booking")) {
+                    if (!checkLoginRequired(activity, "Đặt phòng")) {
+                        return;
+                    }
                     Intent intent = new Intent(activity, BookingListActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     activity.startActivity(intent);
@@ -110,6 +116,9 @@ public class BottomNavigationHelper {
 
             navNotification.setOnClickListener(v -> {
                 if (!activeItem.equalsIgnoreCase("notification")) {
+                    if (!checkLoginRequired(activity, "Thông báo")) {
+                        return;
+                    }
                     Intent intent = new Intent(activity, NotificationsActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     activity.startActivity(intent);
@@ -119,6 +128,9 @@ public class BottomNavigationHelper {
 
             navProfile.setOnClickListener(v -> {
                 if (!activeItem.equalsIgnoreCase("profile")) {
+                    if (!checkLoginRequired(activity, "Hồ sơ")) {
+                        return;
+                    }
                     Intent intent = new Intent(activity, ProfileActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     activity.startActivity(intent);
@@ -142,6 +154,36 @@ public class BottomNavigationHelper {
         } else {
             text.setTypeface(null, android.graphics.Typeface.NORMAL);
         }
+    }
+
+    /**
+     * Kiểm tra xem người dùng đã đăng nhập chưa
+     * @param activity Activity hiện tại
+     * @param featureName Tên tính năng đang yêu cầu đăng nhập
+     * @return true nếu đã đăng nhập, false nếu chưa
+     */
+    private static boolean checkLoginRequired(Activity activity, String featureName) {
+        SessionManager sessionManager = new SessionManager(activity);
+
+        if (!sessionManager.isLoggedIn()) {
+            new AlertDialog.Builder(activity)
+                    .setTitle("Yêu cầu đăng nhập")
+                    .setMessage("Bạn cần đăng nhập để sử dụng tính năng " + featureName)
+                    .setPositiveButton("Đăng nhập", (dialog, which) -> {
+                        Intent intent = new Intent(activity, LoginActivity.class);
+                        intent.putExtra("targetRole", "tenant");
+                        activity.startActivity(intent);
+                    })
+                    .setNegativeButton("Đăng ký", (dialog, which) -> {
+                        Intent intent = new Intent(activity, DangKyNguoiThueActivity.class);
+                        activity.startActivity(intent);
+                    })
+                    .setNeutralButton("Hủy", null)
+                    .show();
+            return false;
+        }
+
+        return true;
     }
 }
 
