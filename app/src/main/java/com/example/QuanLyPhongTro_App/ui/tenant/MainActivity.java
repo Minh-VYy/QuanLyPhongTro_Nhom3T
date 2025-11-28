@@ -11,7 +11,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
+<<<<<<< HEAD
 import com.example.QuanLyPhongTro_App.data.MockDataKnhi;
+=======
+import com.example.QuanLyPhongTro_App.data.MockData;
+>>>>>>> main
 import com.example.QuanLyPhongTro_App.ui.auth.DangKyNguoiThueActivity;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
@@ -65,12 +69,15 @@ public class MainActivity extends AppCompatActivity {
         // Khởi tạo SessionManager để quản lý đăng nhập
         sessionManager = new SessionManager(this);
 
+<<<<<<< HEAD
         // ===== TỰ ĐỘNG ĐĂNG NHẬP GUEST =====
         // Nếu người dùng chưa đăng nhập, tự động tạo session cho guest
         // (Chỉ sử dụng khi testing, không cần đăng nhập thực)
         if (!sessionManager.isLoggedIn()) {
             sessionManager.createLoginSession("guest_user", "Khách", "guest@example.com", "tenant");
         }
+=======
+>>>>>>> main
 
         // Khởi tạo dữ liệu phòng từ MockDataKnhi
         initRoomList();
@@ -124,7 +131,29 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setupRoleDropdown() {
         roleSwitcher.setOnClickListener(v -> {
+<<<<<<< HEAD
             // Kiểm tra người dùng hiện tại có phải chủ trọ không
+=======
+            // Kiểm tra đã đăng nhập chưa
+            if (!sessionManager.isLoggedIn()) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Chọn giao diện")
+                        .setItems(new String[]{"Đăng nhập Người thuê", "Đăng nhập Chủ trọ"}, (dialog, which) -> {
+                            Intent intent = new Intent(this, LoginActivity.class);
+                            if (which == 0) {
+                                intent.putExtra("targetRole", "tenant");
+                            } else {
+                                intent.putExtra("targetRole", "landlord");
+                            }
+                            startActivity(intent);
+                        })
+                        .setNegativeButton("Hủy", null)
+                        .show();
+                return;
+            }
+
+            // Nếu đã đăng nhập
+>>>>>>> main
             boolean landlordAccount = "landlord".equals(sessionManager.getUserRole());
 
             // Tạo danh sách tùy chọn
@@ -173,7 +202,17 @@ public class MainActivity extends AppCompatActivity {
      * - Cập nhật icon phù hợp
      */
     private void applyRoleUI() {
+<<<<<<< HEAD
         // Lấy vai trò hiển thị từ session
+=======
+        if (!sessionManager.isLoggedIn()) {
+            txtRolePrimary.setText("Khách");
+            txtRoleSecondary.setText("Đăng nhập");
+            iconRole.setImageResource(R.drawable.ic_user);
+            return;
+        }
+
+>>>>>>> main
         String display = sessionManager.getDisplayRole();
 
         if (display.equals("landlord")) {
