@@ -19,7 +19,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private ImageView profileAvatar;
     private TextView profileName, profileContact;
-    private CardView btnEditProfile;
+    private CardView btnEditAvatar;
     private LinearLayout menuSavedRooms, menuBookings, menuPersonalInfo, menuSettings;
     private LinearLayout menuHelp, menuLogout;
     private SessionManager sessionManager;
@@ -45,7 +45,7 @@ public class ProfileActivity extends AppCompatActivity {
         profileAvatar = findViewById(R.id.profileAvatar);
         profileName = findViewById(R.id.profileName);
         profileContact = findViewById(R.id.profileContact);
-        btnEditProfile = findViewById(R.id.btnEditProfile);
+        btnEditAvatar = findViewById(R.id.btn_edit_avatar);
 
         menuSavedRooms = findViewById(R.id.menuSavedRooms);
         menuBookings = findViewById(R.id.menuBookings);
@@ -57,8 +57,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void setupListeners() {
         try {
-            if (btnEditProfile != null) {
-                btnEditProfile.setOnClickListener(v -> {
+            if (btnEditAvatar != null) {
+                btnEditAvatar.setOnClickListener(v -> {
                     Intent intent = new Intent(this, EditProfileActivity.class);
                     startActivity(intent);
                 });
@@ -117,19 +117,11 @@ public class ProfileActivity extends AppCompatActivity {
             String userEmail = sessionManager.getUserEmail();
 
             if (profileName != null) {
-                if (userName != null && !userName.isEmpty()) {
-                    profileName.setText(userName);
-                } else {
-                    profileName.setText("Người dùng");
-                }
+                profileName.setText((userName != null && !userName.isEmpty()) ? userName : "Người dùng");
             }
 
             if (profileContact != null) {
-                if (userEmail != null && !userEmail.isEmpty()) {
-                    profileContact.setText(userEmail);
-                } else {
-                    profileContact.setText("Chưa cập nhật");
-                }
+                profileContact.setText((userEmail != null && !userEmail.isEmpty()) ? userEmail : "Chưa cập nhật");
             }
         } catch (Exception e) {
             android.util.Log.e("ProfileActivity", "Error in loadUserData: " + e.getMessage(), e);

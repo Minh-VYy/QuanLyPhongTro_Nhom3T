@@ -19,13 +19,6 @@ import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
 
 import java.util.ArrayList;
-import java.util.List;
-import com.example.QuanLyPhongTro_App.ui.auth.DangKyNguoiThueActivity;
-import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
-import com.example.QuanLyPhongTro_App.utils.SessionManager;
-import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
-
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,10 +38,6 @@ public class MainActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
 
-        // Auto-login as guest for demo
-        if (!sessionManager.isLoggedIn()) {
-            sessionManager.createLoginSession("guest_user", "Khách", "guest@example.com", "tenant");
-        }
 
         initRoomList();
         initViews();
@@ -74,6 +63,25 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupRoleDropdown() {
         roleSwitcher.setOnClickListener(v -> {
+            // Kiểm tra đã đăng nhập chưa
+            if (!sessionManager.isLoggedIn()) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Chọn giao diện")
+                        .setItems(new String[]{"Đăng nhập Người thuê", "Đăng nhập Chủ trọ"}, (dialog, which) -> {
+                            Intent intent = new Intent(this, LoginActivity.class);
+                            if (which == 0) {
+                                intent.putExtra("targetRole", "tenant");
+                            } else {
+                                intent.putExtra("targetRole", "landlord");
+                            }
+                            startActivity(intent);
+                        })
+                        .setNegativeButton("Hủy", null)
+                        .show();
+                return;
+            }
+
+            // Nếu đã đăng nhập
             boolean landlordAccount = "landlord".equals(sessionManager.getUserRole());
             String[] options = landlordAccount ? new String[]{"Người thuê", "Chủ trọ"} : new String[]{"Người thuê", "Đăng nhập Chủ trọ"};
             new AlertDialog.Builder(this)
@@ -103,6 +111,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void applyRoleUI() {
+        if (!sessionManager.isLoggedIn()) {
+            txtRolePrimary.setText("Khách");
+            txtRoleSecondary.setText("Đăng nhập");
+            iconRole.setImageResource(R.drawable.ic_user);
+            return;
+        }
+
         String display = sessionManager.getDisplayRole();
         if (display.equals("landlord")) {
             txtRolePrimary.setText("Chủ trọ");
