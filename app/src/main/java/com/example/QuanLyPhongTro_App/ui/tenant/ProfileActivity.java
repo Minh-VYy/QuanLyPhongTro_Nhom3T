@@ -33,9 +33,9 @@ public class ProfileActivity extends AppCompatActivity {
     private ImageView profileAvatar;
     // Tên người dùng và thông tin liên hệ
     private TextView profileName, profileContact;
-<<<<<<< HEAD
-    // Nút chỉnh sửa hồ sơ
-    private CardView btnEditProfile;
+    // Nút chỉnh sửa hồ sơ (Avatar)
+    private CardView btnEditAvatar;
+    
     // Các menu chức năng trong hồ sơ
     private LinearLayout menuSavedRooms;      // Menu: Phòng yêu thích
     private LinearLayout menuBookings;        // Menu: Lịch hẹn
@@ -45,11 +45,6 @@ public class ProfileActivity extends AppCompatActivity {
     private LinearLayout menuLogout;          // Menu: Đăng xuất
 
     // Quản lý phiên làm việc (session)
-=======
-    private CardView btnEditAvatar;
-    private LinearLayout menuSavedRooms, menuBookings, menuPersonalInfo, menuSettings;
-    private LinearLayout menuHelp, menuLogout;
->>>>>>> main
     private SessionManager sessionManager;
 
     /**
@@ -90,12 +85,11 @@ public class ProfileActivity extends AppCompatActivity {
      * - Tìm các view bằng findViewById() và lưu vào biến
      */
     private void initViews() {
-<<<<<<< HEAD
         // Khởi tạo các view từ layout
         profileAvatar = findViewById(R.id.profileAvatar);        // Avatar
         profileName = findViewById(R.id.profileName);            // Tên người dùng
         profileContact = findViewById(R.id.profileContact);      // Thông tin liên hệ
-        btnEditProfile = findViewById(R.id.btnEditProfile);      // Nút chỉnh sửa
+        btnEditAvatar = findViewById(R.id.btn_edit_avatar);      // Nút chỉnh sửa
 
         // Khởi tạo các menu
         menuSavedRooms = findViewById(R.id.menuSavedRooms);      // Phòng yêu thích
@@ -104,19 +98,6 @@ public class ProfileActivity extends AppCompatActivity {
         menuSettings = findViewById(R.id.menuSettings);          // Cài đặt
         menuHelp = findViewById(R.id.menuHelp);                  // Trợ giúp
         menuLogout = findViewById(R.id.menuLogout);              // Đăng xuất
-=======
-        profileAvatar = findViewById(R.id.profileAvatar);
-        profileName = findViewById(R.id.profileName);
-        profileContact = findViewById(R.id.profileContact);
-        btnEditAvatar = findViewById(R.id.btn_edit_avatar);
-
-        menuSavedRooms = findViewById(R.id.menuSavedRooms);
-        menuBookings = findViewById(R.id.menuBookings);
-        menuPersonalInfo = findViewById(R.id.menuPersonalInfo);
-        menuSettings = findViewById(R.id.menuSettings);
-        menuHelp = findViewById(R.id.menuHelp);
-        menuLogout = findViewById(R.id.menuLogout);
->>>>>>> main
     }
 
     /**
@@ -126,15 +107,9 @@ public class ProfileActivity extends AppCompatActivity {
      */
     private void setupListeners() {
         try {
-<<<<<<< HEAD
-            // ===== NÚT CHỈNH SỬA HỒ SƠ =====
-            // Khi click: Mở Activity EditProfileActivity
-            if (btnEditProfile != null) {
-                btnEditProfile.setOnClickListener(v -> {
-=======
+            // ===== NÚT CHỈNH SỬA HỒ SƠ (AVATAR) =====
             if (btnEditAvatar != null) {
                 btnEditAvatar.setOnClickListener(v -> {
->>>>>>> main
                     Intent intent = new Intent(this, EditProfileActivity.class);
                     startActivity(intent);
                 });
@@ -157,7 +132,7 @@ public class ProfileActivity extends AppCompatActivity {
             }
 
             // ===== MENU THÔNG TIN CÁ NHÂN =====
-            // Khi click: Mở Activity chỉnh sửa hồ sơ (giống như nút EditProfile)
+            // Khi click: Mở Activity chỉnh sửa hồ sơ
             if (menuPersonalInfo != null) {
                 menuPersonalInfo.setOnClickListener(v -> {
                     Intent intent = new Intent(this, EditProfileActivity.class);
@@ -181,15 +156,11 @@ public class ProfileActivity extends AppCompatActivity {
                 });
             }
 
-<<<<<<< HEAD
             // ===== MENU ĐĂNG XUẤT =====
             // Khi click:
             // 1. Gọi sessionManager.logout() để xóa dữ liệu đăng nhập
             // 2. Hiển thị thông báo "Đã đăng xuất"
             // 3. Quay về MainActivity
-            // 4. Xóa history để không quay lại được ProfileActivity
-=======
->>>>>>> main
             if (menuLogout != null) {
                 menuLogout.setOnClickListener(v -> {
                     // Xóa session đăng nhập
@@ -227,32 +198,12 @@ public class ProfileActivity extends AppCompatActivity {
 
             // Hiển thị tên người dùng
             if (profileName != null) {
-<<<<<<< HEAD
-                if (userName != null && !userName.isEmpty()) {
-                    // Nếu có tên, hiển thị tên đó
-                    profileName.setText(userName);
-                } else {
-                    // Nếu không có tên, hiển thị "Người dùng" (default)
-                    profileName.setText("Người dùng");
-                }
-=======
                 profileName.setText((userName != null && !userName.isEmpty()) ? userName : "Người dùng");
->>>>>>> main
             }
 
             // Hiển thị thông tin liên hệ (email)
             if (profileContact != null) {
-<<<<<<< HEAD
-                if (userEmail != null && !userEmail.isEmpty()) {
-                    // Nếu có email, hiển thị email
-                    profileContact.setText(userEmail);
-                } else {
-                    // Nếu không có email, hiển thị "Chưa cập nhật"
-                    profileContact.setText("Chưa cập nhật");
-                }
-=======
                 profileContact.setText((userEmail != null && !userEmail.isEmpty()) ? userEmail : "Chưa cập nhật");
->>>>>>> main
             }
         } catch (Exception e) {
             // Nếu có lỗi, ghi log để debug
