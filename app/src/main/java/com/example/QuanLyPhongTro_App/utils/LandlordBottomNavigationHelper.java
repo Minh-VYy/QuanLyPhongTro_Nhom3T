@@ -29,27 +29,35 @@ public class LandlordBottomNavigationHelper {
      * @param activeItem Which item should be highlighted (home, requests, stats, profile)
      */
     public static void setupBottomNavigation(Activity activity, String activeItem) {
-        View bottomNav = activity.findViewById(R.id.bottomNav);
+        // Try to find the included layout first
+        View bottomNavContainer = activity.findViewById(R.id.bottomNav);
 
-        if (bottomNav == null) {
-            Log.e(TAG, "Bottom navigation view not found in layout!");
+        if (bottomNavContainer == null) {
+            Log.e(TAG, "Bottom navigation container not found in layout!");
             return;
         }
 
-        LinearLayout navHome = bottomNav.findViewById(R.id.navHome);
-        LinearLayout navRequests = bottomNav.findViewById(R.id.navRequests);
-        LinearLayout navStats = bottomNav.findViewById(R.id.navStats);
-        LinearLayout navProfile = bottomNav.findViewById(R.id.navProfile);
+        // The views are directly in the included layout
+        LinearLayout navHome = bottomNavContainer.findViewById(R.id.navHome);
+        LinearLayout navRequests = bottomNavContainer.findViewById(R.id.navRequests);
+        LinearLayout navStats = bottomNavContainer.findViewById(R.id.navStats);
+        LinearLayout navProfile = bottomNavContainer.findViewById(R.id.navProfile);
 
-        ImageView iconHome = bottomNav.findViewById(R.id.navHomeIcon);
-        ImageView iconRequests = bottomNav.findViewById(R.id.navRequestsIcon);
-        ImageView iconStats = bottomNav.findViewById(R.id.navStatsIcon);
-        ImageView iconProfile = bottomNav.findViewById(R.id.navProfileIcon);
+        if (navHome == null || navRequests == null || navStats == null || navProfile == null) {
+            Log.e(TAG, "Navigation items not found! navHome=" + navHome + ", navRequests=" + navRequests
+                + ", navStats=" + navStats + ", navProfile=" + navProfile);
+            return;
+        }
 
-        TextView textHome = bottomNav.findViewById(R.id.navHomeText);
-        TextView textRequests = bottomNav.findViewById(R.id.navRequestsText);
-        TextView textStats = bottomNav.findViewById(R.id.navStatsText);
-        TextView textProfile = bottomNav.findViewById(R.id.navProfileText);
+        ImageView iconHome = bottomNavContainer.findViewById(R.id.navHomeIcon);
+        ImageView iconRequests = bottomNavContainer.findViewById(R.id.navRequestsIcon);
+        ImageView iconStats = bottomNavContainer.findViewById(R.id.navStatsIcon);
+        ImageView iconProfile = bottomNavContainer.findViewById(R.id.navProfileIcon);
+
+        TextView textHome = bottomNavContainer.findViewById(R.id.navHomeText);
+        TextView textRequests = bottomNavContainer.findViewById(R.id.navRequestsText);
+        TextView textStats = bottomNavContainer.findViewById(R.id.navStatsText);
+        TextView textProfile = bottomNavContainer.findViewById(R.id.navProfileText);
 
         // Reset all to inactive state
         setNavItemState(iconHome, textHome, false);
@@ -77,36 +85,40 @@ public class LandlordBottomNavigationHelper {
         navHome.setOnClickListener(v -> {
             if (!activeItem.equalsIgnoreCase("home")) {
                 Intent intent = new Intent(activity, LandlordHomeActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 activity.startActivity(intent);
                 activity.overridePendingTransition(0, 0);
+                activity.finish();
             }
         });
 
         navRequests.setOnClickListener(v -> {
             if (!activeItem.equalsIgnoreCase("requests")) {
                 Intent intent = new Intent(activity, YeuCau.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 activity.startActivity(intent);
                 activity.overridePendingTransition(0, 0);
+                activity.finish();
             }
         });
 
         navStats.setOnClickListener(v -> {
             if (!activeItem.equalsIgnoreCase("stats")) {
                 Intent intent = new Intent(activity, LandlordStatsActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 activity.startActivity(intent);
                 activity.overridePendingTransition(0, 0);
+                activity.finish();
             }
         });
 
         navProfile.setOnClickListener(v -> {
             if (!activeItem.equalsIgnoreCase("profile")) {
                 Intent intent = new Intent(activity, LandlordProfileActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 activity.startActivity(intent);
                 activity.overridePendingTransition(0, 0);
+                activity.finish();
             }
         });
 

@@ -19,9 +19,9 @@ public class ProfileActivity extends AppCompatActivity {
 
     private ImageView profileAvatar;
     private TextView profileName, profileContact;
-    private CardView btnEditProfile;
+    private CardView btnEditAvatar;
     private LinearLayout menuSavedRooms, menuBookings, menuPersonalInfo, menuSettings;
-    private LinearLayout menuHelp, menuTerms, menuLogout;
+    private LinearLayout menuHelp, menuLogout;
     private SessionManager sessionManager;
 
     @Override
@@ -45,21 +45,20 @@ public class ProfileActivity extends AppCompatActivity {
         profileAvatar = findViewById(R.id.profileAvatar);
         profileName = findViewById(R.id.profileName);
         profileContact = findViewById(R.id.profileContact);
-        btnEditProfile = findViewById(R.id.btnEditProfile);
+        btnEditAvatar = findViewById(R.id.btn_edit_avatar);
 
         menuSavedRooms = findViewById(R.id.menuSavedRooms);
         menuBookings = findViewById(R.id.menuBookings);
         menuPersonalInfo = findViewById(R.id.menuPersonalInfo);
         menuSettings = findViewById(R.id.menuSettings);
         menuHelp = findViewById(R.id.menuHelp);
-        menuTerms = findViewById(R.id.menuTerms);
         menuLogout = findViewById(R.id.menuLogout);
     }
 
     private void setupListeners() {
         try {
-            if (btnEditProfile != null) {
-                btnEditProfile.setOnClickListener(v -> {
+            if (btnEditAvatar != null) {
+                btnEditAvatar.setOnClickListener(v -> {
                     Intent intent = new Intent(this, EditProfileActivity.class);
                     startActivity(intent);
                 });
@@ -96,11 +95,6 @@ public class ProfileActivity extends AppCompatActivity {
                 });
             }
 
-            if (menuTerms != null) {
-                menuTerms.setOnClickListener(v -> {
-                    Toast.makeText(this, "Điều khoản", Toast.LENGTH_SHORT).show();
-                });
-            }
 
             if (menuLogout != null) {
                 menuLogout.setOnClickListener(v -> {
