@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -33,16 +34,25 @@ public class BookingCreateActivity extends AppCompatActivity {
 
     private Calendar selectedDate;
     private String selectedTimeSlot = "";
+    private Room currentRoom;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tenant_booking_create);
 
+        // Khởi tạo SessionManager
+        sessionManager = new SessionManager(this);
+
+        // Lấy Room từ Intent
+        currentRoom = (Room) getIntent().getSerializableExtra("room");
+
         initViews();
         setupToolbar();
         setupListeners();
         loadRoomData();
+        loadUserData();
     }
 
     private void initViews() {
@@ -103,11 +113,38 @@ public class BookingCreateActivity extends AppCompatActivity {
     }
 
     private void loadRoomData() {
-        // TODO: Load room data from intent or database
-        // For now, using placeholder data
-        roomTitle.setText("Phòng trọ cao cấp");
-        roomPrice.setText("2.5 triệu/tháng");
-        roomAddress.setText("Quận 1, TP.HCM");
+        if (currentRoom != null) {
+            roomTitle.setText(currentRoom.getTitle());
+            roomPrice.setText(currentRoom.getFormattedPrice());
+            roomAddress.setText(currentRoom.getLocation());
+
+            // Load image nếu có
+            if (currentRoom.getImageResId() != 0) {
+                roomThumbnail.setImageResource(currentRoom.getImageResId());
+            }
+        } else {
+            // Fallback nếu không có room data
+            roomTitle.setText("Phòng trọ cao cấp");
+            roomPrice.setText("2.5 triệu/tháng");
+            roomAddress.setText("Quận 1, TP.HCM");
+        }
+    }
+
+    /**
+     * Tự động điền thông tin người dùng đã đăng nhập
+     */
+    private void loadUserData() {
+        if (sessionManager.isLoggedIn()) {
+            String userName = sessionManager.getUserName();
+            String userEmail = sessionManager.getUserEmail();
+
+            if (userName != null && !userName.isEmpty()) {
+                inputFullName.setText(userName);
+            }
+
+            // TODO: Load phone từ database user profile
+            // Tạm thời để trống cho người dùng nhập
+        }
     }
 
     private void confirmBooking() {
@@ -129,14 +166,49 @@ public class BookingCreateActivity extends AppCompatActivity {
             return;
         }
 
+        if (phone.length() < 10) {
+            inputPhone.setError("Số điện thoại không hợp lệ");
+            inputPhone.requestFocus();
+            return;
+        }
+
         if (selectedTimeSlot.isEmpty()) {
             Toast.makeText(this, "Vui lòng chọn khung giờ", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // TODO: Save booking to database
-        Toast.makeText(this, "Đặt lịch thành công!", Toast.LENGTH_SHORT).show();
-        finish();
+        // Format date
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        String bookingDate = sdf.format(selectedDate.getTime());
+
+        // TODO: Lưu booking vào database
+        // Booking booking = new Booking();
+        // booking.setRoomId(currentRoom.getId());
+        // booking.setUserId(sessionManager.getUserId());
+        // booking.setFullName(fullName);
+        // booking.setPhone(phone);
+        // booking.setBookingDate(bookingDate);
+        // booking.setTimeSlot(selectedTimeSlot);
+        // booking.setNote(note);
+        // booking.setAllowCall(allowCall);
+        // booking.setStatus("Chờ duyệt");
+        // database.saveBooking(booking);
+
+        // Hiển thị thông báo thành công
+        String message = "Đặt lịch xem phòng thành công!\n" +
+                "Ngày: " + bookingDate + "\n" +
+                "Khung giờ: " + selectedTimeSlot + "\n" +
+                "Chủ trọ sẽ liên hệ với bạn sớm";
+
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Đặt lịch thành công")
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, which) -> {
+                    setResult(RESULT_OK);
+                    finish();
+                })
+                .setCancelable(false)
+                .show();
     }
 
     @Override
