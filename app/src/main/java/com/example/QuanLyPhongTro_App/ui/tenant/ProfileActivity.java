@@ -21,7 +21,7 @@ public class ProfileActivity extends AppCompatActivity {
     private TextView profileName, profileContact;
     private CardView btnEditProfile;
     private LinearLayout menuSavedRooms, menuBookings, menuPersonalInfo, menuSettings;
-    private LinearLayout menuHelp, menuTerms, menuLogout;
+    private LinearLayout menuHelp, menuLogout;
     private SessionManager sessionManager;
 
     @Override
@@ -52,7 +52,6 @@ public class ProfileActivity extends AppCompatActivity {
         menuPersonalInfo = findViewById(R.id.menuPersonalInfo);
         menuSettings = findViewById(R.id.menuSettings);
         menuHelp = findViewById(R.id.menuHelp);
-        menuTerms = findViewById(R.id.menuTerms);
         menuLogout = findViewById(R.id.menuLogout);
     }
 
@@ -93,12 +92,6 @@ public class ProfileActivity extends AppCompatActivity {
             if (menuHelp != null) {
                 menuHelp.setOnClickListener(v -> {
                     Toast.makeText(this, "Trợ giúp", Toast.LENGTH_SHORT).show();
-                });
-            }
-
-            if (menuTerms != null) {
-                menuTerms.setOnClickListener(v -> {
-                    Toast.makeText(this, "Điều khoản", Toast.LENGTH_SHORT).show();
                 });
             }
 
