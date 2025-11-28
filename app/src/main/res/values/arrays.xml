@@ -4,4 +4,10 @@
         <item>1.5</item>
         <item>5.0</item>
     </array>
+    <string-array name="listing_filter_options">
+        <item>Tất cả tin đăng</item>
+        <item>Còn trống</item>
+        <item>Đã thuê</item>
+        <item>Không hoạt động</item>
+    </string-array>
 </resources>
