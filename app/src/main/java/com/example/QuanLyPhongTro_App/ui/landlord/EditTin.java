@@ -8,19 +8,18 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-
 import com.example.QuanLyPhongTro_App.R;
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.chip.Chip;
 
 import java.io.IOException;
 
@@ -30,11 +29,11 @@ public class EditTin extends AppCompatActivity {
 
     private ImageButton btnBack;
     private EditText edtTieuDe, edtGia, edtMoTa;
-    private LinearLayout areaPickImage;
+    private MaterialCardView areaPickImage;
     private TextView tvPickHint;
     private ImageView imgPreview;
     private Button btnSave;
-    private CheckBox cbAc, cbWc;
+    private Chip cbAc, cbWc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,27 +52,53 @@ public class EditTin extends AppCompatActivity {
         cbAc = findViewById(R.id.cb_ac);
         cbWc = findViewById(R.id.cb_wc);
 
+        // Null checks để tránh crash
+        if (btnBack == null || edtTieuDe == null || edtGia == null || edtMoTa == null ||
+            areaPickImage == null || tvPickHint == null || imgPreview == null ||
+            btnSave == null || cbAc == null || cbWc == null) {
+            Toast.makeText(this, "Lỗi: Không thể tải giao diện", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
         btnBack.setOnClickListener(v -> finish());
 
         areaPickImage.setOnClickListener(v -> {
             // Mở gallery chọn ảnh
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            intent.setType("image/*");
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
             startActivityForResult(intent, REQ_PICK_IMAGE);
         });
 
         btnSave.setOnClickListener(v -> {
-            String t = edtTieuDe.getText().toString().trim();
-            String g = edtGia.getText().toString().trim();
-            String m = edtMoTa.getText().toString().trim();
+            String tieude = edtTieuDe.getText().toString().trim();
+            String gia = edtGia.getText().toString().trim();
+            String mota = edtMoTa.getText().toString().trim();
 
-            if (t.isEmpty() || g.isEmpty()) {
+            if (tieude.isEmpty() || gia.isEmpty()) {
                 Toast.makeText(EditTin.this, "Vui lòng nhập tiêu đề và giá", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Ở đây bạn sẽ upload ảnh + gửi dữ liệu tới server. Tạm hiện Toast và finish.
-            Toast.makeText(EditTin.this, "Đã lưu tin: " + t, Toast.LENGTH_LONG).show();
+            // Lấy trạng thái tiện nghi
+            boolean hasAC = cbAc.isChecked();
+            boolean hasWC = cbWc.isChecked();
+
+            // TODO: Lưu vào database hoặc gửi lên server
+            // Tạm thời chỉ hiển thị thông báo
+            String amenities = "";
+            if (hasAC) amenities += "Máy lạnh, ";
+            if (hasWC) amenities += "WC riêng, ";
+            if (!amenities.isEmpty()) {
+                amenities = amenities.substring(0, amenities.length() - 2); // Bỏ dấu phẩy cuối
+            }
+
+            String message = "Đã lưu tin: " + tieude;
+            if (!amenities.isEmpty()) {
+                message += "\nTiện nghi: " + amenities;
+            }
+
+            Toast.makeText(EditTin.this, message, Toast.LENGTH_LONG).show();
             setResult(Activity.RESULT_OK);
             finish();
         });
