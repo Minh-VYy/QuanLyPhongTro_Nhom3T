@@ -11,6 +11,7 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.QuanLyPhongTro_App.R;
 import com.example.QuanLyPhongTro_App.data.MockData;
+
 import java.util.List;
 
 public class AllListingsAdapter extends RecyclerView.Adapter<AllListingsAdapter.ViewHolder> {
