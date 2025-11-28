@@ -187,7 +187,7 @@
                             <ImageView
                                 android:layout_width="48dp"
                                 android:layout_height="48dp"
-                                android:src="@drawable/ic_add_photo_alternate"
+                                android:src="@android:drawable/ic_menu_camera"
                                 app:tint="#9CA3AF"/>
 
                             <TextView
@@ -241,16 +241,14 @@
                             style="@style/Widget.Material3.Chip.Filter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Máy lạnh"
-                            app:chipIcon="@drawable/ic_ac"/>
+                            android:text="Máy lạnh"/>
 
                         <com.google.android.material.chip.Chip
                             android:id="@+id/cb_wc"
                             style="@style/Widget.Material3.Chip.Filter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="WC riêng"
-                            app:chipIcon="@drawable/ic_wc"/>
+                            android:text="WC riêng"/>
                     </com.google.android.material.chip.ChipGroup>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
