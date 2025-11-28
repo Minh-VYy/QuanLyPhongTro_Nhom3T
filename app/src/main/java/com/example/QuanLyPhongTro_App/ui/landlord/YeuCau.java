@@ -73,8 +73,14 @@ public class YeuCau extends AppCompatActivity {
         // Setup bottom navigation
         setupBottomNavigation();
 
-        // default show Tin nhắn
-        showTab("tinnhan");
+        // Check if there's a default tab from Intent
+        String defaultTab = getIntent().getStringExtra("defaultTab");
+        if (defaultTab != null && !defaultTab.isEmpty()) {
+            showTab(defaultTab);
+        } else {
+            // default show Tin nhắn
+            showTab("tinnhan");
+        }
     }
 
     private void setupBottomNavigation() {
