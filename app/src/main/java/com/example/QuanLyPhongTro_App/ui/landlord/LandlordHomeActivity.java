@@ -2,10 +2,12 @@ package com.example.QuanLyPhongTro_App.ui.landlord;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -183,12 +185,6 @@ public class LandlordHomeActivity extends AppCompatActivity {
     private void showUtilityDialog() {
         UtilityDialog dialog = new UtilityDialog(this);
         dialog.show();
-
-        // Tuỳ chọn: set kích thước cho dialog
-        Window window = dialog.getWindow();
-        if (window != null) {
-            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        }
     }
 
     @Override

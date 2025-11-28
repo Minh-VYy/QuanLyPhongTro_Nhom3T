@@ -5,4 +5,5 @@
         <item name="colorPrimaryDark">@color/mau_xanh_dam</item>
         <item name="colorAccent">@color/mau_xanh_nhe</item>
     </style>
+
 </resources>

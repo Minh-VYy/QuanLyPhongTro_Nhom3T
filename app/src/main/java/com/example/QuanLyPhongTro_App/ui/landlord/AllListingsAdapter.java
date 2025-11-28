@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.QuanLyPhongTro_App.R;
 import com.example.QuanLyPhongTro_App.data.MockData;
@@ -43,16 +44,22 @@ public class AllListingsAdapter extends RecyclerView.Adapter<AllListingsAdapter.
         holder.tvStatus.setText(listing.status);
         holder.swActive.setChecked(listing.isActive);
 
-        // Set màu cho trạng thái
-        setStatusColor(holder.tvStatus, listing.status);
+        // Set màu và background cho trạng thái
+        setStatusStyle(holder.tvStatus, listing.status);
+
+        // Hiệu ứng click
+        holder.cardView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onListingClick(listing);
+            }
+        });
 
         // Xử lý switch active
         holder.swActive.setOnCheckedChangeListener((buttonView, isChecked) -> {
             listing.isActive = isChecked;
-            // Cập nhật trạng thái hiển thị
             String newStatus = isChecked ? "Còn trống" : "Không hoạt động";
             holder.tvStatus.setText(newStatus);
-            setStatusColor(holder.tvStatus, newStatus);
+            setStatusStyle(holder.tvStatus, newStatus);
         });
 
         // Xử lý click edit
@@ -61,30 +68,33 @@ public class AllListingsAdapter extends RecyclerView.Adapter<AllListingsAdapter.
                 listener.onListingClick(listing);
             }
         });
-
-        // Xử lý click toàn bộ item
-        holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onListingClick(listing);
-            }
-        });
     }
 
-    private void setStatusColor(TextView textView, String status) {
+    private void setStatusStyle(TextView textView, String status) {
+        int backgroundColor;
+        int textColor;
+
         switch (status) {
             case "Còn trống":
-                textView.setTextColor(textView.getContext().getColor(R.color.success));
+                backgroundColor = R.drawable.bg_status_available;
+                textColor = R.color.success;
                 break;
             case "Đã thuê":
-                textView.setTextColor(textView.getContext().getColor(R.color.error));
+                backgroundColor = R.drawable.bg_status_rented;
+                textColor = R.color.error;
                 break;
             case "Chờ xử lý":
-                textView.setTextColor(textView.getContext().getColor(R.color.warning));
+                backgroundColor = R.drawable.bg_status_pending;
+                textColor = R.color.warning;
                 break;
             default:
-                textView.setTextColor(textView.getContext().getColor(R.color.gray));
+                backgroundColor = R.drawable.bg_status_inactive;
+                textColor = R.color.gray;
                 break;
         }
+
+        textView.setBackgroundResource(backgroundColor);
+        textView.setTextColor(textView.getContext().getColor(textColor));
     }
 
     @Override
@@ -93,12 +103,14 @@ public class AllListingsAdapter extends RecyclerView.Adapter<AllListingsAdapter.
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        View cardView;
         TextView tvTitle, tvPrice, tvStatus;
         Switch swActive;
         ImageView btnEdit;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            cardView = itemView.findViewById(R.id.card_listing);
             tvTitle = itemView.findViewById(R.id.tv_listing_title);
             tvPrice = itemView.findViewById(R.id.tv_listing_price);
             tvStatus = itemView.findViewById(R.id.tv_listing_status);
