@@ -30,6 +30,7 @@ public class LandlordBottomNavigationHelper {
      */
     public static void setupBottomNavigation(Activity activity, String activeItem) {
         try {
+            // Find the bottom navigation container
             View bottomNav = activity.findViewById(R.id.bottomNav);
 
             if (bottomNav == null) {
@@ -37,6 +38,7 @@ public class LandlordBottomNavigationHelper {
                 return;
             }
 
+            // Find all navigation items
             LinearLayout navHome = bottomNav.findViewById(R.id.navHome);
             LinearLayout navRequests = bottomNav.findViewById(R.id.navRequests);
             LinearLayout navStats = bottomNav.findViewById(R.id.navStats);
@@ -52,17 +54,19 @@ public class LandlordBottomNavigationHelper {
             TextView textStats = bottomNav.findViewById(R.id.navStatsText);
             TextView textProfile = bottomNav.findViewById(R.id.navProfileText);
 
-            // Null checks
+            // Null checks for navigation items
             if (navHome == null || navRequests == null || navStats == null || navProfile == null) {
                 Log.e(TAG, "One or more navigation items not found!");
                 return;
             }
 
+            // Null checks for icons
             if (iconHome == null || iconRequests == null || iconStats == null || iconProfile == null) {
                 Log.e(TAG, "One or more navigation icons not found!");
                 return;
             }
 
+            // Null checks for texts
             if (textHome == null || textRequests == null || textStats == null || textProfile == null) {
                 Log.e(TAG, "One or more navigation texts not found!");
                 return;
