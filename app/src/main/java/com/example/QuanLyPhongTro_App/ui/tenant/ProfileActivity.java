@@ -52,7 +52,7 @@ public class ProfileActivity extends AppCompatActivity {
         menuPersonalInfo = findViewById(R.id.menuPersonalInfo);
         menuSettings = findViewById(R.id.menuSettings);
         menuHelp = findViewById(R.id.menuHelp);
-        menuTerms = findViewById(R.id.menuTerms);
+       // menuTerms = findViewById(R.id.menuTerms);
         menuLogout = findViewById(R.id.menuLogout);
     }
 
