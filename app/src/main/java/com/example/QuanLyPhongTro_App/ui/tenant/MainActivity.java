@@ -11,11 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
-<<<<<<< HEAD
-import com.example.QuanLyPhongTro_App.data.MockDataKnhi;
-=======
 import com.example.QuanLyPhongTro_App.data.MockData;
->>>>>>> main
+
 import com.example.QuanLyPhongTro_App.ui.auth.DangKyNguoiThueActivity;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
@@ -28,12 +25,12 @@ import java.util.ArrayList;
  * MainActivity - Trang chủ ứng dụng (Người thuê)
  * ============================================================================
  * CHỨC NĂNG:
- * - Hiển thị danh sách phòng trọ từ MockDataKnhi (dữ liệu Đà Nẵng)
+ * - Hiển thị danh sách phòng trọ từ MockData (dữ liệu Đà Nẵng)
  * - Cho phép tìm kiếm/lọc phòng
  * - Cho phép chuyển đổi giữa vai trò Người thuê và Chủ trọ
  * - Cung cấp điều hướng đến các màn hình khác
  *
- * DỮ LIỆU: Sử dụng MockDataKnhi.getRooms() để lấy 8 phòng ở Đà Nẵng
+ * DỮ LIỆU: Sử dụng MockData.getRooms() để lấy danh sách phòng
  * ============================================================================
  */
 public class MainActivity extends AppCompatActivity {
@@ -69,17 +66,7 @@ public class MainActivity extends AppCompatActivity {
         // Khởi tạo SessionManager để quản lý đăng nhập
         sessionManager = new SessionManager(this);
 
-<<<<<<< HEAD
-        // ===== TỰ ĐỘNG ĐĂNG NHẬP GUEST =====
-        // Nếu người dùng chưa đăng nhập, tự động tạo session cho guest
-        // (Chỉ sử dụng khi testing, không cần đăng nhập thực)
-        if (!sessionManager.isLoggedIn()) {
-            sessionManager.createLoginSession("guest_user", "Khách", "guest@example.com", "tenant");
-        }
-=======
->>>>>>> main
-
-        // Khởi tạo dữ liệu phòng từ MockDataKnhi
+        // Khởi tạo dữ liệu phòng từ MockData
         initRoomList();
         // Khởi tạo các view từ layout
         initViews();
@@ -95,13 +82,13 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * PHƯƠNG THỨC: initRoomList()
-     * CHỨC NĂNG: Tải danh sách phòng từ MockDataKnhi
-     * - Lấy 8 phòng ở Đà Nẵng từ MockDataKnhi.getRooms()
+     * CHỨC NĂNG: Tải danh sách phòng từ MockData
+     * - Lấy phòng từ MockData.getRooms()
      * - Lưu vào ArrayList roomList
      */
     private void initRoomList() {
-        // Tạo ArrayList mới và thêm tất cả phòng từ MockDataKnhi
-        roomList = new ArrayList<>(MockDataKnhi.getRooms());
+        // Tạo ArrayList mới và thêm tất cả phòng từ MockData
+        roomList = new ArrayList<>(MockData.getRooms());
     }
 
     /**
@@ -131,9 +118,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setupRoleDropdown() {
         roleSwitcher.setOnClickListener(v -> {
-<<<<<<< HEAD
-            // Kiểm tra người dùng hiện tại có phải chủ trọ không
-=======
             // Kiểm tra đã đăng nhập chưa
             if (!sessionManager.isLoggedIn()) {
                 new AlertDialog.Builder(this)
@@ -153,7 +137,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
             // Nếu đã đăng nhập
->>>>>>> main
             boolean landlordAccount = "landlord".equals(sessionManager.getUserRole());
 
             // Tạo danh sách tùy chọn
@@ -202,9 +185,6 @@ public class MainActivity extends AppCompatActivity {
      * - Cập nhật icon phù hợp
      */
     private void applyRoleUI() {
-<<<<<<< HEAD
-        // Lấy vai trò hiển thị từ session
-=======
         if (!sessionManager.isLoggedIn()) {
             txtRolePrimary.setText("Khách");
             txtRoleSecondary.setText("Đăng nhập");
@@ -212,7 +192,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
->>>>>>> main
         String display = sessionManager.getDisplayRole();
 
         if (display.equals("landlord")) {
