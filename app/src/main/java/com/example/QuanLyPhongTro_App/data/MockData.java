@@ -258,19 +258,6 @@ public class MockData {
 
     public static List<UtilityItem> getLandlordUtilities() {
         List<UtilityItem> utilities = new ArrayList<>();
-        // Trả về danh sách tiện ích cho chủ trọ (như code cũ)
-        utilities.add(new UtilityItem(R.drawable.ic_add, "Thêm tin trọ", "Đăng tin cho thuê phòng trọ mới", com.example.QuanLyPhongTro_App.ui.landlord.EditTin.class)); // Placeholder class
-        utilities.add(new UtilityItem(R.drawable.ic_list, "Danh sách tin đăng", "Xem và quản lý tin đăng", com.example.QuanLyPhongTro_App.ui.landlord.AllListingsActivity.class)); // Placeholder
-        return utilities;
-    }
-
-    public static List<UtilityItem> getTenantUtilities() {
-        List<UtilityItem> utilities = new ArrayList<>();
-        // Trả về danh sách tiện ích cho người thuê
-        utilities.add(new UtilityItem(R.drawable.ic_search, "Tìm phòng trọ", "Tìm kiếm phòng trọ phù hợp", com.example.QuanLyPhongTro_App.ui.tenant.MainActivity.class));
-        return utilities;
-    }
-
         utilities.add(new UtilityItem(
                 R.drawable.ic_add,
                 "Thêm tin trọ",
@@ -299,6 +286,13 @@ public class MockData {
                 com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class
         ));
 
+        return utilities;
+    }
+
+    public static List<UtilityItem> getTenantUtilities() {
+        List<UtilityItem> utilities = new ArrayList<>();
+        // Trả về danh sách tiện ích cho người thuê
+        utilities.add(new UtilityItem(R.drawable.ic_search, "Tìm phòng trọ", "Tìm kiếm phòng trọ phù hợp", com.example.QuanLyPhongTro_App.ui.tenant.MainActivity.class));
         return utilities;
     }
 }
