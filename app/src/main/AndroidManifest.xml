@@ -73,6 +73,9 @@
             />
 =======
         <activity android:name=".ui.landlord.LandlordEditProfileActivity"/>
+        <activity
+            android:name=".ui.chatbot.ChatbotActivity"
+            android:exported="false" />
 
 >>>>>>> hoang
     </application>
