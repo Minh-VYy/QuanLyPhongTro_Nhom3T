@@ -11,114 +11,71 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.MockData;
-
+import com.example.QuanLyPhongTro_App.data.AppDatabase;
 import com.example.QuanLyPhongTro_App.ui.auth.DangKyNguoiThueActivity;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
 
-/**
- * ============================================================================
- * MainActivity - Trang chủ ứng dụng (Người thuê)
- * ============================================================================
- * CHỨC NĂNG:
- * - Hiển thị danh sách phòng trọ từ MockData (dữ liệu Đà Nẵng)
- * - Cho phép tìm kiếm/lọc phòng
- * - Cho phép chuyển đổi giữa vai trò Người thuê và Chủ trọ
- * - Cung cấp điều hướng đến các màn hình khác
- *
- * DỮ LIỆU: Sử dụng MockData.getRooms() để lấy danh sách phòng
- * ============================================================================
- */
 public class MainActivity extends AppCompatActivity {
 
-    // ========== BIẾN GIAO DIỆN ==========
-    // Nút bộ lọc phòng
     private Button btnFilter;
-    // RecyclerView để hiển thị danh sách phòng
     private RecyclerView roomRecyclerView;
-    // Danh sách phòng trọ
-    private ArrayList<Room> roomList;
-    // Quản lý phiên làm việc
+    private ArrayList<Room> roomList = new ArrayList<>();
     private SessionManager sessionManager;
-    // View chuyên dụng để chọn vai trò
     private android.view.View roleSwitcher;
-    // Hiển thị vai trò chính (Người thuê hoặc Chủ trọ)
     private TextView txtRolePrimary;
-    // Hiển thị tùy chọn chuyển vai trò
     private TextView txtRoleSecondary;
-    // Icon hiển thị vai trò
     private ImageView iconRole;
+    private RoomAdapter roomAdapter;
 
-    /**
-     * PHƯƠNG THỨC: onCreate()
-     * CHỨC NĂNG: Được gọi khi Activity được tạo, khởi tạo giao diện và dữ liệu
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Gắn layout với Activity
         setContentView(R.layout.activity_tenant_home);
 
-        // Khởi tạo SessionManager để quản lý đăng nhập
         sessionManager = new SessionManager(this);
 
-        // Khởi tạo dữ liệu phòng từ MockData
-        initRoomList();
-        // Khởi tạo các view từ layout
         initViews();
-        // Thiết lập dropdown chọn vai trò
         setupRoleDropdown();
-        // Thiết lập thanh điều hướng dưới cùng
         setupBottomNavigation();
-        // Thiết lập RecyclerView hiển thị danh sách phòng
         setupRoomRecyclerView();
-        // Thiết lập nút bộ lọc
         setupFilterButton();
+
+        // Tải dữ liệu từ cơ sở dữ liệu thay vì MockData
+        loadRoomsFromDatabase();
     }
 
-    /**
-     * PHƯƠNG THỨC: initRoomList()
-     * CHỨC NĂNG: Tải danh sách phòng từ MockData
-     * - Lấy phòng từ MockData.getRooms()
-     * - Lưu vào ArrayList roomList
-     */
-    private void initRoomList() {
-        // Tạo ArrayList mới và thêm tất cả phòng từ MockData
-        roomList = new ArrayList<>(MockData.getRooms());
+    private void loadRoomsFromDatabase() {
+        AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
+        Executors.newSingleThreadExecutor().execute(() -> {
+            // Lấy dữ liệu từ DB
+            List<Room> dbRooms = db.roomDao().getAll();
+
+            // Cập nhật giao diện trên luồng chính
+            runOnUiThread(() -> {
+                roomList.clear();
+                roomList.addAll(dbRooms);
+                roomAdapter.notifyDataSetChanged(); // Báo cho adapter biết dữ liệu đã thay đổi
+            });
+        });
     }
 
-    /**
-     * PHƯƠNG THỨC: initViews()
-     * CHỨC NĂNG: Khởi tạo các view (layout elements) từ file layout XML
-     */
     private void initViews() {
-        // Nút bộ lọc
         btnFilter = findViewById(R.id.btnFilter);
-        // RecyclerView chứa danh sách phòng
         roomRecyclerView = findViewById(R.id.roomRecyclerView);
-        // View để chọn vai trò
         roleSwitcher = findViewById(R.id.roleSwitcher);
-        // Text hiển thị vai trò hiện tại (ví dụ: "Người thuê")
         txtRolePrimary = roleSwitcher.findViewById(R.id.txtRolePrimary);
-        // Text hiển thị tùy chọn chuyển vai trò
         txtRoleSecondary = roleSwitcher.findViewById(R.id.txtRoleSecondary);
-        // Icon vai trò
         iconRole = roleSwitcher.findViewById(R.id.iconRole);
     }
 
-    /**
-     * PHƯƠNG THỨC: setupRoleDropdown()
-     * CHỨC NĂNG: Thiết lập dropdown để chọn vai trò (Người thuê hoặc Chủ trọ)
-     * - Nếu người dùng là chủ trọ: Cho phép chuyển sang Chủ trọ
-     * - Nếu người dùng chỉ là Người thuê: Cho phép đăng nhập làm Chủ trọ
-     */
     private void setupRoleDropdown() {
         roleSwitcher.setOnClickListener(v -> {
-            // Kiểm tra đã đăng nhập chưa
             if (!sessionManager.isLoggedIn()) {
                 new AlertDialog.Builder(this)
                         .setTitle("Chọn giao diện")
@@ -136,29 +93,20 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            // Nếu đã đăng nhập
             boolean landlordAccount = "landlord".equals(sessionManager.getUserRole());
 
-            // Tạo danh sách tùy chọn
-            // Nếu là chủ trọ: ["Người thuê", "Chủ trọ"]
-            // Nếu chỉ là người thuê: ["Người thuê", "Đăng nhập Chủ trọ"]
             String[] options = landlordAccount
                     ? new String[]{"Người thuê", "Chủ trọ"}
                     : new String[]{"Người thuê", "Đăng nhập Chủ trọ"};
 
-            // Hiển thị dialog chọn vai trò
             new AlertDialog.Builder(this)
                     .setTitle("Chọn giao diện")
                     .setItems(options, (dialog, which) -> {
-                        // which == 0: Chọn Người thuê
                         if (which == 0) {
                             sessionManager.setDisplayRole("tenant");
-                            applyRoleUI(); // Cập nhật giao diện
-                        }
-                        // which == 1: Chuyển đổi vai trò
-                        else if (which == 1) {
+                            applyRoleUI();
+                        } else if (which == 1) {
                             if (landlordAccount) {
-                                // Nếu người dùng là chủ trọ: Chuyển sang giao diện chủ trọ
                                 sessionManager.setDisplayRole("landlord");
                                 Intent intent = new Intent(this,
                                         com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class);
@@ -166,7 +114,6 @@ public class MainActivity extends AppCompatActivity {
                                 startActivity(intent);
                                 finish();
                             } else {
-                                // Nếu người dùng chỉ là Người thuê: Mở trang đăng nhập Chủ trọ
                                 Intent i = new Intent(this, LoginActivity.class);
                                 i.putExtra("targetRole", "landlord");
                                 startActivity(i);
@@ -178,12 +125,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * PHƯƠNG THỨC: applyRoleUI()
-     * CHỨC NĂNG: Cập nhật giao diện dựa trên vai trò hiện tại
-     * - Hiển thị tên vai trò (Người thuê hoặc Chủ trọ)
-     * - Cập nhật icon phù hợp
-     */
     private void applyRoleUI() {
         if (!sessionManager.isLoggedIn()) {
             txtRolePrimary.setText("Khách");
@@ -195,120 +136,43 @@ public class MainActivity extends AppCompatActivity {
         String display = sessionManager.getDisplayRole();
 
         if (display.equals("landlord")) {
-            // Nếu là Chủ trọ
             txtRolePrimary.setText("Chủ trọ");
             txtRoleSecondary.setText("Chuyển vai trò");
-            iconRole.setImageResource(R.drawable.ic_home); // Icon nhà
+            iconRole.setImageResource(R.drawable.ic_home);
         } else {
-            // Nếu là Người thuê
             txtRolePrimary.setText("Người thuê");
             txtRoleSecondary.setText("Chuyển vai trò");
-            iconRole.setImageResource(R.drawable.ic_user); // Icon người dùng
+            iconRole.setImageResource(R.drawable.ic_user);
         }
     }
 
-    /**
-     * PHƯƠNG THỨC: setupBottomNavigation()
-     * CHỨC NĂNG: Thiết lập thanh điều hướng dưới cùng của app
-     * - Đánh dấu tab "home" là đang hoạt động
-     */
     private void setupBottomNavigation() {
         BottomNavigationHelper.setupBottomNavigation(this, "home");
     }
 
-    /**
-     * PHƯƠNG THỨC: checkLoginRequired()
-     * CHỨC NĂNG: Kiểm tra người dùng đã đăng nhập chưa
-     * - Dùng trước khi cho phép các tính năng yêu cầu đăng nhập
-     * RETURN: true = đã đăng nhập, false = chưa đăng nhập
-     */
-    private boolean checkLoginRequired() {
-        // Kiểm tra xem người dùng đã đăng nhập chưa
-        if (!sessionManager.isLoggedIn()) {
-            // Nếu chưa, hiển thị dialog yêu cầu đăng nhập
-            showTenantLoginDialog();
-            return false;
-        }
-        // Nếu đã đăng nhập
-        return true;
-    }
-
-    /**
-     * PHƯƠNG THỨC: showTenantLoginDialog()
-     * CHỨC NĂNG: Hiển thị dialog yêu cầu đăng nhập người dùng
-     * - Cho phép người dùng chọn: Đăng nhập, Đăng ký, hoặc Hủy
-     */
-    private void showTenantLoginDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("Yêu cầu đăng nhập")
-                .setMessage("Bạn cần đăng nhập tài khoản Người thuê để sử dụng tính năng này")
-                .setPositiveButton("Đăng nhập", (dialog, which) -> {
-                    // Nút "Đăng nhập": Mở trang LoginActivity
-                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                    intent.putExtra("targetRole", "tenant");
-                    startActivity(intent);
-                })
-                .setNegativeButton("Đăng ký", (dialog, which) -> {
-                    // Nút "Đăng ký": Mở trang DangKyNguoiThueActivity
-                    Intent intent = new Intent(MainActivity.this, DangKyNguoiThueActivity.class);
-                    startActivity(intent);
-                })
-                .setNeutralButton("Hủy", null)
-                .show();
-    }
-
-    /**
-     * PHƯƠNG THỨC: setupRoomRecyclerView()
-     * CHỨC NĂNG: Thiết lập RecyclerView để hiển thị danh sách phòng
-     * - Tạo RoomAdapter để điều khiển hiển thị
-     * - Gắn sự kiện click: Khi click vào phòng -> mở RoomDetailActivity
-     */
     private void setupRoomRecyclerView() {
-        // Tạo adapter với callback khi click vào phòng
-        RoomAdapter roomAdapter = new RoomAdapter(roomList, room -> {
-            // Khi click vào một phòng:
-            // 1. Tạo intent mở RoomDetailActivity
+        // Khởi tạo adapter với danh sách rỗng ban đầu
+        roomAdapter = new RoomAdapter(roomList, room -> {
             Intent intent = new Intent(MainActivity.this, RoomDetailActivity.class);
-            // 2. Truyền object phòng qua intent
             intent.putExtra("room", room);
-            // 3. Mở activity
             startActivity(intent);
         });
 
-        // Gắn adapter vào RecyclerView
         roomRecyclerView.setAdapter(roomAdapter);
     }
 
-    /**
-     * PHƯƠNG THỨC: setupFilterButton()
-     * CHỨC NĂNG: Thiết lập sự kiện click cho nút bộ lọc
-     * - Khi click: Mở AdvancedFilterBottomSheet
-     */
     private void setupFilterButton() {
         btnFilter.setOnClickListener(v -> showAdvancedFilter());
     }
 
-    /**
-     * PHƯƠNG THỨC: showAdvancedFilter()
-     * CHỨC NĂNG: Hiển thị bộ lọc nâng cao dưới dạng BottomSheet
-     * - Cho phép người dùng lọc phòng theo tiêu chí
-     */
     public void showAdvancedFilter() {
-        // Tạo BottomSheet filter
         AdvancedFilterBottomSheet filterSheet = AdvancedFilterBottomSheet.newInstance();
-        // Hiển thị BottomSheet
         filterSheet.show(getSupportFragmentManager(), "AdvancedFilter");
     }
 
-    /**
-     * PHƯƠNG THỨC: onResume()
-     * CHỨC NĂNG: Được gọi mỗi khi Activity quay trở lại từ background
-     * - Cập nhật giao diện vai trò
-     */
     @Override
     protected void onResume() {
         super.onResume();
-        // Cập nhật lại giao diện vai trò khi quay trở lại
         applyRoleUI();
     }
 }

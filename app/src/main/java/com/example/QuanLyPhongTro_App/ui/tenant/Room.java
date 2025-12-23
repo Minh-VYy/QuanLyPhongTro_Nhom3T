@@ -1,52 +1,85 @@
 package com.example.QuanLyPhongTro_App.ui.tenant;
 
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+
 import java.io.Serializable;
 
-/**
- * Model class cho Room (Phòng trọ)
- * Được sửa đổi để dễ dàng mapping với database
- *
- * HƯỚNG DẪN SỬ DỤNG:
- * - Khi lấy dữ liệu từ database, chỉ cần gán giá trị vào các field
- * - Không cần format lại giá hay rating, database trả về sẵn
- */
+@Entity(tableName = "rooms")
 public class Room implements Serializable {
     // ========== THÔNG TIN CƠ BẢN PHÒNG ==========
+    @PrimaryKey(autoGenerate = true)
     private int id;                    // ID phòng từ database
+
+    @ColumnInfo(name = "title")
     private String title;              // Tiêu đề phòng
+
+    @ColumnInfo(name = "price_value")
     private double priceValue;         // Giá phòng (số thực) - VD: 2500000
+
+    @ColumnInfo(name = "location")
     private String location;           // Vị trí (quận/huyện)
+
+    @ColumnInfo(name = "address")
     private String address;            // Địa chỉ đầy đủ
+
+    @ColumnInfo(name = "area")
     private double area;               // Diện tích (m²) - VD: 20.5
+
+    @ColumnInfo(name = "description")
     private String description;        // Mô tả chi tiết
 
     // ========== HÌNH ẢNH ==========
+    @Ignore // Trường này chỉ dùng cho UI, không lưu vào DB
     private int imageResId;            // Resource ID cho ảnh local (tạm thời)
+
+    @ColumnInfo(name = "image_url")
     private String imageUrl;           // URL ảnh từ server (khi có backend)
 
     // ========== ĐÁNH GIÁ PHÒNG ==========
+    @ColumnInfo(name = "room_rating")
     private double roomRating;         // Đánh giá riêng của phòng (0-5) - VD: 4.5
+
+    @ColumnInfo(name = "room_review_count")
     private int roomReviewCount;       // Số lượng đánh giá của phòng - VD: 8
 
     // ========== THÔNG TIN CHỦ TRỌ ==========
+    @ColumnInfo(name = "landlord_id")
     private int landlordId;            // ID chủ trọ từ database
+
+    @ColumnInfo(name = "landlord_name")
     private String landlordName;       // Tên chủ trọ
+
+    @ColumnInfo(name = "landlord_rating")
     private double landlordRating;     // Tổng đánh giá của chủ trọ (0-5) - VD: 4.8
+
+    @ColumnInfo(name = "landlord_review_count")
     private int landlordReviewCount;   // Số lượng đánh giá của chủ trọ - VD: 25
+
+    @ColumnInfo(name = "landlord_phone")
     private String landlordPhone;      // Số điện thoại chủ trọ
 
     // ========== TRẠNG THÁI ==========
+    @ColumnInfo(name = "is_new")
     private boolean isNew;             // Phòng mới đăng (< 7 ngày)
+
+    @ColumnInfo(name = "is_promo")
     private boolean isPromo;           // Có khuyến mãi
+
+    @ColumnInfo(name = "is_saved")
     private boolean isSaved;           // Đã lưu vào danh sách yêu thích
+
+    @ColumnInfo(name = "created_date")
     private String createdDate;        // Ngày đăng tin - VD: "2024-01-15"
 
     // ========== CONSTRUCTORS ==========
 
-    /**
-     * Constructor đầy đủ - SỬ DỤNG KHI LẤY DỮ LIỆU TỪ DATABASE
-     * Tất cả các field đều mapping trực tiếp từ database
-     */
+    // Constructor trống mà Room yêu cầu
+    public Room() {}
+
+    @Ignore
     public Room(int id, String title, double priceValue, String location, String address,
                 double area, String description, String imageUrl,
                 double roomRating, int roomReviewCount,
@@ -74,25 +107,19 @@ public class Room implements Serializable {
         this.isSaved = false; // Mặc định chưa lưu
     }
 
-    /**
-     * Constructor đơn giản - SỬ DỤNG CHO DỮ LIỆU MẪU (DEMO)
-     */
+    @Ignore
     public Room(String title, String priceText, String location, int imageResId) {
         this.title = title;
-        // Chuyển đổi text giá sang số (VD: "2.5 triệu" -> 2500000)
         this.priceValue = parsePriceFromText(priceText);
         this.location = location;
         this.imageResId = imageResId;
-        // Giá trị mặc định
         this.roomRating = 0;
         this.roomReviewCount = 0;
         this.landlordRating = 0;
         this.landlordReviewCount = 0;
     }
 
-    /**
-     * Constructor cho saved rooms
-     */
+    @Ignore
     public Room(String title, String priceText, String address, String rating, boolean isSaved) {
         this.title = title;
         this.priceValue = parsePriceFromText(priceText);
@@ -100,7 +127,6 @@ public class Room implements Serializable {
         this.location = address;
         this.isSaved = isSaved;
         this.imageResId = 0;
-        // Parse rating nếu có
         if (rating != null && !rating.isEmpty()) {
             try {
                 this.roomRating = Double.parseDouble(rating);
@@ -112,19 +138,13 @@ public class Room implements Serializable {
 
     // ========== HELPER METHODS ==========
 
-    /**
-     * Chuyển đổi text giá sang số
-     * VD: "2.5 triệu" -> 2500000
-     */
+    @Ignore
     private double parsePriceFromText(String priceText) {
         if (priceText == null || priceText.isEmpty()) return 0;
 
         try {
-            // Loại bỏ các ký tự không phải số và dấu chấm
             String cleaned = priceText.replaceAll("[^0-9.]", "");
             double value = Double.parseDouble(cleaned);
-
-            // Nếu text có "triệu" thì nhân với 1,000,000
             if (priceText.toLowerCase().contains("triệu")) {
                 value = value * 1000000;
             }
@@ -134,15 +154,10 @@ public class Room implements Serializable {
         }
     }
 
-    /**
-     * Format giá để hiển thị
-     * VD: 2500000 -> "2.5 triệu/tháng"
-     * DÙNG METHOD NÀY KHI HIỂN THỊ GIÁ TRÊN UI
-     */
+    @Ignore
     public String getFormattedPrice() {
         if (priceValue >= 1000000) {
             double millions = priceValue / 1000000;
-            // Làm tròn 1 chữ số thập phân
             return String.format("%.1f triệu/tháng", millions);
         } else if (priceValue >= 1000) {
             double thousands = priceValue / 1000;
@@ -152,10 +167,7 @@ public class Room implements Serializable {
         }
     }
 
-    /**
-     * Format diện tích để hiển thị
-     * VD: 20.5 -> "20.5m²"
-     */
+    @Ignore
     public String getFormattedArea() {
         if (area == (int) area) {
             return String.format("%dm²", (int) area);
@@ -164,10 +176,7 @@ public class Room implements Serializable {
         }
     }
 
-    /**
-     * Format đánh giá phòng để hiển thị
-     * VD: rating=4.5, count=8 -> "4.5 (8)"
-     */
+    @Ignore
     public String getFormattedRoomRating() {
         if (roomReviewCount > 0) {
             return String.format("%.1f (%d)", roomRating, roomReviewCount);
@@ -176,10 +185,7 @@ public class Room implements Serializable {
         }
     }
 
-    /**
-     * Format đánh giá chủ trọ để hiển thị
-     * VD: rating=4.8, count=25 -> "4.8 (25 đánh giá)"
-     */
+    @Ignore
     public String getFormattedLandlordRating() {
         if (landlordReviewCount > 0) {
             return String.format("%.1f (%d đánh giá)", landlordRating, landlordReviewCount);
@@ -188,13 +194,12 @@ public class Room implements Serializable {
         }
     }
 
-    /**
-     * Kiểm tra có nên hiển thị đánh giá không
-     */
+    @Ignore
     public boolean hasRoomRating() {
         return roomReviewCount > 0 && roomRating > 0;
     }
 
+    @Ignore
     public boolean hasLandlordRating() {
         return landlordReviewCount > 0 && landlordRating > 0;
     }
@@ -209,16 +214,13 @@ public class Room implements Serializable {
     public String getDescription() { return description; }
     public int getImageResId() { return imageResId; }
     public String getImageUrl() { return imageUrl; }
-
     public double getRoomRating() { return roomRating; }
     public int getRoomReviewCount() { return roomReviewCount; }
-
     public int getLandlordId() { return landlordId; }
     public String getLandlordName() { return landlordName; }
     public double getLandlordRating() { return landlordRating; }
     public int getLandlordReviewCount() { return landlordReviewCount; }
     public String getLandlordPhone() { return landlordPhone; }
-
     public boolean isNew() { return isNew; }
     public boolean isPromo() { return isPromo; }
     public boolean isSaved() { return isSaved; }
@@ -234,28 +236,26 @@ public class Room implements Serializable {
     public void setDescription(String description) { this.description = description; }
     public void setImageResId(int imageResId) { this.imageResId = imageResId; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
-
     public void setRoomRating(double roomRating) { this.roomRating = roomRating; }
     public void setRoomReviewCount(int roomReviewCount) { this.roomReviewCount = roomReviewCount; }
-
     public void setLandlordId(int landlordId) { this.landlordId = landlordId; }
     public void setLandlordName(String landlordName) { this.landlordName = landlordName; }
     public void setLandlordRating(double landlordRating) { this.landlordRating = landlordRating; }
     public void setLandlordReviewCount(int landlordReviewCount) { this.landlordReviewCount = landlordReviewCount; }
     public void setLandlordPhone(String landlordPhone) { this.landlordPhone = landlordPhone; }
-
     public void setNew(boolean isNew) { this.isNew = isNew; }
     public void setPromo(boolean isPromo) { this.isPromo = isPromo; }
     public void setSaved(boolean saved) { isSaved = saved; }
     public void setCreatedDate(String createdDate) { this.createdDate = createdDate; }
 
-    // Giữ lại getter cũ để tương thích (deprecated)
     @Deprecated
+    @Ignore
     public String getPrice() {
         return getFormattedPrice();
     }
 
     @Deprecated
+    @Ignore
     public String getRating() {
         return getFormattedRoomRating();
     }
