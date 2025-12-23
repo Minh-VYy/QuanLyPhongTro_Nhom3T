@@ -209,12 +209,14 @@ public class MockData {
             public String price;
             public String status; // "Còn trống", "Đã thuê", "Chờ xử lý"
             public boolean isActive;
+            public String imageName; // THÊM "public" HOẶC TẠO GETTER
 
-            public ListingItem(String title, String price, String status, boolean isActive) {
+            public ListingItem(String title, String price, String status, boolean isActive, String imageName) {
                 this.title = title;
                 this.price = price;
                 this.status = status;
                 this.isActive = isActive;
+                this.imageName = imageName; // PHẢI CÓ DÒNG NÀY
             }
         }
 
@@ -224,12 +226,30 @@ public class MockData {
         public static List<ListingItem> getListings() {
             List<ListingItem> listings = new ArrayList<>();
 
-            listings.add(new ListingItem("Phòng trọ cao cấp gần ĐH Bách Khoa", "3.500.000 đ", "Còn trống", true));
-            listings.add(new ListingItem("Căn hộ mini view biển Mỹ Khê", "5.500.000 đ", "Còn trống", true));
-            listings.add(new ListingItem("Phòng trọ giá rẻ cho sinh viên", "1.800.000 đ", "Đã thuê", false));
-            listings.add(new ListingItem("Studio hiện đại full nội thất", "4.500.000 đ", "Còn trống", true));
-            listings.add(new ListingItem("Phòng có gác lửng tiện nghi", "2.800.000 đ", "Chờ xử lý", true));
-            listings.add(new ListingItem("Chung cư mini cao cấp", "6.000.000 đ", "Còn trống", true));
+            // DÙNG TÊN FILE TRONG DRAWABLE (KHÔNG CẦN ĐUÔI .png/.jpg)
+            listings.add(new ListingItem("Phòng trọ cao cấp gần ĐH Bách Khoa",
+                    "3.600.000 đ", "Còn trống", true,
+                    "room_1")); // <-- TÊN FILE ẢNH
+
+            listings.add(new ListingItem("Căn hộ mini view biển Mỹ Khê",
+                    "5.500.000 đ", "Còn trống", true,
+                    "room_2")); // <-- TÊN FILE ẢNH KHÁC
+
+            listings.add(new ListingItem("Phòng trọ giá rẻ cho sinh viên",
+                    "1.800.000 đ", "Đã thuê", false,
+                    "room_3")); // <-- TÊN FILE ẢNH KHÁC
+
+            listings.add(new ListingItem("Studio hiện đại full nội thất",
+                    "4.500.000 đ", "Còn trống", true,
+                    "room_4")); // <-- TÊN FILE ẢNH KHÁC
+
+            listings.add(new ListingItem("Phòng có gác lửng tiện nghi",
+                    "2.800.000 đ", "Chờ xử lý", true,
+                    "room_5")); // <-- TÊN FILE ẢNH KHÁC
+
+            listings.add(new ListingItem("Chung cư mini cao cấp",
+                    "6.000.000 đ", "Còn trống", true,
+                    "room_6")); // <-- TÊN FILE ẢNH KHÁC
 
             return listings;
         }
@@ -267,10 +287,6 @@ public class MockData {
     public static List<UtilityItem> getTenantUtilities() {
         List<UtilityItem> utilities = new ArrayList<>();
         // Trả về danh sách tiện ích cho người thuê
-        utilities.add(new UtilityItem(R.drawable.ic_search, "Tìm phòng trọ", "Tìm kiếm phòng trọ phù hợp", com.example.QuanLyPhongTro_App.ui.tenant.MainActivity.class));
-        return utilities;
-    }
-
         utilities.add(new UtilityItem(
                 R.drawable.ic_add,
                 "Thêm tin trọ",

@@ -151,7 +151,7 @@
             android:text="Tải Lên Ảnh Giấy Tờ"
             android:textSize="14sp"
             android:textColor="@color/mau_trang"
-            android:background="@drawable/button_border"
+            android:background="@drawable/button_gradient"
             android:layout_marginBottom="15dp" />
 
         <!-- Hiển thị ảnh đã tải lên -->

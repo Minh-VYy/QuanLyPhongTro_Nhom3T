@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root_coordinator"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -73,15 +74,20 @@
                     android:id="@+id/searchInput"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_toStartOf="@+id/searchButton"
+                    android:layout_toStartOf="@+id/filterButton"
                     android:background="@android:color/transparent"
                     android:hint="Tìm tin đăng..."
                     android:paddingStart="12dp"
                     android:paddingEnd="12dp"
                     android:textColor="@color/black"
                     android:textSize="14sp"
-                    android:textColorHint="#999" />
+                    android:textColorHint="#999"
+                    android:imeOptions="actionSearch"
+                    android:singleLine="true"
+                    android:inputType="text|textCapSentences|textAutoCorrect|textNoSuggestions"
+                    tools:ignore="UnknownId" />
 
+                <!-- Search Button -->
                 <ImageButton
                     android:id="@+id/searchButton"
                     android:layout_width="32dp"
@@ -152,70 +158,77 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:background="@drawable/card_background"
+                    android:background="@drawable/card_selector"
                     android:padding="16dp"
-                    android:layout_marginEnd="8dp">
+                    android:layout_marginEnd="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground">
 
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_home"
-                        app:tint="@color/primary"
-                        android:contentDescription="Total listings icon" />
+                <!-- Nội dung không thay đổi -->
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_home"
+                    app:tint="@color/primary"
+                    android:contentDescription="Total listings icon" />
 
-                    <TextView
-                        android:id="@+id/tv_total_listings"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="12"
-                        android:textSize="28sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/black"
-                        android:layout_marginTop="8dp" />
+                <TextView
+                    android:id="@+id/tv_total_listings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="12"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="8dp" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Tổng tin đăng"
-                        android:textSize="12sp"
-                        android:textColor="#666"
-                        android:layout_marginTop="4dp" />
-                </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tổng tin đăng"
+                    android:textSize="12sp"
+                    android:textColor="#666"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:background="@drawable/card_background"
+                    android:background="@drawable/card_selector"
                     android:padding="16dp"
-                    android:layout_marginStart="8dp">
+                    android:layout_marginStart="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground">
 
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_check_circle"
-                        app:tint="#10B981"
-                        android:contentDescription="Active listings icon" />
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_check_circle"
+                    app:tint="#10B981"
+                    android:contentDescription="Active listings icon" />
 
-                    <TextView
-                        android:id="@+id/tv_active_listings"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="8"
-                        android:textSize="28sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/black"
-                        android:layout_marginTop="8dp" />
+                <TextView
+                    android:id="@+id/tv_active_listings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="8"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="8dp" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Đang hoạt động"
-                        android:textSize="12sp"
-                        android:textColor="#666"
-                        android:layout_marginTop="4dp" />
-                </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Đang hoạt động"
+                    android:textSize="12sp"
+                    android:textColor="#666"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
 
             </LinearLayout>
 
@@ -368,7 +381,6 @@
                     android:focusable="true"
                     android:background="?android:attr/selectableItemBackground"
                     android:padding="4dp" />
-
             </LinearLayout>
 
             <!-- Listings Grid -->

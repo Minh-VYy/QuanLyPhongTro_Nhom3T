@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Trạng thái khi được nhấn/pressed -->
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#E3F2FD" /> <!-- Màu nền khi nhấn -->
+            <corners android:radius="12dp" /> <!-- Bo góc (cùng radius với card_background) -->
+            <stroke android:width="1dp" android:color="#2196F3" /> <!-- Viền xanh khi nhấn -->
+        </shape>
+    </item>
+
+    <!-- Trạng thái khi focus (nếu dùng keyboard/remote) -->
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#E3F2FD" />
+            <corners android:radius="12dp" />
+            <stroke android:width="1dp" android:color="#2196F3" />
+        </shape>
+    </item>
+
+    <!-- Trạng thái bình thường -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFF" /> <!-- Màu nền mặc định -->
+            <corners android:radius="12dp" />
+            <stroke android:width="1dp" android:color="#E0E0E0" /> <!-- Viền xám mặc định -->
+        </shape>
+    </item>
+</selector>

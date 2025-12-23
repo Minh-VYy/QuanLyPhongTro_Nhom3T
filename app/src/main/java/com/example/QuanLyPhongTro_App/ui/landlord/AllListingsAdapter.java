@@ -1,5 +1,9 @@
 package com.example.QuanLyPhongTro_App.ui.landlord;
 
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,66 +40,120 @@ public class AllListingsAdapter extends RecyclerView.Adapter<AllListingsAdapter.
         return new ViewHolder(view);
     }
 
+
+
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         MockData.LandlordData.ListingItem listing = listings.get(position);
 
+        Log.d("AllListingsAdapter",
+                "Position: " + position +
+                        ", Title: " + listing.title +
+                        ", ImageName: " + listing.imageName);
+        // 1. HIỂN THỊ TEXT
         holder.tvTitle.setText(listing.title);
         holder.tvPrice.setText(listing.price);
         holder.tvStatus.setText(listing.status);
         holder.swActive.setChecked(listing.isActive);
 
-        // Set màu và background cho trạng thái
-        setStatusStyle(holder.tvStatus, listing.status);
+        // 2. LOAD ẢNH TỪ DRAWABLE (QUAN TRỌNG!)
+        loadImage(holder.imgListing, listing.imageName);
 
-        // Hiệu ứng click
-        holder.cardView.setOnClickListener(v -> {
+        // 3. SET MÀU CHO TRẠNG THÁI
+        updateStatusStyle(holder.tvStatus, listing.status);
+
+        // 4. CLICK VÀO ITEM
+        holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onListingClick(listing);
             }
         });
 
-        // Xử lý switch active
+        // 5. XỬ LÝ SWITCH
+        holder.swActive.setOnCheckedChangeListener(null);
+        holder.swActive.setChecked(listing.isActive);
+
         holder.swActive.setOnCheckedChangeListener((buttonView, isChecked) -> {
             listing.isActive = isChecked;
             String newStatus = isChecked ? "Còn trống" : "Không hoạt động";
             holder.tvStatus.setText(newStatus);
-            setStatusStyle(holder.tvStatus, newStatus);
-        });
-
-        // Xử lý click edit
-        holder.btnEdit.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onListingClick(listing);
-            }
+            updateStatusStyle(holder.tvStatus, newStatus);
         });
     }
 
-    private void setStatusStyle(TextView textView, String status) {
-        int backgroundColor;
+    private void loadImage(ImageView imageView, String imageName) {
+        Log.d("AllListingsAdapter", "Loading image: " + imageName);
+
+        if (imageName == null || imageName.isEmpty()) {
+            Log.w("AllListingsAdapter", "ImageName is null or empty, using default");
+            imageView.setImageResource(R.drawable.room_4);
+            return;
+        }
+
+        try {
+            Context context = imageView.getContext();
+            int drawableId = context.getResources()
+                    .getIdentifier(imageName, "drawable", context.getPackageName());
+
+            Log.d("AllListingsAdapter", "Drawable ID for " + imageName + ": " + drawableId);
+
+            if (drawableId != 0) {
+                imageView.setImageResource(drawableId);
+                Log.i("AllListingsAdapter", "✓ Successfully loaded: " + imageName);
+            } else {
+                imageView.setImageResource(R.drawable.room_4);
+                Log.e("AllListingsAdapter", "✗ Image not found: " + imageName);
+            }
+        } catch (Exception e) {
+            imageView.setImageResource(R.drawable.room_4);
+            Log.e("AllListingsAdapter", "Error loading image: " + imageName, e);
+        }
+    }
+
+    // PHƯƠNG THỨC SET MÀU STATUS
+    private void updateStatusStyle(TextView textView, String status) {
         int textColor;
+        int bgColor;
 
         switch (status) {
             case "Còn trống":
-                backgroundColor = R.drawable.bg_status_available;
-                textColor = R.color.success;
+                textColor = Color.parseColor("#059669"); // Xanh đậm
+                bgColor = Color.parseColor("#D1FAE5");   // Xanh nhạt
                 break;
             case "Đã thuê":
-                backgroundColor = R.drawable.bg_status_rented;
-                textColor = R.color.error;
+                textColor = Color.parseColor("#DC2626"); // Đỏ đậm
+                bgColor = Color.parseColor("#FEE2E2");   // Đỏ nhạt
                 break;
             case "Chờ xử lý":
-                backgroundColor = R.drawable.bg_status_pending;
-                textColor = R.color.warning;
+                textColor = Color.parseColor("#D97706"); // Cam đậm
+                bgColor = Color.parseColor("#FEF3C7");   // Vàng nhạt
+                break;
+            case "Không hoạt động":
+                textColor = Color.parseColor("#6B7280"); // Xám đậm
+                bgColor = Color.parseColor("#F3F4F6");   // Xám nhạt
                 break;
             default:
-                backgroundColor = R.drawable.bg_status_inactive;
-                textColor = R.color.gray;
-                break;
+                textColor = Color.BLACK;
+                bgColor = Color.TRANSPARENT;
         }
 
-        textView.setBackgroundResource(backgroundColor);
-        textView.setTextColor(textView.getContext().getColor(textColor));
+        textView.setTextColor(textColor);
+
+        // Tạo background với góc bo tròn
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setCornerRadius(16);
+        drawable.setColor(bgColor);
+        drawable.setStroke(1, textColor);
+        textView.setBackground(drawable);
+
+        // Thêm padding cho đẹp
+        int padding = dpToPx(textView.getContext(), 6);
+        textView.setPadding(padding, padding/2, padding, padding/2);
+    }
+
+
+    private int dpToPx(Context context, int dp) {
+        return (int) (dp * context.getResources().getDisplayMetrics().density);
     }
 
     @Override
@@ -103,20 +161,20 @@ public class AllListingsAdapter extends RecyclerView.Adapter<AllListingsAdapter.
         return listings.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        View cardView;
+    // VIEWHOLDER (PHẢI CÓ imgListing!)
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView imgListing;
         TextView tvTitle, tvPrice, tvStatus;
         Switch swActive;
-        ImageView btnEdit;
 
-        public ViewHolder(@NonNull View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
-            cardView = itemView.findViewById(R.id.card_listing);
-            tvTitle = itemView.findViewById(R.id.tv_listing_title);
-            tvPrice = itemView.findViewById(R.id.tv_listing_price);
-            tvStatus = itemView.findViewById(R.id.tv_listing_status);
-            swActive = itemView.findViewById(R.id.sw_listing_active);
-            btnEdit = itemView.findViewById(R.id.btn_edit_listing);
+            // QUAN TRỌNG: FIND VIEW BY ID PHẢI ĐÚNG
+            imgListing = itemView.findViewById(R.id.img_listing_item);
+            tvTitle = itemView.findViewById(R.id.tv_title_item);
+            tvPrice = itemView.findViewById(R.id.tv_price_item);
+            tvStatus = itemView.findViewById(R.id.tv_status_item);
+            swActive = itemView.findViewById(R.id.switch_active);
         }
     }
 }

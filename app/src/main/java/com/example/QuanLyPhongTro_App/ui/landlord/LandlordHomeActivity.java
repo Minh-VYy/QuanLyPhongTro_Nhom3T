@@ -1,15 +1,22 @@
 package com.example.QuanLyPhongTro_App.ui.landlord;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Gravity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,18 +25,14 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 
 import com.example.QuanLyPhongTro_App.R;
 import com.example.QuanLyPhongTro_App.data.MockData;
@@ -50,16 +53,27 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
     private SessionManager sessionManager;
     private RecyclerView rvListings;
-    private FloatingActionButton fabAddListing;
     private View roleSwitcher;
     private TextView txtRolePrimary;
     private ImageView iconRole;
     private View btnQuickAdd, btnQuickRequests, btnQuickStats;
-    private ImageView btnMenu, btnMessages;
+    private ImageView btnMenu, btnMessages, btnFilter;
     private TextView btnViewAll;
+    private ImageButton searchButton;
+    private EditText searchInput;
     private FloatingActionButton fabTaoTin;
     private LinearLayout quickActionMenu;
     private boolean isMenuOpen = false;
+
+    // Biến cho tìm kiếm và lọc
+    private String currentStatusFilter = "all";
+    private String currentActiveFilter = "all";
+    private String currentKeyword = "";
+
+    // Danh sách tin đăng
+    private List<LandlordListing> allListings = new ArrayList<>();
+    private List<LandlordListing> filteredListings = new ArrayList<>();
+    private ListingAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +81,7 @@ public class LandlordHomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_landlord_home);
 
         sessionManager = new SessionManager(this);
-        
+
         // Kiểm tra quyền truy cập
         if (!sessionManager.isLoggedIn() || !"landlord".equals(sessionManager.getUserRole())) {
             Toast.makeText(this, "Vui lòng đăng nhập với tài khoản Chủ Trọ", Toast.LENGTH_LONG).show();
@@ -81,7 +95,8 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
         initViews();
         setupRoleSwitcher();
-        setupListings(); // Load danh sách tin đăng từ MockData
+        setupListings();
+        setupSearchAndFilter();
         setupQuickActions();
         setupBottomNavigation();
         setupFAB();
@@ -103,7 +118,12 @@ public class LandlordHomeActivity extends AppCompatActivity {
         btnViewAll = findViewById(R.id.btn_view_all);
         fabTaoTin = findViewById(R.id.fab_tao_tin);
         quickActionMenu = findViewById(R.id.quick_action_menu);
+
+        // Khởi tạo các view tìm kiếm
+        searchInput = findViewById(R.id.searchInput);
+        searchButton = findViewById(R.id.searchButton);
     }
+
     private void setupFAB() {
         fabTaoTin.setOnClickListener(v -> {
             if (isMenuOpen) {
@@ -116,16 +136,10 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
     private void openQuickActionMenu() {
         isMenuOpen = true;
-
-        // Thay đổi icon FAB thành dấu trừ
         fabTaoTin.setImageResource(R.drawable.ic_remove);
-
-        // Hiển thị menu
         quickActionMenu.setVisibility(View.VISIBLE);
 
-        // Animation hiện menu từ dưới lên
         AnimatorSet animatorSet = new AnimatorSet();
-
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(quickActionMenu, "scaleX", 0.8f, 1f);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(quickActionMenu, "scaleY", 0.8f, 1f);
         ObjectAnimator alpha = ObjectAnimator.ofFloat(quickActionMenu, "alpha", 0f, 1f);
@@ -138,13 +152,9 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
     private void closeQuickActionMenu() {
         isMenuOpen = false;
-
-        // Thay đổi icon FAB thành dấu cộng
         fabTaoTin.setImageResource(android.R.drawable.ic_input_add);
 
-        // Animation ẩn menu
         AnimatorSet animatorSet = new AnimatorSet();
-
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(quickActionMenu, "scaleX", 1f, 0.8f);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(quickActionMenu, "scaleY", 1f, 0.8f);
         ObjectAnimator alpha = ObjectAnimator.ofFloat(quickActionMenu, "alpha", 1f, 0f);
@@ -162,29 +172,23 @@ public class LandlordHomeActivity extends AppCompatActivity {
     }
 
     private void setupMenuActions() {
-        // Thêm tin mới
         findViewById(R.id.menu_add_listing).setOnClickListener(v -> {
             closeQuickActionMenu();
             startActivity(new Intent(this, EditTin.class));
         });
 
-        // Chỉnh sửa tin
         findViewById(R.id.menu_edit_listing).setOnClickListener(v -> {
             closeQuickActionMenu();
-            // Mở activity chỉnh sửa hoặc hiển thị dialog chọn tin để sửa
             Toast.makeText(this, "Mở danh sách tin để chỉnh sửa", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, AllListingsActivity.class));
         });
 
-        // Xóa tin
         findViewById(R.id.menu_delete_listing).setOnClickListener(v -> {
             closeQuickActionMenu();
-            // Mở activity xóa tin
             Toast.makeText(this, "Mở danh sách tin để xóa", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, AllListingsActivity.class));
         });
 
-        // Quản lý yêu cầu
         findViewById(R.id.menu_manage_requests).setOnClickListener(v -> {
             closeQuickActionMenu();
             Intent intent = new Intent(this, YeuCau.class);
@@ -192,7 +196,6 @@ public class LandlordHomeActivity extends AppCompatActivity {
             startActivity(intent);
         });
     }
-
 
     private void setupRoleSwitcher() {
         txtRolePrimary.setText("Chủ trọ");
@@ -215,20 +218,16 @@ public class LandlordHomeActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Lấy dữ liệu tin đăng từ MockData và hiển thị lên RecyclerView
-     */
     private void setupListings() {
         rvListings.setLayoutManager(new GridLayoutManager(this, 2));
 
-        List<LandlordListing> listings = new ArrayList<>();
-
-        // Lấy dữ liệu từ MockData (đã cập nhật)
+        // Lấy dữ liệu từ MockData
         List<MockData.LandlordData.ListingItem> mockListings = MockData.LandlordData.getListings();
 
-        // Map dữ liệu từ MockData sang model của Activity này (nếu cần thiết)
+        // Chuyển đổi sang LandlordListing
+        allListings.clear();
         for (MockData.LandlordData.ListingItem item : mockListings) {
-            listings.add(new LandlordListing(
+            allListings.add(new LandlordListing(
                     item.title,
                     item.price,
                     item.status,
@@ -236,12 +235,129 @@ public class LandlordHomeActivity extends AppCompatActivity {
             ));
         }
 
-        ListingAdapter adapter = new ListingAdapter(listings, listing -> {
+        // Sao chép sang filteredListings để hiển thị ban đầu
+        filteredListings.clear();
+        filteredListings.addAll(allListings);
+
+        // Tạo adapter
+        adapter = new ListingAdapter(filteredListings, listing -> {
             Intent intent = new Intent(this, EditTin.class);
             startActivity(intent);
         });
 
         rvListings.setAdapter(adapter);
+
+        // Cập nhật số lượng tin đăng
+        updateListingCounts();
+    }
+
+    private void updateListingCounts() {
+        int total = allListings.size();
+        int activeCount = 0;
+
+        for (LandlordListing listing : allListings) {
+            if (listing.isActive) {
+                activeCount++;
+            }
+        }
+
+        TextView tvTotal = findViewById(R.id.tv_total_listings);
+        TextView tvActive = findViewById(R.id.tv_active_listings);
+
+        if (tvTotal != null) tvTotal.setText(String.valueOf(total));
+        if (tvActive != null) tvActive.setText(String.valueOf(activeCount));
+    }
+
+    private void setupSearchAndFilter() {
+        // Tìm kiếm khi nhấn nút search
+        searchButton.setOnClickListener(v -> {
+            currentKeyword = searchInput.getText().toString().trim().toLowerCase();
+            applyAllFilters();
+            hideKeyboard();
+        });
+
+        // Tìm kiếm khi nhấn Enter trên bàn phím
+        searchInput.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                currentKeyword = searchInput.getText().toString().trim().toLowerCase();
+                applyAllFilters();
+                hideKeyboard();
+                return true;
+            }
+            return false;
+        });
+
+
+
+        // Tìm kiếm realtime khi gõ (tùy chọn)
+        searchInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                currentKeyword = s.toString().trim().toLowerCase();
+                // Nếu muốn tìm kiếm realtime, bỏ comment dòng dưới:
+                // applyAllFilters();
+            }
+        });
+    }
+
+    private void applyAllFilters() {
+        filteredListings.clear();
+
+        // Áp dụng cả 3 loại filter: keyword, status, active
+        for (LandlordListing listing : allListings) {
+            // Kiểm tra keyword
+            boolean matchesKeyword = currentKeyword.isEmpty() ||
+                    listing.title.toLowerCase().contains(currentKeyword) ||
+                    listing.price.toLowerCase().contains(currentKeyword) ||
+                    listing.status.toLowerCase().contains(currentKeyword);
+
+            // Kiểm tra status
+            boolean matchesStatus = currentStatusFilter.equals("all") ||
+                    listing.status.equals(currentStatusFilter);
+
+            // Kiểm tra active
+            boolean matchesActive = currentActiveFilter.equals("all") ||
+                    (currentActiveFilter.equals("active") && listing.isActive) ||
+                    (currentActiveFilter.equals("inactive") && !listing.isActive);
+
+            if (matchesKeyword && matchesStatus && matchesActive) {
+                filteredListings.add(listing);
+            }
+        }
+
+        // Cập nhật adapter
+        adapter.updateList(filteredListings);
+
+        // Hiển thị số lượng kết quả
+        showSearchResultCount();
+    }
+
+    private void showSearchResultCount() {
+        if (!currentKeyword.isEmpty() ||
+                !currentStatusFilter.equals("all") ||
+                !currentActiveFilter.equals("all")) {
+
+            String message = "Tìm thấy " + filteredListings.size() + " tin đăng";
+            if (!currentKeyword.isEmpty()) {
+                message += " với từ khóa: " + currentKeyword;
+            }
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+
+    private void hideKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null && getCurrentFocus() != null) {
+            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+        }
     }
 
     private void setupQuickActions() {
@@ -272,8 +388,6 @@ public class LandlordHomeActivity extends AppCompatActivity {
     private void setupBottomNavigation() {
         LandlordBottomNavigationHelper.setupBottomNavigation(this, "home");
     }
-
-
 
     private void showUtilityDialog() {
         UtilityDialog dialog = new UtilityDialog(this);
@@ -309,12 +423,18 @@ public class LandlordHomeActivity extends AppCompatActivity {
     }
 
     static class ListingAdapter extends RecyclerView.Adapter<ListingAdapter.ViewHolder> {
-        private final List<LandlordListing> listings;
+        private List<LandlordListing> listings;
         private final OnListingClickListener listener;
 
         ListingAdapter(List<LandlordListing> listings, OnListingClickListener listener) {
             this.listings = listings;
             this.listener = listener;
+        }
+
+        // Thêm phương thức updateList
+        public void updateList(List<LandlordListing> newList) {
+            this.listings = newList;
+            notifyDataSetChanged();
         }
 
         @NonNull
