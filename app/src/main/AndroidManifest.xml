@@ -66,6 +66,7 @@
         <activity android:name=".ui.landlord.EditTin" />
         <activity android:name=".ui.landlord.TroGiup" />
         <activity android:name=".ui.landlord.AllListingsActivity" />
+        <activity android:name=".ui.landlord.LandlordEditProfileActivity"/>
 
     </application>
 

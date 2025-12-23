@@ -1,4 +1,4 @@
-package com.example.QuanLyPhongTro_App.ui.tenant;
+package com.example.QuanLyPhongTro_App.ui.landlord;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
@@ -19,11 +19,11 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.Calendar;
 
-public class EditProfileActivity extends AppCompatActivity {
+public class LandlordEditProfileActivity extends AppCompatActivity {
 
     private ImageView btnBack, ivAvatar, ivIdDocument;
     private LinearLayout btnChangeAvatar;
-    private TextInputEditText etFullName, etPhone, etEmail, etDob, etBankName, etAccountNumber, etAccountHolderName;
+    private TextInputEditText etFullName, etPhone, etEmail, etAddress, etDob, etBankName, etAccountNumber, etAccountHolderName;
     private RadioGroup rgGender;
     private RadioButton rbMale, rbFemale;
     private Button btnSave;
@@ -31,7 +31,7 @@ public class EditProfileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_tenant_edit_profile);
+        setContentView(R.layout.activity_landlord_edit_profile);
 
         initViews();
         setupListeners();
@@ -45,6 +45,7 @@ public class EditProfileActivity extends AppCompatActivity {
         etFullName = findViewById(R.id.etFullName);
         etPhone = findViewById(R.id.etPhone);
         etEmail = findViewById(R.id.etEmail);
+        etAddress = findViewById(R.id.etAddress);
         etDob = findViewById(R.id.etDob);
         rgGender = findViewById(R.id.rgGender);
         rbMale = findViewById(R.id.rbMale);
@@ -85,11 +86,11 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     private void loadProfileData() {
-        // TODO: Load actual tenant profile data from SessionManager or Database
+        // TODO: Load actual landlord profile data from SessionManager or Database
         // For now, using placeholder data from layout (already set in XML)
 
         // Set initial gender (example)
-        // if (tenant.getGender().equals("Nam")) {
+        // if (landlord.getGender().equals("Nam")) {
         //    rbMale.setChecked(true);
         // } else {
         //    rbFemale.setChecked(true);
@@ -101,6 +102,7 @@ public class EditProfileActivity extends AppCompatActivity {
         String fullName = etFullName.getText().toString();
         String phone = etPhone.getText().toString();
         String email = etEmail.getText().toString();
+        String address = etAddress.getText().toString();
         String dob = etDob.getText().toString();
 
         int selectedGenderId = rgGender.getCheckedRadioButtonId();
@@ -115,7 +117,7 @@ public class EditProfileActivity extends AppCompatActivity {
         String accountHolderName = etAccountHolderName.getText().toString();
 
         // TODO: Implement actual save logic (e.g., update SessionManager, send to server)
-        String message = "Lưu thay đổi hồ sơ Người thuê: " +
+        String message = "Lưu thay đổi hồ sơ Chủ trọ: " +
                 "\nHọ tên: " + fullName +
                 "\nNgày sinh: " + dob +
                 "\nGiới tính: " + gender +

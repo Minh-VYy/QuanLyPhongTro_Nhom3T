@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F2F4F8"
-    tools:context=".ui.tenant.EditProfileActivity">
+    tools:context=".ui.landlord.LandlordEditProfileActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/headerLayout"
@@ -28,7 +28,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Chỉnh sửa hồ sơ"
+            android:text="Chỉnh sửa hồ sơ Chủ trọ"
             android:textColor="#1F2937"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -101,7 +101,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="@drawable/card_background"
-                android:padding="16dp">
+                android:padding="16dp"
+                android:layout_marginBottom="16dp">
+
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
@@ -116,7 +118,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textPersonName"
-                        android:text="Nguyễn Văn A"
+                        android:text="Chủ Trọ A"
                         android:textSize="15sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -190,7 +192,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="phone"
-                        android:text="0123456789"
+                        android:text="0987654321"
                         android:textSize="15sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -208,7 +210,119 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textEmailAddress"
-                        android:text="nguyenvana@email.com"
+                        android:text="chutroa@example.com"
+                        android:textSize="15sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:hint="Địa chỉ nhà trọ"
+                    app:startIconDrawable="@drawable/ic_location"
+                    app:boxStrokeColor="#4a90e2"
+                    app:hintTextColor="#4a90e2">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etAddress"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPostalAddress"
+                        android:text="123 Đường ABC, Quận XYZ, TP.HCM"
+                        android:textSize="15sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+
+                <!-- ID Document (Read-Only) -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ảnh giấy tờ (không thể sửa)"
+                    android:textColor="#1F2937"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <ImageView
+                    android:id="@+id/ivIdDocument"
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:background="#E0E0E0"
+                    android:scaleType="centerInside"
+                    android:layout_marginBottom="16dp"
+                    android:contentDescription="Ảnh giấy tờ" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/card_background"
+                android:padding="16dp"
+                android:layout_marginTop="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Thông tin thanh toán"
+                    android:textColor="#1F2937"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="12dp"/>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:hint="Tên ngân hàng"
+                    app:boxStrokeColor="#4a90e2"
+                    app:hintTextColor="#4a90e2">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etBankName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName"
+                        android:text="Ngân hàng XYZ"
+                        android:textSize="15sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:hint="Số tài khoản"
+                    app:boxStrokeColor="#4a90e2"
+                    app:hintTextColor="#4a90e2">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etAccountNumber"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:text="0987654321"
+                        android:textSize="15sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Tên chủ tài khoản"
+                    app:boxStrokeColor="#4a90e2"
+                    app:hintTextColor="#4a90e2">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etAccountHolderName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName"
+                        android:text="Chủ Trọ A"
                         android:textSize="15sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
