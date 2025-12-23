@@ -9,8 +9,20 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -45,6 +57,9 @@ public class LandlordHomeActivity extends AppCompatActivity {
     private View btnQuickAdd, btnQuickRequests, btnQuickStats;
     private ImageView btnMenu, btnMessages;
     private TextView btnViewAll;
+    private FloatingActionButton fabTaoTin;
+    private LinearLayout quickActionMenu;
+    private boolean isMenuOpen = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,11 +85,11 @@ public class LandlordHomeActivity extends AppCompatActivity {
         setupQuickActions();
         setupBottomNavigation();
         setupFAB();
+        setupMenuActions();
     }
 
     private void initViews() {
         rvListings = findViewById(R.id.rv_grid_listings);
-        fabAddListing = findViewById(R.id.fab_tao_tin);
         roleSwitcher = findViewById(R.id.roleSwitcher);
         txtRolePrimary = roleSwitcher.findViewById(R.id.txtRolePrimary);
         iconRole = roleSwitcher.findViewById(R.id.iconRole);
@@ -86,7 +101,98 @@ public class LandlordHomeActivity extends AppCompatActivity {
         btnMenu = findViewById(R.id.btn_menu);
         btnMessages = findViewById(R.id.btn_messages);
         btnViewAll = findViewById(R.id.btn_view_all);
+        fabTaoTin = findViewById(R.id.fab_tao_tin);
+        quickActionMenu = findViewById(R.id.quick_action_menu);
     }
+    private void setupFAB() {
+        fabTaoTin.setOnClickListener(v -> {
+            if (isMenuOpen) {
+                closeQuickActionMenu();
+            } else {
+                openQuickActionMenu();
+            }
+        });
+    }
+
+    private void openQuickActionMenu() {
+        isMenuOpen = true;
+
+        // Thay đổi icon FAB thành dấu trừ
+        fabTaoTin.setImageResource(R.drawable.ic_remove);
+
+        // Hiển thị menu
+        quickActionMenu.setVisibility(View.VISIBLE);
+
+        // Animation hiện menu từ dưới lên
+        AnimatorSet animatorSet = new AnimatorSet();
+
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(quickActionMenu, "scaleX", 0.8f, 1f);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(quickActionMenu, "scaleY", 0.8f, 1f);
+        ObjectAnimator alpha = ObjectAnimator.ofFloat(quickActionMenu, "alpha", 0f, 1f);
+
+        animatorSet.playTogether(scaleX, scaleY, alpha);
+        animatorSet.setDuration(250);
+        animatorSet.setInterpolator(new AccelerateDecelerateInterpolator());
+        animatorSet.start();
+    }
+
+    private void closeQuickActionMenu() {
+        isMenuOpen = false;
+
+        // Thay đổi icon FAB thành dấu cộng
+        fabTaoTin.setImageResource(android.R.drawable.ic_input_add);
+
+        // Animation ẩn menu
+        AnimatorSet animatorSet = new AnimatorSet();
+
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(quickActionMenu, "scaleX", 1f, 0.8f);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(quickActionMenu, "scaleY", 1f, 0.8f);
+        ObjectAnimator alpha = ObjectAnimator.ofFloat(quickActionMenu, "alpha", 1f, 0f);
+
+        animatorSet.playTogether(scaleX, scaleY, alpha);
+        animatorSet.setDuration(200);
+        animatorSet.setInterpolator(new AccelerateDecelerateInterpolator());
+        animatorSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                quickActionMenu.setVisibility(View.GONE);
+            }
+        });
+        animatorSet.start();
+    }
+
+    private void setupMenuActions() {
+        // Thêm tin mới
+        findViewById(R.id.menu_add_listing).setOnClickListener(v -> {
+            closeQuickActionMenu();
+            startActivity(new Intent(this, EditTin.class));
+        });
+
+        // Chỉnh sửa tin
+        findViewById(R.id.menu_edit_listing).setOnClickListener(v -> {
+            closeQuickActionMenu();
+            // Mở activity chỉnh sửa hoặc hiển thị dialog chọn tin để sửa
+            Toast.makeText(this, "Mở danh sách tin để chỉnh sửa", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, AllListingsActivity.class));
+        });
+
+        // Xóa tin
+        findViewById(R.id.menu_delete_listing).setOnClickListener(v -> {
+            closeQuickActionMenu();
+            // Mở activity xóa tin
+            Toast.makeText(this, "Mở danh sách tin để xóa", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, AllListingsActivity.class));
+        });
+
+        // Quản lý yêu cầu
+        findViewById(R.id.menu_manage_requests).setOnClickListener(v -> {
+            closeQuickActionMenu();
+            Intent intent = new Intent(this, YeuCau.class);
+            intent.putExtra("defaultTab", "yeucau");
+            startActivity(intent);
+        });
+    }
+
 
     private void setupRoleSwitcher() {
         txtRolePrimary.setText("Chủ trọ");
@@ -167,9 +273,7 @@ public class LandlordHomeActivity extends AppCompatActivity {
         LandlordBottomNavigationHelper.setupBottomNavigation(this, "home");
     }
 
-    private void setupFAB() {
-        fabAddListing.setOnClickListener(v -> showUtilityDialog());
-    }
+
 
     private void showUtilityDialog() {
         UtilityDialog dialog = new UtilityDialog(this);
