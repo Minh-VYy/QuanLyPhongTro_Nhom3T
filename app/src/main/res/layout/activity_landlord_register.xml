@@ -76,18 +76,6 @@
             android:textColorHint="@color/mau_xam_dam"
             android:layout_marginBottom="15dp" />
 
-        <!-- Địa chỉ -->
-        <EditText
-            android:id="@+id/dia_chi_chu_tro"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:hint="Địa chỉ hiện tại"
-            android:inputType="textPostalAddress"
-            android:padding="15dp"
-            android:background="@drawable/edit_text_border"
-            android:textColorHint="@color/mau_xam_dam"
-            android:layout_marginBottom="15dp" />
-
         <!-- Mật khẩu -->
         <EditText
             android:id="@+id/mat_khau_dang_ky_chu_tro"
@@ -112,64 +100,12 @@
             android:textColorHint="@color/mau_xam_dam"
             android:layout_marginBottom="20dp" />
 
-        <!-- Tiêu đề xác minh -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Xác Minh Danh Tính"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/primary"
-            android:layout_marginBottom="15dp" />
-
-        <!-- Loại giấy tờ -->
-        <Spinner
-            android:id="@+id/loai_giay_to"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@drawable/edit_text_border"
-            android:padding="15dp"
-            android:layout_marginBottom="15dp" />
-
-        <!-- Số giấy tờ -->
-        <EditText
-            android:id="@+id/so_giay_to"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:hint="Số CMND/CCCD/Hộ chiếu"
-            android:inputType="text"
-            android:padding="15dp"
-            android:background="@drawable/edit_text_border"
-            android:textColorHint="@color/mau_xam_dam"
-            android:layout_marginBottom="15dp" />
-
-        <!-- Nút tải lên ảnh giấy tờ -->
-        <Button
-            android:id="@+id/btn_tai_len_giay_to"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:text="Tải Lên Ảnh Giấy Tờ"
-            android:textSize="14sp"
-            android:textColor="@color/mau_trang"
-            android:background="@drawable/button_border"
-            android:layout_marginBottom="15dp" />
-
-        <!-- Hiển thị ảnh đã tải lên -->
-        <ImageView
-            android:id="@+id/hinh_giay_to"
-            android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:scaleType="centerInside"
-            android:background="@color/mau_xam"
-            android:layout_marginBottom="20dp"
-            android:visibility="gone" />
-
         <!-- Checkbox Điều khoản -->
         <CheckBox
             android:id="@+id/dong_y_dieu_khoan_chu_tro"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tôi đồng ý với Điều khoản dịch vụ"
+            android:text="Tôi đồng ý với các điều khoản của ứng dụng"
             android:textSize="14sp"
             android:textColor="@color/mau_xam_dam"
             android:layout_marginBottom="20dp" />
