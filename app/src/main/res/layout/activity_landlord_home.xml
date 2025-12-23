@@ -407,4 +407,18 @@
         android:layout_height="56dp"
         android:layout_gravity="bottom" />
 
+    <!-- Chatbot FAB - Draggable -->
+    <com.example.QuanLyPhongTro_App.ui.chatbot.DraggableChatbotView
+        android:id="@+id/fabChatbot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="140dp"
+        android:src="@drawable/ic_chatbot"
+        android:contentDescription="Trợ lý AI"
+        app:tint="@android:color/white"
+        app:backgroundTint="#4CAF50"
+        app:elevation="6dp"/>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

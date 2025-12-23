@@ -40,4 +40,7 @@
     <color name="mau_xanh_nhe">#D1FAE5</color>
     <color name="white_transparent_20">#33FFFFFF</color>
 
+    <!-- Chatbot colors -->
+    <color name="chip_background">#E3F2FD</color>
+
 </resources>

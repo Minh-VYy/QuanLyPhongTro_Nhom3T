@@ -21,6 +21,7 @@ import com.example.QuanLyPhongTro_App.R;
 import com.example.QuanLyPhongTro_App.data.MockData;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
 import com.example.QuanLyPhongTro_App.ui.tenant.MainActivity;
+import com.example.QuanLyPhongTro_App.ui.chatbot.ChatbotActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.LandlordBottomNavigationHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -32,7 +33,7 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
     private SessionManager sessionManager;
     private RecyclerView rvListings;
-    private FloatingActionButton fabAddListing;
+    private FloatingActionButton fabAddListing, fabChatbot;
     private View roleSwitcher;
     private TextView txtRolePrimary;
     private ImageView iconRole;
@@ -64,6 +65,19 @@ public class LandlordHomeActivity extends AppCompatActivity {
         setupQuickActions();
         setupBottomNavigation();
         setupFAB();
+        setupChatbot();
+    }
+
+    private void setupChatbot() {
+        fabChatbot = findViewById(R.id.fabChatbot);
+        if (fabChatbot != null) {
+            fabChatbot.setOnClickListener(v -> {
+                Intent intent = new Intent(LandlordHomeActivity.this, ChatbotActivity.class);
+                intent.putExtra("user_type", "landlord");
+                intent.putExtra("context", "home");
+                startActivity(intent);
+            });
+        }
     }
 
     private void initViews() {

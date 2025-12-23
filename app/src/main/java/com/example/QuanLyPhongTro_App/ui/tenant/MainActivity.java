@@ -15,8 +15,10 @@ import com.example.QuanLyPhongTro_App.R;
 import com.example.QuanLyPhongTro_App.data.MockData;
 import com.example.QuanLyPhongTro_App.ui.auth.DangKyNguoiThueActivity;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
+import com.example.QuanLyPhongTro_App.ui.chatbot.ChatbotActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 
@@ -26,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView roomRecyclerView;
     private ArrayList<Room> roomList;
     private SessionManager sessionManager;
+    private FloatingActionButton fabChatbot;
     private View roleSwitcher;
     private TextView txtRolePrimary;
     private TextView txtRoleSecondary;
@@ -45,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
         setupBottomNavigation();
         setupRoomRecyclerView();
         setupFilterButton();
+        setupChatbot();
     }
 
     private void initRoomList() {
@@ -132,6 +136,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupBottomNavigation() {
         BottomNavigationHelper.setupBottomNavigation(this, "home");
+    }
+
+    private void setupChatbot() {
+        fabChatbot = findViewById(R.id.fabChatbot);
+        if (fabChatbot != null) {
+            fabChatbot.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, ChatbotActivity.class);
+                intent.putExtra("user_type", "tenant");
+                intent.putExtra("context", "home");
+                startActivity(intent);
+            });
+        }
     }
 
     /**
