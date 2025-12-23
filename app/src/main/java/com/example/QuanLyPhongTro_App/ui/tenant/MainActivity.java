@@ -2,16 +2,19 @@ package com.example.QuanLyPhongTro_App.ui.tenant;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.AppDatabase;
+import com.example.QuanLyPhongTro_App.data.api.ApiService;
+import com.example.QuanLyPhongTro_App.data.api.RetrofitClient;
 import com.example.QuanLyPhongTro_App.ui.auth.DangKyNguoiThueActivity;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
@@ -19,7 +22,10 @@ import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,22 +52,39 @@ public class MainActivity extends AppCompatActivity {
         setupRoomRecyclerView();
         setupFilterButton();
 
-        // Tải dữ liệu từ cơ sở dữ liệu thay vì MockData
-        loadRoomsFromDatabase();
+        // Tải dữ liệu từ API
+        loadRoomsFromApi();
     }
 
-    private void loadRoomsFromDatabase() {
-        AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
-        Executors.newSingleThreadExecutor().execute(() -> {
-            // Lấy dữ liệu từ DB
-            List<Room> dbRooms = db.roomDao().getAll();
+    private void loadRoomsFromApi() {
+        ApiService apiService = RetrofitClient.getApiService();
+        Call<List<Room>> call = apiService.getRooms();
 
-            // Cập nhật giao diện trên luồng chính
-            runOnUiThread(() -> {
-                roomList.clear();
-                roomList.addAll(dbRooms);
-                roomAdapter.notifyDataSetChanged(); // Báo cho adapter biết dữ liệu đã thay đổi
-            });
+        call.enqueue(new Callback<List<Room>>() {
+            @Override
+            public void onResponse(Call<List<Room>> call, Response<List<Room>> response) {
+                if (response.isSuccessful()) {
+                    List<Room> apiRooms = response.body();
+                    if (apiRooms != null) {
+                        roomList.clear();
+                        roomList.addAll(apiRooms);
+                        roomAdapter.notifyDataSetChanged();
+                        Toast.makeText(MainActivity.this, "Tải dữ liệu thành công!", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    // Xử lý lỗi từ server (ví dụ: 404 Not Found, 500 Internal Server Error)
+                    Toast.makeText(MainActivity.this, "Lỗi server: " + response.code(), Toast.LENGTH_LONG).show();
+                    Log.e("API_ERROR", "Response Code: " + response.code() + " - Message: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Room>> call, Throwable t) {
+                // Xử lý lỗi mạng (ví dụ: không có internet, sai URL, không kết nối được tới server)
+                Toast.makeText(MainActivity.this, "Lỗi kết nối mạng. Vui lòng kiểm tra lại URL và API của bạn.", Toast.LENGTH_LONG).show();
+                Log.e("API_FAILURE", "Lỗi: " + t.getMessage());
+                t.printStackTrace();
+            }
         });
     }
 

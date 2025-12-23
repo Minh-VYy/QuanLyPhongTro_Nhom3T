@@ -1,6 +1,7 @@
 package com.example.QuanLyPhongTro_App.ui.tenant;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,7 +41,6 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.notificationMessage.setText(notification.getMessage());
         holder.notificationTime.setText(notification.getTime());
 
-        // Set icon based on type
         int iconResId = R.drawable.ic_calendar;
         switch (notification.getIconType()) {
             case "calendar":
@@ -55,10 +55,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         }
         holder.notificationIcon.setImageResource(iconResId);
 
-        // Show/hide unread dot
         holder.unreadDot.setVisibility(notification.isUnread() ? View.VISIBLE : View.GONE);
 
-        // Set background for unread notifications
         if (notification.isUnread()) {
             holder.itemView.setBackgroundColor(context.getResources().getColor(R.color.light_gray));
         } else {
@@ -68,8 +66,17 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.itemView.setOnClickListener(v -> {
             notification.setUnread(false);
             notifyItemChanged(position);
-            Toast.makeText(context, "Đã đọc: " + notification.getTitle(), Toast.LENGTH_SHORT).show();
-            // TODO: Navigate to related screen
+
+            // Kiểm tra loại thông báo
+            if ("message".equals(notification.getIconType())) {
+                Intent intent = new Intent(context, MessageDetailActivity.class);
+                // Giả sử tiêu đề thông báo là tên người gửi
+                intent.putExtra("USER_NAME", notification.getTitle());
+                context.startActivity(intent);
+            } else {
+                Toast.makeText(context, "Đã đọc: " + notification.getTitle(), Toast.LENGTH_SHORT).show();
+                // TODO: Xử lý điều hướng cho các loại thông báo khác
+            }
         });
     }
 
@@ -93,4 +100,3 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         }
     }
 }
-

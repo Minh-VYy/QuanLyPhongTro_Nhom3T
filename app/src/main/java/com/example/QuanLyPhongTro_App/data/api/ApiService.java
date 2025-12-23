@@ -1,6 +1,7 @@
 package com.example.QuanLyPhongTro_App.data.api;
 
-import com.example.QuanLyPhongTro_App.data.model.Room;
+// Thay đổi import để sử dụng lớp Room duy nhất
+import com.example.QuanLyPhongTro_App.ui.tenant.Room;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.GET;

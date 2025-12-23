@@ -7,7 +7,7 @@ public class RetrofitClient {
 
     private static Retrofit retrofit = null;
     // THAY THẾ BẰNG URL CƠ SỞ CỦA API CỦA BẠN
-    private static final String BASE_URL = "YOUR_API_BASE_URL";
+    private static final String BASE_URL = "http://18.140.64.80:5000/";
 
     public static ApiService getApiService() {
         if (retrofit == null) {
