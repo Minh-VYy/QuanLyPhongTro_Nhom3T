@@ -9,250 +9,205 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class chứa tất cả dữ liệu tĩnh để test UI
- * Sử dụng trong lúc chưa có backend
+ * Class chứa tất cả dữ liệu tĩnh cho ứng dụng (Tenant + Landlord)
+ * Đã cập nhật: Thêm dữ liệu chi tiết cho chủ trọ và người thuê, sử dụng hình ảnh mới.
  */
 public class MockData {
 
-    // ==================== ROOMS DATA ====================
+    // ==================== 1. TENANT DATA (Dữ liệu cho người thuê) ====================
 
+    /**
+     * Lấy danh sách tất cả phòng trọ (Hiển thị ở trang chủ Tenant)
+     */
     public static List<Room> getRooms() {
         List<Room> rooms = new ArrayList<>();
 
-        rooms.add(new Room(
-            "Phòng trọ đẹp, gần ĐH Bách Khoa",
-            "2.5 triệu/tháng",
-            "Quận 10, TP.HCM",
-            R.drawable.tro
-        ));
+        // Phòng 1
+        Room room1 = new Room(
+                1,
+                "Phòng trọ cao cấp gần ĐH Bách Khoa",
+                3500000, // 3.5 triệu
+                "Quận Liên Chiểu",
+                "123 Nguyễn Sinh Sắc, P. Hòa Minh, Q. Liên Chiểu, Đà Nẵng",
+                25.0,
+                "Phòng mới xây, đầy đủ nội thất (giường, tủ, điều hòa). An ninh tốt, có camera 24/7. Gần chợ và trường đại học.",
+                null,
+                4.5, 12,
+                101, "Nguyễn Văn Chủ", 4.8, 56, "0905123456",
+                true, false, "2024-05-20"
+        );
+        room1.setImageResId(R.drawable.room_1);
+        rooms.add(room1);
 
-        rooms.add(new Room(
-            "Chung cư mini full nội thất",
-            "3.2 triệu/tháng",
-            "Quận 1, TP.HCM",
-            R.drawable.tro
-        ));
+        // Phòng 2
+        Room room2 = new Room(
+                2,
+                "Căn hộ mini view biển Mỹ Khê",
+                5500000,
+                "Quận Sơn Trà",
+                "45 Võ Nguyên Giáp, P. Mân Thái, Q. Sơn Trà, Đà Nẵng",
+                40.0,
+                "Căn hộ 1 phòng ngủ, view biển tuyệt đẹp. Full nội thất cao cấp. Thích hợp cho người nước ngoài hoặc vợ chồng trẻ.",
+                null,
+                4.9, 28,
+                102, "Trần Thị B", 4.9, 120, "0905987654",
+                false, true, "2024-05-15"
+        );
+        room2.setImageResId(R.drawable.room_2);
+        rooms.add(room2);
 
-        rooms.add(new Room(
-            "Phòng trọ mới xây",
-            "1.8 triệu/tháng",
-            "Quận Tân Bình, TP.HCM",
-            R.drawable.tro
-        ));
+        // Phòng 3
+        Room room3 = new Room(
+                3,
+                "Phòng trọ giá rẻ cho sinh viên",
+                1800000,
+                "Quận Thanh Khê",
+                "K123 Điện Biên Phủ, P. Chính Gián, Q. Thanh Khê, Đà Nẵng",
+                18.0,
+                "Phòng trọ thoáng mát, yên tĩnh, giá rẻ điện nước giá dân. Ưu tiên sinh viên nữ.",
+                null,
+                4.0, 5,
+                103, "Lê Văn C", 4.2, 15, "0905111222",
+                false, false, "2024-05-10"
+        );
+        room3.setImageResId(R.drawable.room_3);
+        rooms.add(room3);
 
-        rooms.add(new Room(
-            "Studio cao cấp view đẹp",
-            "4.5 triệu/tháng",
-            "Quận 3, TP.HCM",
-            R.drawable.tro
-        ));
+        // Phòng 4
+        Room room4 = new Room(
+                4,
+                "Studio hiện đại full nội thất",
+                4500000,
+                "Quận Sơn Trà",
+                "234 Võ Nguyên Giáp, P. Phước Mỹ, Q. Sơn Trà, Đà Nẵng",
+                30.0,
+                "Studio hiện đại, máy lạnh, nóng lạnh, tủ lạnh, máy giặt đầy đủ. View biển tuyệt đẹp.",
+                null,
+                4.8, 15,
+                102, "Trần Thị B", 4.9, 120, "0905987654",
+                true, false, "2024-05-25"
+        );
+        room4.setImageResId(R.drawable.room_4);
+        rooms.add(room4);
 
-        rooms.add(new Room(
-            "Phòng trọ giá rẻ cho sinh viên",
-            "1.5 triệu/tháng",
-            "Quận Bình Thạnh, TP.HCM",
-            R.drawable.tro
-        ));
+        // Phòng 5
+        Room room5 = new Room(
+                5,
+                "Phòng có gác lửng tiện nghi",
+                2800000,
+                "Quận Thanh Khê",
+                "567 Điện Biên Phủ, P. Thanh Khê Tây, Q. Thanh Khê, Đà Nẵng",
+                22.0,
+                "Phòng có gác lửng, thoáng mát, gần Sân bay Quốc tế Đà Nẵng.",
+                null,
+                4.5, 10,
+                104, "Phạm Thị D", 4.6, 30, "0905333444",
+                false, false, "2024-05-18"
+        );
+        room5.setImageResId(R.drawable.room_5);
+        rooms.add(room5);
 
-        rooms.add(new Room(
-            "Nhà nguyên căn 3 phòng ngủ",
-            "5.0 triệu/tháng",
-            "Quận 7, TP.HCM",
-            R.drawable.tro
-        ));
+        // Phòng 6
+        Room room6 = new Room(
+                6,
+                "Chung cư mini cao cấp",
+                6000000,
+                "Quận Hải Châu",
+                "890 Nguyễn Văn Linh, P. Nam Dương, Q. Hải Châu, Đà Nẵng",
+                45.0,
+                "Chung cư mini cao cấp, bảo vệ 24/7, thang máy, chỗ đậu xe. Gần cầu Rồng.",
+                null,
+                5.0, 25,
+                105, "Hoàng Văn E", 5.0, 40, "0905555666",
+                true, true, "2024-05-28"
+        );
+        room6.setImageResId(R.drawable.room_6);
+        rooms.add(room6);
 
-        rooms.add(new Room(
-            "Căn hộ dịch vụ cao cấp",
-            "6.0 triệu/tháng",
-            "Quận 2, TP.HCM",
-            R.drawable.tro
-        ));
+        // Phòng 7
+        Room room7 = new Room(
+                7,
+                "Phòng trọ gần Chợ Hàn",
+                3200000,
+                "Quận Hải Châu",
+                "345 Hùng Vương, P. Vĩnh Trung, Q. Hải Châu, Đà Nẵng",
+                20.0,
+                "Vị trí đắc địa, gần Chợ Hàn, trung tâm thành phố.",
+                null,
+                4.6, 18,
+                104, "Phạm Thị D", 4.6, 30, "0905333444",
+                false, false, "2024-05-22"
+        );
+        room7.setImageResId(R.drawable.room_7);
+        rooms.add(room7);
 
-        rooms.add(new Room(
-            "Phòng có gác lửng",
-            "2.2 triệu/tháng",
-            "Quận Gò Vấp, TP.HCM",
-            R.drawable.tro
-        ));
+        // Phòng 8
+        Room room8 = new Room(
+                8,
+                "Nhà nguyên căn 3 tầng",
+                15000000,
+                "Quận Cẩm Lệ",
+                "678 Nguyễn Hữu Thọ, P. Khuê Trung, Q. Cẩm Lệ, Đà Nẵng",
+                120.0,
+                "Nhà nguyên căn 3 tầng, 4 phòng ngủ, sân thượng, garage ô tô. Gần Khu công nghệ cao.",
+                null,
+                4.9, 30,
+                106, "Vũ Thị F", 4.8, 10, "0905777888",
+                false, true, "2024-05-12"
+        );
+        room8.setImageResId(R.drawable.room_8);
+        rooms.add(room8);
 
         return rooms;
     }
 
     public static List<Room> getSavedRooms() {
-        List<Room> rooms = new ArrayList<>();
-
-        rooms.add(new Room(
-            "Phòng trọ đẹp, gần ĐH Bách Khoa",
-            "2.5 triệu/tháng",
-            "Quận 10, TP.HCM",
-            R.drawable.tro
-        ));
-
-        rooms.add(new Room(
-            "Studio cao cấp view đẹp",
-            "4.5 triệu/tháng",
-            "Quận 3, TP.HCM",
-            R.drawable.tro
-        ));
-
-        rooms.add(new Room(
-            "Căn hộ dịch vụ cao cấp",
-            "6.0 triệu/tháng",
-            "Quận 2, TP.HCM",
-            R.drawable.tro
-        ));
-
-        return rooms;
+        List<Room> allRooms = getRooms();
+        List<Room> savedRooms = new ArrayList<>();
+        // Giả lập lấy vài phòng đã lưu
+        if (allRooms.size() > 0) savedRooms.add(allRooms.get(0));
+        if (allRooms.size() > 3) savedRooms.add(allRooms.get(3));
+        return savedRooms;
     }
 
-    // ==================== BOOKINGS DATA ====================
+    // ==================== BOOKINGS & NOTIFICATIONS (Giữ nguyên) ====================
 
     public static List<Booking> getPendingBookings() {
         List<Booking> bookings = new ArrayList<>();
-
-        bookings.add(new Booking(
-            "1",
-            "Phòng trọ đẹp, gần ĐH Bách Khoa",
-            "2.5 triệu/tháng",
-            "15/12/2024",
-            "Sáng (8-12h)",
-            "pending",
-            "Nguyễn Văn A",
-            "Quận 10, TP.HCM"
-        ));
-
-        bookings.add(new Booking(
-            "2",
-            "Studio cao cấp view đẹp",
-            "4.5 triệu/tháng",
-            "18/12/2024",
-            "Chiều (13-17h)",
-            "pending",
-            "Trần Thị B",
-            "Quận 3, TP.HCM"
-        ));
-
+        bookings.add(new Booking("1", "Phòng trọ đẹp, gần ĐH Bách Khoa", "2.5 triệu/tháng", "15/12/2024", "Sáng (8-12h)", "pending", "Nguyễn Văn A", "Quận 10, TP.HCM"));
         return bookings;
     }
 
     public static List<Booking> getConfirmedBookings() {
-        List<Booking> bookings = new ArrayList<>();
-
-        bookings.add(new Booking(
-            "3",
-            "Chung cư mini full nội thất",
-            "3.2 triệu/tháng",
-            "20/12/2024",
-            "Sáng (8-12h)",
-            "confirmed",
-            "Lê Văn C",
-            "Quận 1, TP.HCM"
-        ));
-
-        bookings.add(new Booking(
-            "4",
-            "Căn hộ dịch vụ cao cấp",
-            "6.0 triệu/tháng",
-            "22/12/2024",
-            "Tối (18-20h)",
-            "confirmed",
-            "Phạm Thị D",
-            "Quận 2, TP.HCM"
-        ));
-
-        return bookings;
+        return new ArrayList<>();
     }
 
     public static List<Booking> getCompletedBookings() {
-        List<Booking> bookings = new ArrayList<>();
-
-        bookings.add(new Booking(
-            "5",
-            "Phòng trọ mới xây",
-            "1.8 triệu/tháng",
-            "10/11/2024",
-            "Sáng (8-12h)",
-            "completed",
-            "Hoàng Văn E",
-            "Quận Tân Bình, TP.HCM"
-        ));
-
-        return bookings;
+        return new ArrayList<>();
     }
 
     public static List<Booking> getCancelledBookings() {
-        List<Booking> bookings = new ArrayList<>();
-
-        bookings.add(new Booking(
-            "6",
-            "Phòng trọ giá rẻ cho sinh viên",
-            "1.5 triệu/tháng",
-            "05/11/2024",
-            "Chiều (13-17h)",
-            "cancelled",
-            "Vũ Thị F",
-            "Quận Bình Thạnh, TP.HCM"
-        ));
-
-        return bookings;
+        return new ArrayList<>();
     }
-
-    // ==================== NOTIFICATIONS DATA ====================
 
     public static List<Notification> getNotifications() {
         List<Notification> notifications = new ArrayList<>();
-
-        notifications.add(new Notification(
-            "Lịch hẹn được xác nhận",
-            "Chủ trọ đã xác nhận lịch xem phòng của bạn vào 20/12/2024 lúc 9:00",
-            "2 giờ trước",
-            "calendar",
-            false
-        ));
-
-        notifications.add(new Notification(
-            "Tin đăng mới phù hợp",
-            "Có 3 tin đăng mới ở Quận 10 phù hợp với tìm kiếm của bạn",
-            "5 giờ trước",
-            "home",
-            false
-        ));
-
-        notifications.add(new Notification(
-            "Nhắc nhở lịch hẹn",
-            "Bạn có lịch xem phòng vào ngày mai lúc 14:00",
-            "1 ngày trước",
-            "calendar",
-            true
-        ));
-
-        notifications.add(new Notification(
-            "Giá phòng thay đổi",
-            "Phòng trọ bạn đã lưu có thay đổi giá từ 2.5tr → 2.3tr/tháng",
-            "2 ngày trước",
-            "home",
-            true
-        ));
-
-        notifications.add(new Notification(
-            "Chủ trọ gửi tin nhắn",
-            "Bạn có tin nhắn mới từ chủ trọ về lịch xem phòng",
-            "3 ngày trước",
-            "message",
-            true
-        ));
-
+        notifications.add(new Notification("Lịch hẹn được xác nhận", "Chủ trọ đã xác nhận lịch xem phòng của bạn.", "2 giờ trước", "calendar", false));
+        notifications.add(new Notification("Tin đăng mới phù hợp", "Có 3 tin đăng mới phù hợp với tìm kiếm của bạn.", "5 giờ trước", "home", false));
         return notifications;
     }
 
-    // ==================== LANDLORD DATA ====================
+    // ==================== 2. LANDLORD DATA (Dữ liệu cho Chủ trọ) ====================
 
+    /**
+     * Cấu trúc dữ liệu cũ để tương thích với AllListingsAdapter
+     */
     public static class LandlordData {
 
         public static class ListingItem {
             public String title;
             public String price;
-            public String status;
+            public String status; // "Còn trống", "Đã thuê", "Chờ xử lý"
             public boolean isActive;
 
             public ListingItem(String title, String price, String status, boolean isActive) {
@@ -263,59 +218,25 @@ public class MockData {
             }
         }
 
+        /**
+         * Lấy danh sách tin đăng cho trang quản lý của chủ trọ
+         */
         public static List<ListingItem> getListings() {
             List<ListingItem> listings = new ArrayList<>();
 
-            listings.add(new ListingItem(
-                "Phòng trọ gần ĐH Bách Khoa",
-                "2.500.000 đ",
-                "Còn trống",
-                true
-            ));
-
-            listings.add(new ListingItem(
-                "Chung cư mini full nội thất",
-                "3.200.000 đ",
-                "Đã thuê",
-                true
-            ));
-
-            listings.add(new ListingItem(
-                "Phòng sinh viên giá rẻ",
-                "1.800.000 đ",
-                "Chờ xử lý",
-                false
-            ));
-
-            listings.add(new ListingItem(
-                "Studio cao cấp view đẹp",
-                "4.500.000 đ",
-                "Còn trống",
-                true
-            ));
-
-            listings.add(new ListingItem(
-                "Căn hộ dịch vụ",
-                "6.000.000 đ",
-                "Còn trống",
-                true
-            ));
-
-            listings.add(new ListingItem(
-                "Phòng có gác lửng",
-                "2.200.000 đ",
-                "Đã thuê",
-                false
-            ));
+            listings.add(new ListingItem("Phòng trọ cao cấp gần ĐH Bách Khoa", "3.500.000 đ", "Còn trống", true));
+            listings.add(new ListingItem("Căn hộ mini view biển Mỹ Khê", "5.500.000 đ", "Còn trống", true));
+            listings.add(new ListingItem("Phòng trọ giá rẻ cho sinh viên", "1.800.000 đ", "Đã thuê", false));
+            listings.add(new ListingItem("Studio hiện đại full nội thất", "4.500.000 đ", "Còn trống", true));
+            listings.add(new ListingItem("Phòng có gác lửng tiện nghi", "2.800.000 đ", "Chờ xử lý", true));
+            listings.add(new ListingItem("Chung cư mini cao cấp", "6.000.000 đ", "Còn trống", true));
 
             return listings;
         }
     }
-    // ==================== UTILITY ITEMS DATA ====================
 
-    /**
-     * Model class cho các tiện ích trong danh sách
-     */
+    // ==================== 3. UTILITIES (Tiện ích) ====================
+
     public static class UtilityItem {
         private int icon;
         private String title;
@@ -329,24 +250,39 @@ public class MockData {
             this.targetActivity = targetActivity;
         }
 
-        // Getters
         public int getIcon() { return icon; }
         public String getTitle() { return title; }
         public String getDescription() { return description; }
         public Class<?> getTargetActivity() { return targetActivity; }
     }
 
-    /**
-     * Lấy danh sách các tiện ích cho chủ trọ
-     */
     public static List<UtilityItem> getLandlordUtilities() {
         List<UtilityItem> utilities = new ArrayList<>();
+        // Trả về danh sách tiện ích cho chủ trọ (như code cũ)
+        utilities.add(new UtilityItem(R.drawable.ic_add, "Thêm tin trọ", "Đăng tin cho thuê phòng trọ mới", com.example.QuanLyPhongTro_App.ui.landlord.EditTin.class)); // Placeholder class
+        utilities.add(new UtilityItem(R.drawable.ic_list, "Danh sách tin đăng", "Xem và quản lý tin đăng", com.example.QuanLyPhongTro_App.ui.landlord.AllListingsActivity.class)); // Placeholder
+        return utilities;
+    }
+
+    public static List<UtilityItem> getTenantUtilities() {
+        List<UtilityItem> utilities = new ArrayList<>();
+        // Trả về danh sách tiện ích cho người thuê
+        utilities.add(new UtilityItem(R.drawable.ic_search, "Tìm phòng trọ", "Tìm kiếm phòng trọ phù hợp", com.example.QuanLyPhongTro_App.ui.tenant.MainActivity.class));
+        return utilities;
+    }
 
         utilities.add(new UtilityItem(
                 R.drawable.ic_add,
                 "Thêm tin trọ",
                 "Đăng tin cho thuê phòng trọ mới",
                 com.example.QuanLyPhongTro_App.ui.landlord.EditTin.class
+        ));
+
+        utilities.add(new UtilityItem(
+                R.drawable.ic_list,
+                "Danh sách tin đăng",
+                "Xem và quản lý tất cả tin đăng",
+                com.example.QuanLyPhongTro_App.ui.landlord.AllListingsActivity.class
         ));
 
         utilities.add(new UtilityItem(
@@ -357,78 +293,12 @@ public class MockData {
         ));
 
         utilities.add(new UtilityItem(
-                R.drawable.ic_list,
-                "Danh sách tin đăng",
-                "Xem và quản lý tất cả tin đăng của bạn",
-                com.example.QuanLyPhongTro_App.ui.landlord.AllListingsActivity.class
-        ));
-
-        utilities.add(new UtilityItem(
                 R.drawable.ic_analytics,
                 "Thống kê",
                 "Xem báo cáo và thống kê tin đăng",
                 com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class
         ));
 
-        utilities.add(new UtilityItem(
-                R.drawable.ic_request,
-                "Yêu cầu thuê",
-                "Quản lý yêu cầu thuê từ người dùng",
-                com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class
-        ));
-
-        utilities.add(new UtilityItem(
-                R.drawable.ic_message,
-                "Tin nhắn",
-                "Quản lý tin nhắn với người thuê",
-                com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class
-        ));
-
-        utilities.add(new UtilityItem(
-                R.drawable.ic_settings,
-                "Cài đặt",
-                "Cài đặt tài khoản và ứng dụng",
-                com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class
-        ));
-
-        return utilities;
-    }
-
-    /**
-     * Lấy danh sách các tiện ích cho người thuê
-     */
-    public static List<UtilityItem> getTenantUtilities() {
-        List<UtilityItem> utilities = new ArrayList<>();
-
-        utilities.add(new UtilityItem(
-                R.drawable.ic_search,
-                "Tìm phòng trọ",
-                "Tìm kiếm phòng trọ phù hợp",
-                com.example.QuanLyPhongTro_App.ui.tenant.MainActivity.class
-        ));
-
-        utilities.add(new UtilityItem(
-                R.drawable.ic_saved,
-                "Phòng đã lưu",
-                "Xem lại các phòng trọ đã lưu",
-                com.example.QuanLyPhongTro_App.ui.tenant.MainActivity.class
-        ));
-
-        utilities.add(new UtilityItem(
-                R.drawable.ic_booking,
-                "Lịch hẹn xem phòng",
-                "Quản lý lịch hẹn xem phòng",
-                com.example.QuanLyPhongTro_App.ui.tenant.MainActivity.class
-        ));
-
-        utilities.add(new UtilityItem(
-                R.drawable.ic_notification,
-                "Thông báo",
-                "Xem thông báo và cập nhật",
-                com.example.QuanLyPhongTro_App.ui.tenant.MainActivity.class
-        ));
-
         return utilities;
     }
 }
-
