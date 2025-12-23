@@ -72,7 +72,17 @@ public class AdvancedFilterBottomSheet extends BottomSheetDialogFragment {
     }
 
     private void setupSpinner() {
-        String[] areas = {"Chọn quận/khu vực", "Quận 1", "Quận 2", "Quận 3", "Quận 5", "Quận 7", "Quận 10"};
+        // Cập nhật danh sách quận theo dữ liệu Đà Nẵng
+        String[] areas = {
+            "Chọn quận/khu vực",
+            "Quận Liên Chiểu",
+            "Quận Sơn Trà",
+            "Quận Thanh Khê",
+            "Quận Hải Châu",
+            "Quận Cẩm Lệ",
+            "Quận Ngũ Hành Sơn",
+            "Huyện Hòa Vang"
+        };
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_item, areas);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

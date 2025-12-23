@@ -37,6 +37,11 @@ public class MockData {
                 true, false, "2024-05-20"
         );
         room1.setImageResId(R.drawable.room_1);
+        room1.setRoomType("Phòng riêng");
+        ArrayList<String> amenities1 = new ArrayList<>();
+        amenities1.add("Máy lạnh");
+        amenities1.add("Wi-Fi");
+        room1.setAmenities(amenities1);
         rooms.add(room1);
 
         // Phòng 2
@@ -54,6 +59,13 @@ public class MockData {
                 false, true, "2024-05-15"
         );
         room2.setImageResId(R.drawable.room_2);
+        room2.setRoomType("Nguyên căn");
+        ArrayList<String> amenities2 = new ArrayList<>();
+        amenities2.add("Máy lạnh");
+        amenities2.add("Wi-Fi");
+        amenities2.add("WC riêng");
+        amenities2.add("Giữ xe");
+        room2.setAmenities(amenities2);
         rooms.add(room2);
 
         // Phòng 3
@@ -71,6 +83,10 @@ public class MockData {
                 false, false, "2024-05-10"
         );
         room3.setImageResId(R.drawable.room_3);
+        room3.setRoomType("Phòng riêng");
+        ArrayList<String> amenities3 = new ArrayList<>();
+        amenities3.add("Wi-Fi");
+        room3.setAmenities(amenities3);
         rooms.add(room3);
 
         // Phòng 4
@@ -88,6 +104,12 @@ public class MockData {
                 true, false, "2024-05-25"
         );
         room4.setImageResId(R.drawable.room_4);
+        room4.setRoomType("Phòng riêng");
+        ArrayList<String> amenities4 = new ArrayList<>();
+        amenities4.add("Máy lạnh");
+        amenities4.add("Wi-Fi");
+        amenities4.add("WC riêng");
+        room4.setAmenities(amenities4);
         rooms.add(room4);
 
         // Phòng 5
@@ -105,6 +127,11 @@ public class MockData {
                 false, false, "2024-05-18"
         );
         room5.setImageResId(R.drawable.room_5);
+        room5.setRoomType("Phòng riêng");
+        ArrayList<String> amenities5 = new ArrayList<>();
+        amenities5.add("Wi-Fi");
+        amenities5.add("Giữ xe");
+        room5.setAmenities(amenities5);
         rooms.add(room5);
 
         // Phòng 6
@@ -122,6 +149,13 @@ public class MockData {
                 true, true, "2024-05-28"
         );
         room6.setImageResId(R.drawable.room_6);
+        room6.setRoomType("Nguyên căn");
+        ArrayList<String> amenities6 = new ArrayList<>();
+        amenities6.add("Máy lạnh");
+        amenities6.add("Wi-Fi");
+        amenities6.add("WC riêng");
+        amenities6.add("Giữ xe");
+        room6.setAmenities(amenities6);
         rooms.add(room6);
 
         // Phòng 7
@@ -139,6 +173,11 @@ public class MockData {
                 false, false, "2024-05-22"
         );
         room7.setImageResId(R.drawable.room_7);
+        room7.setRoomType("Phòng riêng");
+        ArrayList<String> amenities7 = new ArrayList<>();
+        amenities7.add("Máy lạnh");
+        amenities7.add("Wi-Fi");
+        room7.setAmenities(amenities7);
         rooms.add(room7);
 
         // Phòng 8
@@ -156,6 +195,13 @@ public class MockData {
                 false, true, "2024-05-12"
         );
         room8.setImageResId(R.drawable.room_8);
+        room8.setRoomType("Nguyên căn");
+        ArrayList<String> amenities8 = new ArrayList<>();
+        amenities8.add("Máy lạnh");
+        amenities8.add("Wi-Fi");
+        amenities8.add("WC riêng");
+        amenities8.add("Giữ xe");
+        room8.setAmenities(amenities8);
         rooms.add(room8);
 
         return rooms;
