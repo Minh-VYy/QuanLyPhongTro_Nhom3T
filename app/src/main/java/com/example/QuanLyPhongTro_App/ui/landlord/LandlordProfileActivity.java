@@ -67,8 +67,8 @@ public class LandlordProfileActivity extends AppCompatActivity {
 
     private void setupButtons() {
         btnEditProfile.setOnClickListener(v -> {
-            // TODO: Open edit profile
-            showComingSoon();
+            Intent intent = new Intent(this, LandlordEditProfileActivity.class);
+            startActivity(intent);
         });
 
         btnSettings.setOnClickListener(v -> {

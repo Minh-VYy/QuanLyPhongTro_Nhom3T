@@ -66,10 +66,15 @@
         <activity android:name=".ui.landlord.EditTin" />
         <activity android:name=".ui.landlord.TroGiup" />
         <activity android:name=".ui.landlord.AllListingsActivity" />
+<<<<<<< HEAD
         <activity
             android:name=".ui.tenant.MessageDetailActivity"
             android:exported="false"
             />
+=======
+        <activity android:name=".ui.landlord.LandlordEditProfileActivity"/>
+
+>>>>>>> hoang
     </application>
 
 </manifest>
