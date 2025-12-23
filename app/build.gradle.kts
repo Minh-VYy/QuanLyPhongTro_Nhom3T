@@ -46,4 +46,12 @@ dependencies {
     annotationProcessor("com.github.bumptech.glide:compiler:5.0.5")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
 
+    val room_version = "2.6.1"
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor("androidx.room:room-compiler:$room_version")
+
+    // Retrofit for API calls
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
+    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+
 }
