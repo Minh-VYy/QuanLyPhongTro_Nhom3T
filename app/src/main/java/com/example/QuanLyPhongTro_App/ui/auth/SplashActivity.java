@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.QuanLyPhongTro_App.R;
 import com.example.QuanLyPhongTro_App.ui.tenant.MainActivity;
+import com.example.QuanLyPhongTro_App.utils.SessionManager;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -24,6 +25,10 @@ public class SplashActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
+
+        // Xóa tất cả session trước đó để luôn bắt đầu ở chế độ khách vãng lai
+        SessionManager sessionManager = new SessionManager(this);
+        sessionManager.logout();
 
         // Sau 2 giây, chuyển sang màn hình Home (Guest Mode)
         new Handler(Looper.getMainLooper()).postDelayed(() -> {

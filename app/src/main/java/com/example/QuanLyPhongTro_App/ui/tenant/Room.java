@@ -1,6 +1,7 @@
 package com.example.QuanLyPhongTro_App.ui.tenant;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * Model class cho Room (Phòng trọ)
@@ -40,6 +41,10 @@ public class Room implements Serializable {
     private boolean isPromo;           // Có khuyến mãi
     private boolean isSaved;           // Đã lưu vào danh sách yêu thích
     private String createdDate;        // Ngày đăng tin - VD: "2024-01-15"
+    
+    // ========== THÔNG TIN BỔ SUNG CHO LỌC ==========
+    private String roomType;           // Loại phòng: "Nguyên căn", "Phòng riêng", "Ở ghép"
+    private ArrayList<String> amenities; // Danh sách tiện nghi
 
     // ========== CONSTRUCTORS ==========
 
@@ -223,6 +228,8 @@ public class Room implements Serializable {
     public boolean isPromo() { return isPromo; }
     public boolean isSaved() { return isSaved; }
     public String getCreatedDate() { return createdDate; }
+    public String getRoomType() { return roomType; }
+    public ArrayList<String> getAmenities() { return amenities; }
 
     // ========== SETTERS ==========
     public void setId(int id) { this.id = id; }
@@ -248,6 +255,8 @@ public class Room implements Serializable {
     public void setPromo(boolean isPromo) { this.isPromo = isPromo; }
     public void setSaved(boolean saved) { isSaved = saved; }
     public void setCreatedDate(String createdDate) { this.createdDate = createdDate; }
+    public void setRoomType(String roomType) { this.roomType = roomType; }
+    public void setAmenities(ArrayList<String> amenities) { this.amenities = amenities; }
 
     // Giữ lại getter cũ để tương thích (deprecated)
     @Deprecated
