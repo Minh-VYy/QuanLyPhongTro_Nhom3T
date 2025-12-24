@@ -16,6 +16,8 @@ import com.example.QuanLyPhongTro_App.R;
 import com.example.QuanLyPhongTro_App.ui.landlord.Landlord;
 import com.example.QuanLyPhongTro_App.ui.landlord.LandlordDao;
 import com.example.QuanLyPhongTro_App.ui.tenant.MainActivity;
+import com.example.QuanLyPhongTro_App.ui.tenant.Tenant;
+import com.example.QuanLyPhongTro_App.ui.tenant.TenantDao;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -82,14 +84,18 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
+        // Disable login button to prevent multiple clicks
+        btnLogin.setEnabled(false);
+        btnLogin.setText("Đang đăng nhập...");
+
         if ("landlord".equals(targetRole)) {
-            new LoginTask().execute(email, password);
+            new LandlordLoginTask().execute(email, password);
         } else {
-            Toast.makeText(this, "Chức năng đăng nhập cho người thuê chưa được triển khai.", Toast.LENGTH_LONG).show();
+            new TenantLoginTask().execute(email, password);
         }
     }
 
-    private class LoginTask extends AsyncTask<String, Void, Landlord> {
+    private class LandlordLoginTask extends AsyncTask<String, Void, Landlord> {
         private String errorMsg = null;
 
         @Override
@@ -106,9 +112,9 @@ public class LoginActivity extends AppCompatActivity {
             Landlord landlord = null;
 
             // --- IMPORTANT DEBUG LOGGING ---
-            Log.d("LoginTask", "Attempting to log in with:");
-            Log.d("LoginTask", "Email: [" + email + "]");
-            Log.d("LoginTask", "PasswordHash: [" + password + "] (This should match DB value)");
+            Log.d("LandlordLoginTask", "Attempting to log in with:");
+            Log.d("LandlordLoginTask", "Email: [" + email + "]");
+            Log.d("LandlordLoginTask", "PasswordHash: [" + password + "] (This should match DB value)");
 
             try {
                 Class.forName("net.sourceforge.jtds.jdbc.Driver");
@@ -122,13 +128,13 @@ public class LoginActivity extends AppCompatActivity {
 
             } catch (ClassNotFoundException | SQLException e) {
                 errorMsg = e.getMessage();
-                Log.e("LoginTask", "Login Error: " + errorMsg, e);
+                Log.e("LandlordLoginTask", "Login Error: " + errorMsg, e);
             } finally {
                 if (connection != null) {
                     try {
                         connection.close();
                     } catch (SQLException e) {
-                        Log.e("LoginTask", "Error closing connection", e);
+                        Log.e("LandlordLoginTask", "Error closing connection", e);
                     }
                 }
             }
@@ -138,11 +144,13 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Landlord landlord) {
             super.onPostExecute(landlord);
-            // Optional: Hide the progress bar
+            // Re-enable login button
+            btnLogin.setEnabled(true);
+            btnLogin.setText("Đăng Nhập");
 
             if (landlord != null) {
                 // Login successful
-                loginSuccess(landlord.getEmail(), landlord.getNguoiDungId(), landlord.getHoTen(), "landlord");
+                loginSuccessLandlord(landlord.getEmail(), landlord.getNguoiDungId(), landlord.getHoTen(), "landlord");
             } else {
                 // Login failed
                 if (errorMsg != null) {
@@ -154,7 +162,77 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private void loginSuccess(String email, String userId, String userName, String userType) {
+    private class TenantLoginTask extends AsyncTask<String, Void, Tenant> {
+        private String errorMsg = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // Optional: Show a progress bar
+        }
+
+        @Override
+        protected Tenant doInBackground(String... params) {
+            String email = params[0];
+            String password = params[1];
+            Connection connection = null;
+            Tenant tenant = null;
+
+            Log.d("TenantLoginTask", "Attempting tenant login with:");
+            Log.d("TenantLoginTask", "Email: [" + email + "]");
+
+            try {
+                Class.forName("net.sourceforge.jtds.jdbc.Driver");
+                String url = "jdbc:jtds:sqlserver://" + IP + ":" + PORT + "/" + DATABASE;
+                connection = DriverManager.getConnection(url, USERNAME, PASSWORD);
+
+                if (connection != null) {
+                    TenantDao tenantDao = new TenantDao();
+                    tenant = tenantDao.login(connection, email, password);
+                    
+                    // Update last login time if successful
+                    if (tenant != null) {
+                        tenantDao.updateLastLogin(connection, tenant.getNguoiDungId());
+                    }
+                }
+
+            } catch (ClassNotFoundException | SQLException e) {
+                errorMsg = e.getMessage();
+                Log.e("TenantLoginTask", "Login Error: " + errorMsg, e);
+            } finally {
+                if (connection != null) {
+                    try {
+                        connection.close();
+                    } catch (SQLException e) {
+                        Log.e("TenantLoginTask", "Error closing connection", e);
+                    }
+                }
+            }
+            return tenant;
+        }
+
+        @Override
+        protected void onPostExecute(Tenant tenant) {
+            super.onPostExecute(tenant);
+            // Re-enable login button
+            btnLogin.setEnabled(true);
+            btnLogin.setText("Đăng Nhập");
+
+            if (tenant != null) {
+                // Login successful
+                loginSuccessTenant(tenant.getEmail(), tenant.getNguoiDungId(), tenant.getHoTen(), "tenant");
+            } else {
+                // Login failed
+                if (errorMsg != null) {
+                    Toast.makeText(LoginActivity.this, "Lỗi kết nối: " + errorMsg, Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(LoginActivity.this, "Tên đăng nhập hoặc mật khẩu không đúng.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
+
+    private void loginSuccessLandlord(String email, String userId, String userName, String userType) {
         sessionManager.createLoginSession(userId, userName, email, userType);
         sessionManager.setLandlordStatus(true);
         sessionManager.setDisplayRole(userType);
@@ -162,6 +240,19 @@ public class LoginActivity extends AppCompatActivity {
         Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
 
         Intent intent = new Intent(this, com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void loginSuccessTenant(String email, String userId, String userName, String userType) {
+        sessionManager.createLoginSession(userId, userName, email, userType);
+        sessionManager.setLandlordStatus(false);
+        sessionManager.setDisplayRole(userType);
+
+        Toast.makeText(this, "Chào mừng " + userName + "!", Toast.LENGTH_SHORT).show();
+
+        Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish();
