@@ -11,11 +11,11 @@
     android:paddingBottom="12dp"
     android:gravity="center_vertical">
 
-    <!-- Icon Circle -->
+    <!-- Icon Circle - Màu xanh dương -->
     <LinearLayout
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:background="@drawable/circle_background_purple_light"
+        android:background="@drawable/circle_background_blue_light"
         android:gravity="center">
 
         <ImageView
@@ -23,7 +23,7 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:src="@drawable/ic_calendar"
-            app:tint="#7c3aed" />
+            app:tint="@color/primary_blue" />
 
     </LinearLayout>
 
