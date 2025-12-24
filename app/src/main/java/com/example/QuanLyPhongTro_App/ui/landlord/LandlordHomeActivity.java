@@ -19,6 +19,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.Normalizer;
+import java.util.regex.Pattern;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
@@ -281,10 +284,24 @@ public class LandlordHomeActivity extends AppCompatActivity {
         if (tvActive != null) tvActive.setText(String.valueOf(activeCount));
     }
 
+    public void afterTextChanged(Editable s) {
+        currentKeyword = normalizeText(s.toString().trim());
+    }
+
+
+    private String normalizeText(String text) {
+        if (text == null) return "";
+        String normalized = Normalizer.normalize(text, Normalizer.Form.NFD);
+        return Pattern.compile("\\p{InCombiningDiacriticalMarks}+")
+                .matcher(normalized)
+                .replaceAll("")
+                .toLowerCase();
+    }
+
     private void setupSearchAndFilter() {
         // Tìm kiếm khi nhấn nút search
         searchButton.setOnClickListener(v -> {
-            currentKeyword = searchInput.getText().toString().trim().toLowerCase();
+            currentKeyword = normalizeText(searchInput.getText().toString().trim());
             applyAllFilters();
             hideKeyboard();
         });
@@ -292,7 +309,7 @@ public class LandlordHomeActivity extends AppCompatActivity {
         // Tìm kiếm khi nhấn Enter trên bàn phím
         searchInput.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                currentKeyword = searchInput.getText().toString().trim().toLowerCase();
+                currentKeyword = normalizeText(searchInput.getText().toString().trim());
                 applyAllFilters();
                 hideKeyboard();
                 return true;
@@ -313,11 +330,10 @@ public class LandlordHomeActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 currentKeyword = s.toString().trim().toLowerCase();
-                // Nếu muốn tìm kiếm realtime, bỏ comment dòng dưới:
-                // applyAllFilters();
             }
         });
     }
+
 
     private void applyAllFilters() {
         filteredListings.clear();
@@ -325,10 +341,10 @@ public class LandlordHomeActivity extends AppCompatActivity {
         // Áp dụng cả 3 loại filter: keyword, status, active
         for (LandlordListing listing : allListings) {
             // Kiểm tra keyword
-            boolean matchesKeyword = currentKeyword.isEmpty() ||
-                    listing.title.toLowerCase().contains(currentKeyword) ||
-                    listing.price.toLowerCase().contains(currentKeyword) ||
-                    listing.status.toLowerCase().contains(currentKeyword);
+            boolean matchesKeyword = currentKeyword.isEmpty()
+                    || normalizeText(listing.title).contains(currentKeyword)
+                    || normalizeText(listing.price).contains(currentKeyword)
+                    || normalizeText(listing.status).contains(currentKeyword);
 
             // Kiểm tra status
             boolean matchesStatus = currentStatusFilter.equals("all") ||
