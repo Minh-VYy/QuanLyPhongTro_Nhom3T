@@ -1,7 +1,19 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- Base application theme - Night Mode -->
+    <!-- ĐÃ CẬP NHẬT: Định nghĩa màu xanh dương làm màu chính cho dark theme -->
     <style name="Base.Theme.ChuTro" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <!-- Màu chính xanh dương cho dark theme -->
+        <item name="colorPrimary">@color/primary_blue</item>
+        <item name="colorPrimaryDark">@color/primary_blue_dark</item>
+        <item name="colorPrimaryContainer">@color/primary_blue_lighter</item>
+        <item name="colorOnPrimaryContainer">@color/primary_blue_dark</item>
+        <item name="colorSecondary">@color/primary_blue</item>
+        <item name="colorSecondaryContainer">@color/primary_blue_lighter</item>
+        <item name="colorOnSecondaryContainer">@color/primary_blue_dark</item>
+        <item name="colorAccent">@color/primary_blue</item>
+        
+        <!-- Màu cho các button Material3 -->
+        <item name="materialButtonStyle">@style/Widget.App.Button</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.App.Button.Outlined</item>
     </style>
 </resources>
