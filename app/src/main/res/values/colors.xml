@@ -6,6 +6,20 @@
     <color name="primary_light">#E3F2FD</color>
     <color name="primary_TT">#FF2196F3</color>
 
+    <!-- Hệ thống màu xanh dương mới cho tenant UI -->
+    <color name="primary_blue">#4a90e2</color>
+    <color name="primary_blue_dark">#3a7bd5</color>
+    <color name="primary_blue_light">#63b3ed</color>
+    <color name="primary_blue_lighter">#e3f2fd</color>
+    
+    <!-- Màu gradient cho buttons -->
+    <color name="gradient_start">#4a90e2</color>
+    <color name="gradient_end">#63b3ed</color>
+    
+    <!-- Màu text trên nền xanh và text xanh -->
+    <color name="text_on_primary">#FFFFFF</color>
+    <color name="text_primary_blue">#4a90e2</color>
+
     <!-- Màu cơ bản -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
