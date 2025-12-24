@@ -72,7 +72,17 @@
         <activity android:name=".ui.landlord.EditTin" />
         <activity android:name=".ui.landlord.TroGiup" />
         <activity android:name=".ui.landlord.AllListingsActivity" />
+<<<<<<< HEAD
 
+=======
+        <activity
+            android:name=".ui.tenant.MessageDetailActivity"
+            android:exported="false" />
+        <activity android:name=".ui.landlord.LandlordEditProfileActivity"/>
+        <activity
+            android:name=".ui.chatbot.ChatbotActivity"
+            android:exported="false" />
+>>>>>>> 26753fc93360948aa995ca218c479715fbfc7ff1
     </application>
 
 </manifest>

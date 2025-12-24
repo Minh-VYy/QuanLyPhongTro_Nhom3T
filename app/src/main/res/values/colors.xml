@@ -44,4 +44,7 @@
     <color name="mau_xanh_dam">#059669</color>
     <color name="mau_xanh_nhe">#D1FAE5</color>
 
+    <!-- Chatbot colors -->
+    <color name="chip_background">#E3F2FD</color>
+
 </resources>

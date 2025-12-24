@@ -47,7 +47,8 @@
     <!-- ==================== 3. Nội dung cuộn (ScrollView) ==================== -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:scrollbars="none">
 
         <LinearLayout
@@ -101,7 +102,7 @@
                 android:id="@+id/areaSpinner"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:background="@drawable/spinner_backgroud"
+                android:background="@drawable/spinner_background"
                 android:padding="12dp"
                 android:layout_marginBottom="20dp" />
 
@@ -278,6 +279,8 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginTop="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="8dp"
         android:elevation="4dp"
         android:background="@android:color/white">
 
