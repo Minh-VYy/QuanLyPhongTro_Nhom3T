@@ -10,16 +10,13 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.MockData;
 import com.example.QuanLyPhongTro_App.utils.LandlordBottomNavigationHelper;
-import java.util.List;
 
 public class AllListingsActivity extends AppCompatActivity {
 
-    private RecyclerView rvAllListings;
     private LinearLayout layoutEmptyState;
     private TextView tvListingCount;
     private ImageView btnBack;
@@ -38,17 +35,14 @@ public class AllListingsActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        rvAllListings = findViewById(R.id.rv_all_listings);
-        layoutEmptyState = findViewById(R.id.layout_empty_state); // ĐÃ THAY ĐỔI
+        layoutEmptyState = findViewById(R.id.layout_empty_state);
         tvListingCount = findViewById(R.id.tv_listing_count);
         btnBack = findViewById(R.id.btn_back);
         spinnerFilter = findViewById(R.id.spinner_filter);
         btnCreateFirstListing = findViewById(R.id.btn_create_first_listing);
 
-        // Xử lý nút quay lại
         btnBack.setOnClickListener(v -> finish());
 
-        // Xử lý nút tạo tin đầu tiên
         btnCreateFirstListing.setOnClickListener(v -> {
             Intent intent = new Intent(this, EditTin.class);
             startActivity(intent);
@@ -56,7 +50,6 @@ public class AllListingsActivity extends AppCompatActivity {
     }
 
     private void setupFilter() {
-        // Tạo adapter cho spinner filter
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.listing_filter_options,
@@ -67,17 +60,9 @@ public class AllListingsActivity extends AppCompatActivity {
     }
 
     private void setupListings() {
-        // Lấy danh sách tin đăng từ MockData
-        List<MockData.LandlordData.ListingItem> listings = MockData.LandlordData.getListings();
-
-        // Cập nhật số lượng tin
-        updateListingCount(listings.size());
-
-        if (listings.isEmpty()) {
-            showEmptyState();
-        } else {
-            showListings(listings);
-        }
+        // Không làm gì cả, luôn hiển thị trạng thái trống
+        updateListingCount(0);
+        showEmptyState();
     }
 
     private void updateListingCount(int count) {
@@ -86,21 +71,13 @@ public class AllListingsActivity extends AppCompatActivity {
     }
 
     private void showEmptyState() {
-        layoutEmptyState.setVisibility(View.VISIBLE); // SỬ DỤNG layout_empty_state
-        rvAllListings.setVisibility(View.GONE);
-    }
-
-    private void showListings(List<MockData.LandlordData.ListingItem> listings) {
-        layoutEmptyState.setVisibility(View.GONE); // SỬ DỤNG layout_empty_state
-        rvAllListings.setVisibility(View.VISIBLE);
-
-        rvAllListings.setLayoutManager(new LinearLayoutManager(this));
-        AllListingsAdapter adapter = new AllListingsAdapter(listings, listing -> {
-            // Mở trang chỉnh sửa khi click vào tin đăng
-            Intent intent = new Intent(this, EditTin.class);
-            startActivity(intent);
-        });
-        rvAllListings.setAdapter(adapter);
+        if (layoutEmptyState != null) {
+            layoutEmptyState.setVisibility(View.VISIBLE);
+        }
+        RecyclerView rvAllListings = findViewById(R.id.rv_all_listings);
+        if (rvAllListings != null) {
+            rvAllListings.setVisibility(View.GONE);
+        }
     }
 
     private void setupBottomNavigation() {
@@ -110,7 +87,6 @@ public class AllListingsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Refresh dữ liệu khi quay lại từ EditTin
         setupListings();
         LandlordBottomNavigationHelper.setupBottomNavigation(this, "listings");
     }

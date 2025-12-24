@@ -17,7 +17,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_logo_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.QuanLyPhongTro_ChuTro">
+        android:theme="@style/Theme.QuanLyPhongTro_ChuTro"
+        android:usesCleartextTraffic="true">
 
         <!-- ============================================= -->
         <!-- SPLASH SCREEN - Màn hình khởi động -->
@@ -53,6 +54,11 @@
         <activity android:name=".ui.tenant.NotificationsActivity" />
         <activity android:name=".ui.tenant.ProfileActivity" />
         <activity android:name=".ui.tenant.EditProfileActivity" />
+        <activity android:name=".ui.tenant.DatabaseTestActivity" />
+        <activity
+            android:name=".ui.tenant.MessageDetailActivity"
+            android:exported="false"
+            />
 
         <!-- ============================================= -->
         <!-- LANDLORD ACTIVITIES - Chủ trọ -->
@@ -66,9 +72,6 @@
         <activity android:name=".ui.landlord.EditTin" />
         <activity android:name=".ui.landlord.TroGiup" />
         <activity android:name=".ui.landlord.AllListingsActivity" />
-        <activity
-            android:name=".ui.tenant.MessageDetailActivity"
-            android:exported="false" />
         <activity android:name=".ui.landlord.LandlordEditProfileActivity"/>
         <activity
             android:name=".ui.chatbot.ChatbotActivity"
