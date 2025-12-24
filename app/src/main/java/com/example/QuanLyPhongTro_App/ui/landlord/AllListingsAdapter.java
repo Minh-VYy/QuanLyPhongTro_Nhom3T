@@ -7,23 +7,37 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.MockData;
 
 import java.util.List;
 
 public class AllListingsAdapter extends RecyclerView.Adapter<AllListingsAdapter.ViewHolder> {
 
-    private final List<MockData.LandlordData.ListingItem> listings;
+    // Bước 1: Định nghĩa lại lớp ListingItem ngay tại đây
+    public static class ListingItem {
+        public String title;
+        public String price;
+        public String status;
+        public boolean isActive;
+
+        public ListingItem(String title, String price, String status, boolean isActive) {
+            this.title = title;
+            this.price = price;
+            this.status = status;
+            this.isActive = isActive;
+        }
+    }
+
+    // Bước 2: Thay đổi các tham chiếu để sử dụng ListingItem mới
+    private final List<ListingItem> listings;
     private final OnListingClickListener listener;
 
     public interface OnListingClickListener {
-        void onListingClick(MockData.LandlordData.ListingItem listing);
+        void onListingClick(ListingItem listing);
     }
 
-    public AllListingsAdapter(List<MockData.LandlordData.ListingItem> listings, OnListingClickListener listener) {
+    public AllListingsAdapter(List<ListingItem> listings, OnListingClickListener listener) {
         this.listings = listings;
         this.listener = listener;
     }
@@ -38,24 +52,21 @@ public class AllListingsAdapter extends RecyclerView.Adapter<AllListingsAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        MockData.LandlordData.ListingItem listing = listings.get(position);
+        ListingItem listing = listings.get(position);
 
         holder.tvTitle.setText(listing.title);
         holder.tvPrice.setText(listing.price);
         holder.tvStatus.setText(listing.status);
         holder.swActive.setChecked(listing.isActive);
 
-        // Set màu và background cho trạng thái
         setStatusStyle(holder.tvStatus, listing.status);
 
-        // Hiệu ứng click
         holder.cardView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onListingClick(listing);
             }
         });
 
-        // Xử lý switch active
         holder.swActive.setOnCheckedChangeListener((buttonView, isChecked) -> {
             listing.isActive = isChecked;
             String newStatus = isChecked ? "Còn trống" : "Không hoạt động";
@@ -63,7 +74,6 @@ public class AllListingsAdapter extends RecyclerView.Adapter<AllListingsAdapter.
             setStatusStyle(holder.tvStatus, newStatus);
         });
 
-        // Xử lý click edit
         holder.btnEdit.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onListingClick(listing);

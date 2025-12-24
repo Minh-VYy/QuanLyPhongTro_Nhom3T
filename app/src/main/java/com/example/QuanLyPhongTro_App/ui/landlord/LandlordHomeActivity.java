@@ -2,12 +2,10 @@ package com.example.QuanLyPhongTro_App.ui.landlord;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -20,7 +18,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.MockData;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
 import com.example.QuanLyPhongTro_App.ui.tenant.MainActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
@@ -30,10 +27,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Màn hình chính cho Chủ trọ (Landlord)
- * Hiển thị danh sách tin đăng và các chức năng quản lý.
- */
 public class LandlordHomeActivity extends AppCompatActivity {
 
     private SessionManager sessionManager;
@@ -53,7 +46,6 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         
-        // Kiểm tra quyền truy cập
         if (!sessionManager.isLoggedIn() || !"landlord".equals(sessionManager.getUserRole())) {
             Toast.makeText(this, "Vui lòng đăng nhập với tài khoản Chủ Trọ", Toast.LENGTH_LONG).show();
             Intent intent = new Intent(this, LoginActivity.class);
@@ -66,7 +58,7 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
         initViews();
         setupRoleSwitcher();
-        setupListings(); // Load danh sách tin đăng từ MockData
+        setupListings(); // Sửa lại để không dùng MockData
         setupQuickActions();
         setupBottomNavigation();
         setupFAB();
@@ -109,26 +101,11 @@ public class LandlordHomeActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Lấy dữ liệu tin đăng từ MockData và hiển thị lên RecyclerView
-     */
     private void setupListings() {
         rvListings.setLayoutManager(new GridLayoutManager(this, 2));
 
+        // Sử dụng danh sách trống vì MockData đã bị xóa
         List<LandlordListing> listings = new ArrayList<>();
-
-        // Lấy dữ liệu từ MockData (đã cập nhật)
-        List<MockData.LandlordData.ListingItem> mockListings = MockData.LandlordData.getListings();
-
-        // Map dữ liệu từ MockData sang model của Activity này (nếu cần thiết)
-        for (MockData.LandlordData.ListingItem item : mockListings) {
-            listings.add(new LandlordListing(
-                    item.title,
-                    item.price,
-                    item.status,
-                    item.isActive
-            ));
-        }
 
         ListingAdapter adapter = new ListingAdapter(listings, listing -> {
             Intent intent = new Intent(this, EditTin.class);
@@ -229,7 +206,6 @@ public class LandlordHomeActivity extends AppCompatActivity {
             holder.tvStatus.setText(listing.status);
             holder.swActive.setChecked(listing.isActive);
 
-            // Đổi màu trạng thái
             int colorRes = R.color.black;
             if ("Còn trống".equals(listing.status)) colorRes = R.color.success;
             else if ("Đã thuê".equals(listing.status)) colorRes = R.color.error;
