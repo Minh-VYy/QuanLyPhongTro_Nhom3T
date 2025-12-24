@@ -47,6 +47,7 @@ public class BookingListFragment extends Fragment {
         recyclerView = view.findViewById(R.id.bookingRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        // Sử dụng một danh sách trống vì MockData đã bị xóa
         adapter = new BookingAdapter(getContext(), getBookingList());
         recyclerView.setAdapter(adapter);
 
@@ -54,24 +55,7 @@ public class BookingListFragment extends Fragment {
     }
 
     private List<Booking> getBookingList() {
-        List<Booking> bookings = new ArrayList<>();
-
-        if ("pending".equals(bookingType)) {
-            bookings.addAll(com.example.QuanLyPhongTro_App.data.MockData.getPendingBookings());
-        } else if ("confirmed".equals(bookingType)) {
-            bookings.addAll(com.example.QuanLyPhongTro_App.data.MockData.getConfirmedBookings());
-        } else if ("completed".equals(bookingType)) {
-            bookings.addAll(com.example.QuanLyPhongTro_App.data.MockData.getCompletedBookings());
-        } else if ("cancelled".equals(bookingType)) {
-            bookings.addAll(com.example.QuanLyPhongTro_App.data.MockData.getCancelledBookings());
-        } else {
-            // "all" - load all bookings
-            bookings.addAll(com.example.QuanLyPhongTro_App.data.MockData.getPendingBookings());
-            bookings.addAll(com.example.QuanLyPhongTro_App.data.MockData.getConfirmedBookings());
-        }
-
-
-        return bookings;
+        // Trả về một danh sách trống vì không còn sử dụng MockData
+        return new ArrayList<>();
     }
 }
-

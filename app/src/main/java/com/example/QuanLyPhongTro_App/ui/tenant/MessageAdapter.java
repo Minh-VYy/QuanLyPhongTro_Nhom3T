@@ -1,81 +1,54 @@
 package com.example.QuanLyPhongTro_App.ui.tenant;
 
-import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
-// Import lớp Message model của bạn
-// import com.example.QuanLyPhongTro_App.model.Message;
 
 import java.util.List;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
 
-    private final Context context;
-    private final List<Message> messageList; // Thay Message bằng tên model của bạn
+    private static final int VIEW_TYPE_SENT = 1;
+    private static final int VIEW_TYPE_RECEIVED = 2;
 
-    public MessageAdapter(Context context, List<Message> messageList) {
-        this.context = context;
+    private final List<Message> messageList;
+
+    public MessageAdapter(List<Message> messageList) {
         this.messageList = messageList;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        Message message = messageList.get(position);
+        if (message.isSentByUser) {
+            return VIEW_TYPE_SENT;
+        } else {
+            return VIEW_TYPE_RECEIVED;
+        }
     }
 
     @NonNull
     @Override
     public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Ánh xạ layout item_landlord_message.xml
-        View view = LayoutInflater.from(context).inflate(R.layout.item_landlord_message, parent, false);
+        View view;
+        if (viewType == VIEW_TYPE_SENT) {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_message_sent, parent, false);
+        } else {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_message_received, parent, false);
+        }
         return new MessageViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
         Message message = messageList.get(position);
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Lệnh Intent để chuyển Activity
-                Intent intent = new Intent(context, MessageDetailActivity.class);
-
-                // Gửi ID hoặc đối tượng Message model qua Intent
-                intent.putExtra("message_id", message.getId());
-
-                // Bắt đầu Activity mới
-                context.startActivity(intent);
-            }
-        });
-        // Gán dữ liệu (Sử dụng ID từ item_landlord_message.xml)
-        holder.tvAvatarInitial.setText(message.getRequesterName().substring(0, 1));
-        holder.tvMsgName.setText(message.getRequesterName());
-        holder.tvMsgTime.setText(message.getSentTime());
-        holder.tvMsgPreview.setText(message.getPreview());
-
-        // 1. CHỨC NĂNG XEM CHI TIẾT (CLICK)
-        holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, MessageDetailActivity.class);
-            intent.putExtra("message_id", message.getId());
-
-            // QUAN TRỌNG: Thêm cờ FLAG_ACTIVITY_NEW_TASK nếu Context bạn dùng là Application Context
-            // Nếu Context là Activity Context, KHÔNG cần thêm dòng này.
-            // Nếu bạn không chắc, HÃY THỬ thêm dòng này:
-            // intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-            context.startActivity(intent);
-        });
-
-        // 2. CHỨC NĂNG XÓA (LONG CLICK) - Nếu không dùng Swipe-to-Dismiss
-        holder.itemView.setOnLongClickListener(v -> {
-            // Triển khai dialog xác nhận xóa tại đây
-            // hoặc gọi một interface để Activity/Fragment xử lý
-            return true;
-        });
+        holder.messageText.setText(message.text);
     }
 
     @Override
@@ -83,25 +56,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         return messageList.size();
     }
 
-    // Lớp ViewHolder
-    public static class MessageViewHolder extends RecyclerView.ViewHolder {
-        TextView tvAvatarInitial, tvMsgName, tvMsgTime, tvMsgPreview;
-        RelativeLayout itemContainer; // ID message_item_container từ XML
+    static class MessageViewHolder extends RecyclerView.ViewHolder {
+        TextView messageText;
 
-        public MessageViewHolder(@NonNull View itemView) {
+        MessageViewHolder(View itemView) {
             super(itemView);
-            tvAvatarInitial = itemView.findViewById(R.id.tv_avatar_initial);
-            tvMsgName = itemView.findViewById(R.id.tv_msg_name);
-            tvMsgTime = itemView.findViewById(R.id.tv_msg_time);
-            tvMsgPreview = itemView.findViewById(R.id.tv_msg_preview);
-            itemContainer = itemView.findViewById(R.id.message_item_container);
+            messageText = itemView.findViewById(R.id.messageText);
         }
-    }
-
-    // Hàm hỗ trợ xóa tin nhắn (nếu dùng Swipe-to-Dismiss)
-    public void deleteMessage(int position) {
-        // messageList.remove(position);
-        // notifyItemRemoved(position);
-        // *** LOGIC XÓA API/DB NÊN ĐƯỢC GỌI Ở ĐÂY HOẶC TRONG ACTIVITY ***
     }
 }
