@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/gradient_splash">
+
+    <!-- Logo TroTot - Hình tròn, to hơn -->
+    <FrameLayout
+        android:layout_width="240dp"
+        android:layout_height="240dp"
+        android:background="@drawable/logo_circle_background">
+
+        <ImageView
+            android:id="@+id/logo_trotot"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@mipmap/ic_logo_round"
+            android:contentDescription="Logo TroTot"
+            android:scaleType="centerInside"
+            android:padding="30dp" />
+    </FrameLayout>
+
+    <!-- Khẩu hiệu -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tìm Trọ Dễ Dàng"
+        android:textSize="16sp"
+        android:textColor="@color/mau_xam_dam"
+        android:layout_marginTop="10dp" />
+
+    <!-- Loading indicator -->
+    <ProgressBar
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="50dp"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/mau_xanh_chinh" />
+
+</LinearLayout>

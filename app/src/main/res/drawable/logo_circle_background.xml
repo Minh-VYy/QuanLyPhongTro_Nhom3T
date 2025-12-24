@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Shadow layer -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#1A000000" />
+        </shape>
+    </item>
+
+    <!-- White circle background -->
+    <item android:top="2dp" android:left="2dp" android:right="2dp" android:bottom="2dp">
+        <shape android:shape="oval">
+            <solid android:color="@color/mau_trang" />
+            <stroke
+                android:width="2dp"
+                android:color="@color/mau_xanh_chinh" />
+        </shape>
+    </item>
+</layer-list>
