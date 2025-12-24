@@ -123,16 +123,21 @@
 
             </LinearLayout>
 
-            <!-- Nút xem chi tiết -->
-            <Button
+            <!-- Nút xem chi tiết - gradient xanh dương với bo góc và hiệu ứng nổi -->
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/detailButton"
                 android:layout_width="match_parent"
                 android:layout_height="36dp"
-                android:background="@color/colorPrimary"
+                android:background="@drawable/button_primary_gradient"
+                app:backgroundTint="@null"
                 android:text="Xem chi tiết"
                 android:textAllCaps="false"
                 android:textColor="@android:color/white"
-                android:textSize="13sp" />
+                android:textSize="13sp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:cornerRadius="12dp"
+                app:elevation="2dp" />
 
         </LinearLayout>
 

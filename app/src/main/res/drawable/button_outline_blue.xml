@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Outline Button với viền xanh dương
+    Sử dụng cho các nút phụ như "Lưu tin", "Xem bản đồ", "Chỉ đường"
+    Nền trong suốt, viền xanh dương, text màu xanh
+    Corner radius 12dp để thống nhất với primary button
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Nền trong suốt -->
+    <solid android:color="@android:color/transparent" />
+    
+    <!-- Viền xanh dương 2dp -->
+    <stroke
+        android:width="2dp"
+        android:color="@color/primary_blue" />
+    
+    <!-- Bo góc 12dp để thống nhất với primary button -->
+    <corners android:radius="12dp" />
+</shape>
