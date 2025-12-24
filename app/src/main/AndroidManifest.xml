@@ -68,8 +68,11 @@
         <activity android:name=".ui.landlord.AllListingsActivity" />
         <activity
             android:name=".ui.tenant.MessageDetailActivity"
-            android:exported="false"
-            />
+            android:exported="false" />
+        <activity android:name=".ui.landlord.LandlordEditProfileActivity"/>
+        <activity
+            android:name=".ui.chatbot.ChatbotActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
