@@ -23,7 +23,6 @@ public class DangKyChuTroActivity extends AppCompatActivity {
     private EditText xacNhanMatKhauChuTro;
     private CheckBox dongYDieuKhoanChuTro;
     private Button btnDangKyChuTro;
-    private TextView chuyenNguoiThueDangKyChuTro;
     private TextView dangNhapChuTro;
     private SessionManager sessionManager;
 
@@ -42,23 +41,15 @@ public class DangKyChuTroActivity extends AppCompatActivity {
         // Ánh xạ các view
         hoTenChuTro = findViewById(R.id.ho_ten_chu_tro);
         emailChuTro = findViewById(R.id.email_chu_tro);
-        sdtChuTro = findViewById(R.id.sdt_chu_tro);
-        matKhauDangKyChuTro = findViewById(R.id.mat_khau_dang_ky_chu_tro);
+        sdtChuTro = findViewById(R.id.so_dien_thoai_chu_tro);
+        matKhauDangKyChuTro = findViewById(R.id.mat_khau_chu_tro);
         xacNhanMatKhauChuTro = findViewById(R.id.xac_nhan_mat_khau_chu_tro);
         dongYDieuKhoanChuTro = findViewById(R.id.dong_y_dieu_khoan_chu_tro);
         btnDangKyChuTro = findViewById(R.id.btn_dang_ky_chu_tro);
-        chuyenNguoiThueDangKyChuTro = findViewById(R.id.chuyen_nguoi_thue_dang_ky_chu_tro);
-        dangNhapChuTro = findViewById(R.id.dang_nhap_chu_tro);
+        dangNhapChuTro = findViewById(R.id.txt_goto_login_chu_tro);
 
         // Xử lý nút Đăng Ký
         btnDangKyChuTro.setOnClickListener(v -> xuLyDangKy());
-
-        // Xử lý Chuyển sang Người Thuê
-        chuyenNguoiThueDangKyChuTro.setOnClickListener(v -> {
-            Intent intent = new Intent(DangKyChuTroActivity.this, DangKyNguoiThueActivity.class);
-            startActivity(intent);
-            finish();
-        });
 
         // Xử lý Đăng Nhập
         dangNhapChuTro.setOnClickListener(v -> {

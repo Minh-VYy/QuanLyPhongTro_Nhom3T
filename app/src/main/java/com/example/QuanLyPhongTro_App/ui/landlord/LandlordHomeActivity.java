@@ -3,22 +3,16 @@ package com.example.QuanLyPhongTro_App.ui.landlord;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-<<<<<<< HEAD
-=======
 import android.text.Editable;
 import android.text.TextWatcher;
->>>>>>> 26753fc93360948aa995ca218c479715fbfc7ff1
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-<<<<<<< HEAD
-=======
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
->>>>>>> 26753fc93360948aa995ca218c479715fbfc7ff1
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
@@ -85,12 +79,8 @@ public class LandlordHomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_landlord_home);
 
         sessionManager = new SessionManager(this);
-<<<<<<< HEAD
-        
-=======
 
         // Kiểm tra quyền truy cập
->>>>>>> 26753fc93360948aa995ca218c479715fbfc7ff1
         if (!sessionManager.isLoggedIn() || !"landlord".equals(sessionManager.getUserRole())) {
             Toast.makeText(this, "Vui lòng đăng nhập với tài khoản Chủ Trọ", Toast.LENGTH_LONG).show();
             Intent intent = new Intent(this, LoginActivity.class);
@@ -103,13 +93,10 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
         initViews();
         setupRoleSwitcher();
-<<<<<<< HEAD
-        setupListings(); // Sửa lại để không dùng MockData
-=======
         setupListings();
         setupSearchAndFilter();
->>>>>>> 26753fc93360948aa995ca218c479715fbfc7ff1
         setupQuickActions();
+        setupMenuActions();
         setupBottomNavigation();
         setupFAB();
         setupChatbot();
@@ -245,34 +232,16 @@ public class LandlordHomeActivity extends AppCompatActivity {
     private void setupListings() {
         rvListings.setLayoutManager(new GridLayoutManager(this, 2));
 
-<<<<<<< HEAD
+        // Initialize lists
+        allListings.clear();
+        filteredListings.clear();
+
         // Sử dụng danh sách trống vì MockData đã bị xóa
         List<LandlordListing> listings = new ArrayList<>();
+        allListings.addAll(listings);
+        filteredListings.addAll(listings);
 
-        ListingAdapter adapter = new ListingAdapter(listings, listing -> {
-=======
-        // Lấy dữ liệu từ MockData
-        List<MockData.LandlordData.ListingItem> mockListings = MockData.LandlordData.getListings();
-
-        // Chuyển đổi sang LandlordListing
-        allListings.clear();
-        for (MockData.LandlordData.ListingItem item : mockListings) {
-            allListings.add(new LandlordListing(
-                    item.title,
-                    item.price,
-                    item.status,
-                    item.isActive,
-                    item.imageName
-            ));
-        }
-
-        // Sao chép sang filteredListings để hiển thị ban đầu
-        filteredListings.clear();
-        filteredListings.addAll(allListings);
-
-        // Tạo adapter
         adapter = new ListingAdapter(filteredListings, listing -> {
->>>>>>> 26753fc93360948aa995ca218c479715fbfc7ff1
             Intent intent = new Intent(this, EditTin.class);
             startActivity(intent);
         });
@@ -502,24 +471,7 @@ public class LandlordHomeActivity extends AppCompatActivity {
             holder.tvStatus.setText(listing.status);
             holder.swActive.setChecked(listing.isActive);
 
-<<<<<<< HEAD
-=======
-            // 🔥 LOAD ẢNH TỪ DRAWABLE
-            int imageResId = holder.itemView.getContext()
-                    .getResources()
-                    .getIdentifier(
-                            listing.imageName,
-                            "drawable",
-                            holder.itemView.getContext().getPackageName()
-                    );
-
-            if (imageResId != 0) {
-                holder.imgRoom.setImageResource(imageResId);
-            } else {
-                holder.imgRoom.setImageResource(R.drawable.room_1); // ảnh mặc định
-            }
             // Đổi màu trạng thái
->>>>>>> 26753fc93360948aa995ca218c479715fbfc7ff1
             int colorRes = R.color.black;
             if ("Còn trống".equals(listing.status)) colorRes = R.color.success;
             else if ("Đã thuê".equals(listing.status)) colorRes = R.color.error;
