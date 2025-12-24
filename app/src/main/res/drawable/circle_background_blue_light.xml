@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Circle Background Xanh Dương Nhạt
+    Sử dụng cho icon background trong menu profile
+    Màu: primary_blue_lighter (#e3f2fd)
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="#E3F2FD" />
+    <solid android:color="@color/primary_blue_lighter" />
 </shape>
-
