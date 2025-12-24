@@ -26,8 +26,9 @@ import java.util.ArrayList;
 
 public class YeuCau extends AppCompatActivity {
 
-    private TextView btnDatLich, btnTinNhan, btnThanhToan; // Sửa từ Button thành TextView
+    private TextView btnDatLich, btnTinNhan, btnThanhToan;
     private RecyclerView rvBookings, rvMessages, rvPayments;
+    private View tabIndicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +38,7 @@ public class YeuCau extends AppCompatActivity {
         btnDatLich = findViewById(R.id.btn_tab_datlich);
         btnTinNhan = findViewById(R.id.btn_tab_tinnhan);
         btnThanhToan = findViewById(R.id.btn_tab_thanhtoan);
+        tabIndicator = findViewById(R.id.tab_indicator);
 
         rvBookings = findViewById(R.id.rv_bookings);
         rvMessages = findViewById(R.id.rv_messages);
@@ -74,7 +76,7 @@ public class YeuCau extends AppCompatActivity {
         if (defaultTab != null && !defaultTab.isEmpty()) {
             showTab(defaultTab);
         } else {
-            showTab("tinnhan");
+            showTab("datlich");
         }
     }
 
@@ -89,12 +91,13 @@ public class YeuCau extends AppCompatActivity {
     }
 
     private void showTab(String tab) {
-        int mauChinh = ContextCompat.getColor(this, R.color.primary);
-        int mauKhong = Color.parseColor("#6B7280");
+        int primaryColor = ContextCompat.getColor(this, R.color.primary);
+        int mutedColor = ContextCompat.getColor(this, R.color.muted);
 
-        btnDatLich.setTextColor(mauKhong);
-        btnTinNhan.setTextColor(mauKhong);
-        btnThanhToan.setTextColor(mauKhong);
+        btnDatLich.setTextColor(mutedColor);
+        btnTinNhan.setTextColor(mutedColor);
+        btnThanhToan.setTextColor(mutedColor);
+        tabIndicator.setBackgroundColor(primaryColor);
 
         rvBookings.setVisibility(View.GONE);
         rvMessages.setVisibility(View.GONE);
@@ -103,15 +106,15 @@ public class YeuCau extends AppCompatActivity {
         switch (tab) {
             case "datlich":
                 rvBookings.setVisibility(View.VISIBLE);
-                btnDatLich.setTextColor(mauChinh);
+                btnDatLich.setTextColor(primaryColor);
                 break;
             case "tinnhan":
                 rvMessages.setVisibility(View.VISIBLE);
-                btnTinNhan.setTextColor(mauChinh);
+                btnTinNhan.setTextColor(primaryColor);
                 break;
             case "thanhtoan":
                 rvPayments.setVisibility(View.VISIBLE);
-                btnThanhToan.setTextColor(mauChinh);
+                btnThanhToan.setTextColor(primaryColor);
                 break;
         }
     }

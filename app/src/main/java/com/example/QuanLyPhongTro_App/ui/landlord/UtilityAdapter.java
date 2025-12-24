@@ -11,16 +11,37 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.MockData;
 
 import java.util.List;
 
 public class UtilityAdapter extends RecyclerView.Adapter<UtilityAdapter.ViewHolder> {
+
+    // Bước 1: Định nghĩa lại lớp UtilityItem ngay tại đây
+    public static class UtilityItem {
+        private int icon;
+        private String title;
+        private String description;
+        private Class<?> targetActivity;
+
+        public UtilityItem(int icon, String title, String description, Class<?> targetActivity) {
+            this.icon = icon;
+            this.title = title;
+            this.description = description;
+            this.targetActivity = targetActivity;
+        }
+
+        public int getIcon() { return icon; }
+        public String getTitle() { return title; }
+        public String getDescription() { return description; }
+        public Class<?> getTargetActivity() { return targetActivity; }
+    }
+
     private Context context;
-    private List<MockData.UtilityItem> utilityItems;
+    // Bước 2: Thay đổi các tham chiếu để sử dụng UtilityItem mới
+    private List<UtilityItem> utilityItems;
     private UtilityDialog dialog;
 
-    public UtilityAdapter(Context context, List<MockData.UtilityItem> utilityItems, UtilityDialog dialog) {
+    public UtilityAdapter(Context context, List<UtilityItem> utilityItems, UtilityDialog dialog) {
         this.context = context;
         this.utilityItems = utilityItems;
         this.dialog = dialog;
@@ -36,7 +57,7 @@ public class UtilityAdapter extends RecyclerView.Adapter<UtilityAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        MockData.UtilityItem item = utilityItems.get(position);
+        UtilityItem item = utilityItems.get(position);
 
         holder.icon.setImageResource(item.getIcon());
         holder.title.setText(item.getTitle());
@@ -44,11 +65,9 @@ public class UtilityAdapter extends RecyclerView.Adapter<UtilityAdapter.ViewHold
 
         holder.itemView.setOnClickListener(v -> {
             if (item.getTargetActivity() != null) {
-                // Đóng dialog trước
                 if (dialog != null && dialog.isShowing()) {
                     dialog.dismiss();
                 }
-                // Mở activity
                 Intent intent = new Intent(context, item.getTargetActivity());
                 context.startActivity(intent);
             }

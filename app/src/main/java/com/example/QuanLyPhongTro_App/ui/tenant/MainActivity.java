@@ -2,30 +2,20 @@ package com.example.QuanLyPhongTro_App.ui.tenant;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.api.ApiService;
-import com.example.QuanLyPhongTro_App.data.api.RetrofitClient;
-import com.example.QuanLyPhongTro_App.ui.auth.DangKyNguoiThueActivity;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
 
 import java.util.ArrayList;
-import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -49,43 +39,8 @@ public class MainActivity extends AppCompatActivity {
         initViews();
         setupRoleDropdown();
         setupBottomNavigation();
-        setupRoomRecyclerView();
+        setupRoomRecyclerView(); // Sẽ hiển thị danh sách rỗng
         setupFilterButton();
-
-        // Tải dữ liệu từ API
-        loadRoomsFromApi();
-    }
-
-    private void loadRoomsFromApi() {
-        ApiService apiService = RetrofitClient.getApiService();
-        Call<List<Room>> call = apiService.getRooms();
-
-        call.enqueue(new Callback<List<Room>>() {
-            @Override
-            public void onResponse(Call<List<Room>> call, Response<List<Room>> response) {
-                if (response.isSuccessful()) {
-                    List<Room> apiRooms = response.body();
-                    if (apiRooms != null) {
-                        roomList.clear();
-                        roomList.addAll(apiRooms);
-                        roomAdapter.notifyDataSetChanged();
-                        Toast.makeText(MainActivity.this, "Tải dữ liệu thành công!", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    // Xử lý lỗi từ server (ví dụ: 404 Not Found, 500 Internal Server Error)
-                    Toast.makeText(MainActivity.this, "Lỗi server: " + response.code(), Toast.LENGTH_LONG).show();
-                    Log.e("API_ERROR", "Response Code: " + response.code() + " - Message: " + response.message());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Room>> call, Throwable t) {
-                // Xử lý lỗi mạng (ví dụ: không có internet, sai URL, không kết nối được tới server)
-                Toast.makeText(MainActivity.this, "Lỗi kết nối mạng. Vui lòng kiểm tra lại URL và API của bạn.", Toast.LENGTH_LONG).show();
-                Log.e("API_FAILURE", "Lỗi: " + t.getMessage());
-                t.printStackTrace();
-            }
-        });
     }
 
     private void initViews() {
@@ -95,6 +50,33 @@ public class MainActivity extends AppCompatActivity {
         txtRolePrimary = roleSwitcher.findViewById(R.id.txtRolePrimary);
         txtRoleSecondary = roleSwitcher.findViewById(R.id.txtRoleSecondary);
         iconRole = roleSwitcher.findViewById(R.id.iconRole);
+    }
+
+    private void setupRoomRecyclerView() {
+        roomAdapter = new RoomAdapter(roomList, room -> {
+            Intent intent = new Intent(MainActivity.this, RoomDetailActivity.class);
+            intent.putExtra("room", room);
+            startActivity(intent);
+        });
+        roomRecyclerView.setAdapter(roomAdapter);
+    }
+
+    private void setupBottomNavigation() {
+        BottomNavigationHelper.setupBottomNavigation(this, "home");
+    }
+
+    private void setupFilterButton() {
+        btnFilter.setOnClickListener(v -> {
+            AdvancedFilterBottomSheet filterSheet = AdvancedFilterBottomSheet.newInstance();
+            filterSheet.show(getSupportFragmentManager(), "AdvancedFilter");
+        });
+        
+        // Long click để test database (hidden feature)
+        btnFilter.setOnLongClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, DatabaseTestActivity.class);
+            startActivity(intent);
+            return true;
+        });
     }
 
     private void setupRoleDropdown() {
@@ -167,30 +149,6 @@ public class MainActivity extends AppCompatActivity {
             txtRoleSecondary.setText("Chuyển vai trò");
             iconRole.setImageResource(R.drawable.ic_user);
         }
-    }
-
-    private void setupBottomNavigation() {
-        BottomNavigationHelper.setupBottomNavigation(this, "home");
-    }
-
-    private void setupRoomRecyclerView() {
-        // Khởi tạo adapter với danh sách rỗng ban đầu
-        roomAdapter = new RoomAdapter(roomList, room -> {
-            Intent intent = new Intent(MainActivity.this, RoomDetailActivity.class);
-            intent.putExtra("room", room);
-            startActivity(intent);
-        });
-
-        roomRecyclerView.setAdapter(roomAdapter);
-    }
-
-    private void setupFilterButton() {
-        btnFilter.setOnClickListener(v -> showAdvancedFilter());
-    }
-
-    public void showAdvancedFilter() {
-        AdvancedFilterBottomSheet filterSheet = AdvancedFilterBottomSheet.newInstance();
-        filterSheet.show(getSupportFragmentManager(), "AdvancedFilter");
     }
 
     @Override
