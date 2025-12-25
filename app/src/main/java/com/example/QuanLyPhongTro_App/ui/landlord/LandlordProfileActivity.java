@@ -299,9 +299,6 @@ public class LandlordProfileActivity extends AppCompatActivity {
                 updateUIWithProfile(profile);
             } else {
                 Log.w(TAG, "⚠️ Failed to load profile from database: " + errorMessage);
-                Toast.makeText(LandlordProfileActivity.this, 
-                    "Không thể tải thông tin hồ sơ từ database. Sử dụng dữ liệu tạm thời.", 
-                    Toast.LENGTH_LONG).show();
                 loadUserInfo(); // Fallback to session data
             }
         }

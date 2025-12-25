@@ -25,9 +25,13 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.List;
 import java.util.Locale;
 
@@ -219,9 +223,34 @@ public class BookingCreateActivity extends AppCompatActivity {
                 
                 // Lấy PhongId từ currentRoom
                 String phongId = null;
+                String chuTroId = null;
                 
                 if (currentRoom != null && currentRoom.getPhongId() != null) {
                     phongId = currentRoom.getPhongId();
+                    
+                    // Lấy ChuTroId từ database dựa trên PhongId
+                    String getChuTroQuery = "SELECT nt.ChuTroId FROM Phong p " +
+                                          "INNER JOIN NhaTro nt ON p.NhaTroId = nt.NhaTroId " +
+                                          "WHERE p.PhongId = ?";
+                    
+                    try (PreparedStatement stmt = conn.prepareStatement(getChuTroQuery)) {
+                        stmt.setString(1, phongId);
+                        try (ResultSet rs = stmt.executeQuery()) {
+                            if (rs.next()) {
+                                chuTroId = rs.getString("ChuTroId");
+                            }
+                        }
+                    }
+                    
+                    if (chuTroId == null) {
+                        final String finalError = "Không tìm thấy thông tin chủ trọ. Vui lòng thử lại.";
+                        runOnUiThread(() -> {
+                            Toast.makeText(this, finalError, Toast.LENGTH_LONG).show();
+                            btnConfirmBooking.setEnabled(true);
+                            btnConfirmBooking.setText("Xác nhận đặt lịch");
+                        });
+                        return;
+                    }
                 } else {
                     final String finalError = "Không tìm thấy thông tin phòng. Vui lòng chọn phòng từ danh sách.";
                     runOnUiThread(() -> {
@@ -234,6 +263,7 @@ public class BookingCreateActivity extends AppCompatActivity {
                 
                 datPhong.setPhongId(phongId);
                 datPhong.setNguoiThueId(sessionManager.getUserId());
+                datPhong.setChuTroId(chuTroId); // *** QUAN TRỌNG: Set ChuTroId ***
                 datPhong.setLoai("Xem phòng"); // Loại đặt lịch
                 
                 // Set thời gian bắt đầu (ngày + khung giờ)

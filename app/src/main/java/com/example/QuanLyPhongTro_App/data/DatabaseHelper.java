@@ -16,13 +16,10 @@ import java.util.concurrent.TimeUnit;
 public class DatabaseHelper {
     private static final String TAG = "DatabaseHelper";
     
-<<<<<<< HEAD
+
     // Database credentials - THAY ĐỔI THEO MÁY CHỦ CỦA BẠN
     private static final String IP = "172.26.98.234";
-=======
-    // Database credentials
-    private static final String IP = "172.26.98.219";
->>>>>>> 72f4d68c29696a544d76cadc9461c37ded9330d8
+
     private static final String PORT = "1433";
     private static final String DATABASE = "QuanLyPhongTro";
     private static final String USERNAME = "sa";

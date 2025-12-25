@@ -17,6 +17,8 @@ import java.sql.DriverManager;
 
 public class LandlordStatsActivity extends AppCompatActivity {
 
+    private static final String TAG = "LandlordStatsActivity";
+    
     private SessionManager sessionManager;
     private StatsDao statsDao;
     private TextView tvTotalRooms, tvOccupiedRooms, tvVacantRooms;
@@ -76,7 +78,7 @@ public class LandlordStatsActivity extends AppCompatActivity {
         if (tvOccupancyRate != null) tvOccupancyRate.setText("66.7%");
         if (tvApprovalRate != null) tvApprovalRate.setText("78.3%");
         
-        Toast.makeText(this, "Hiển thị dữ liệu mẫu", Toast.LENGTH_SHORT).show();
+        // Mock data loaded silently
     }
 
     private void setupBottomNavigation() {
@@ -161,25 +163,19 @@ public class LandlordStatsActivity extends AppCompatActivity {
                 Log.d("LandlordStats", "✅ Using REAL statistics from database");
                 displayRealStatistics(stats);
                 
-                Toast.makeText(LandlordStatsActivity.this, 
-                    "✅ Đã tải thống kê từ database", 
-                    Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "✅ Loaded statistics from database");
                     
             } else if (errorMsg != null) {
                 Log.e("LandlordStats", "❌ Database error, showing mock data: " + errorMsg);
                 loadMockStatistics();
                 
-                Toast.makeText(LandlordStatsActivity.this, 
-                    "⚠️ Lỗi database, hiển thị dữ liệu mẫu: " + errorMsg, 
-                    Toast.LENGTH_LONG).show();
+                Log.w(TAG, "⚠️ Database error, showing mock data: " + errorMsg);
                     
             } else {
                 Log.d("LandlordStats", "ℹ️ No statistics found, showing mock data");
                 loadMockStatistics();
                 
-                Toast.makeText(LandlordStatsActivity.this, 
-                    "ℹ️ Chưa có dữ liệu thống kê, hiển thị dữ liệu mẫu", 
-                    Toast.LENGTH_SHORT).show();
+                Log.i(TAG, "ℹ️ No statistics data available, showing mock data");
             }
         }
     }

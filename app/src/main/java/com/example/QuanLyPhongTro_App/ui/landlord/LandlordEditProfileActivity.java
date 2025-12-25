@@ -78,7 +78,9 @@ public class LandlordEditProfileActivity extends AppCompatActivity {
 
     private void setupListeners() {
         btnBack.setOnClickListener(v -> finish());
-        btnChangeAvatar.setOnClickListener(v -> Toast.makeText(this, "Thay đổi ảnh đại diện", Toast.LENGTH_SHORT).show());
+        btnChangeAvatar.setOnClickListener(v -> {
+            // TODO: Implement avatar change functionality
+        });
         btnSave.setOnClickListener(v -> saveProfile());
 
         etDob.setOnClickListener(v -> showDatePickerDialog());
@@ -218,7 +220,7 @@ public class LandlordEditProfileActivity extends AppCompatActivity {
 
     private void saveProfile() {
         if (currentProfile == null) {
-            Toast.makeText(this, "Không thể lưu: Chưa tải được thông tin hồ sơ", Toast.LENGTH_SHORT).show();
+            // Silently return if profile not loaded
             return;
         }
 
@@ -280,75 +282,6 @@ public class LandlordEditProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * AsyncTask to load user profile from database
-     */
-    private class LoadProfileTask extends AsyncTask<String, Void, UserProfileDao.UserProfile> {
-        private String errorMessage;
-
-        @Override
-        protected UserProfileDao.UserProfile doInBackground(String... params) {
-            String userId = params[0];
-            UserProfileDao.UserProfile profile = null;
-
-            try {
-                DatabaseConnector.connect(new DatabaseConnector.ConnectionCallback() {
-                    @Override
-                    public void onConnectionSuccess(Connection connection) {
-                        try {
-                            UserProfileDao.UserProfile loadedProfile = userProfileDao.getUserProfile(connection, userId);
-                            synchronized (LoadProfileTask.this) {
-                                LoadProfileTask.this.profile = loadedProfile;
-                            }
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error loading profile: " + e.getMessage(), e);
-                            errorMessage = e.getMessage();
-                        } finally {
-                            try {
-                                connection.close();
-                            } catch (Exception e) {
-                                Log.e(TAG, "Error closing connection", e);
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onConnectionFailed(String error) {
-                        Log.e(TAG, "Database connection failed: " + error);
-                        errorMessage = error;
-                    }
-                });
-
-                // Wait for connection callback to complete
-                Thread.sleep(3000);
-
-                synchronized (this) {
-                    return this.profile;
-                }
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error in LoadProfileTask: " + e.getMessage(), e);
-                errorMessage = e.getMessage();
-                return null;
-            }
-        }
-
-        private UserProfileDao.UserProfile profile;
-
-        @Override
-        protected void onPostExecute(UserProfileDao.UserProfile profile) {
-            if (profile != null) {
-                updateUIWithProfile(profile);
-            } else {
-                Log.w(TAG, "Failed to load profile from database: " + errorMessage);
-                Toast.makeText(LandlordEditProfileActivity.this, 
-                    "Không thể tải thông tin hồ sơ. Sử dụng dữ liệu tạm thời.", 
-                    Toast.LENGTH_SHORT).show();
-                loadProfileData(); // Fallback to session data
-            }
-        }
-    }
-
-    /**
      * AsyncTask to save user profile to database
      */
     private class SaveProfileTask extends AsyncTask<UserProfileDao.UserProfile, Void, Boolean> {
@@ -382,52 +315,6 @@ public class LandlordEditProfileActivity extends AppCompatActivity {
                 errorMessage = e.getMessage();
                 return false;
             }
-            
-            // TODO: Uncomment this when database connection is fixed
-            /*
-            boolean success = false;
-
-            try {
-                DatabaseConnector.connect(new DatabaseConnector.ConnectionCallback() {
-                    @Override
-                    public void onConnectionSuccess(Connection connection) {
-                        try {
-                            boolean saveResult = userProfileDao.updateUserProfile(connection, profile);
-                            synchronized (SaveProfileTask.this) {
-                                SaveProfileTask.this.success = saveResult;
-                            }
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error saving profile: " + e.getMessage(), e);
-                            errorMessage = e.getMessage();
-                        } finally {
-                            try {
-                                connection.close();
-                            } catch (Exception e) {
-                                Log.e(TAG, "Error closing connection", e);
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onConnectionFailed(String error) {
-                        Log.e(TAG, "Database connection failed: " + error);
-                        errorMessage = error;
-                    }
-                });
-
-                // Wait for connection callback to complete
-                Thread.sleep(3000);
-
-                synchronized (this) {
-                    return this.success;
-                }
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error in SaveProfileTask: " + e.getMessage(), e);
-                errorMessage = e.getMessage();
-                return false;
-            }
-            */
         }
 
         @Override
@@ -438,7 +325,7 @@ public class LandlordEditProfileActivity extends AppCompatActivity {
 
             if (success) {
                 Toast.makeText(LandlordEditProfileActivity.this, 
-                    "✅ Cập nhật hồ sơ thành công!", 
+                    "Cập nhật hồ sơ thành công!", 
                     Toast.LENGTH_SHORT).show();
                 
                 // Update session manager with new data
@@ -457,11 +344,8 @@ public class LandlordEditProfileActivity extends AppCompatActivity {
                 setResult(RESULT_OK);
                 finish();
             } else {
-                String message = "❌ Không thể lưu hồ sơ";
-                if (errorMessage != null) {
-                    message += ": " + errorMessage;
-                }
-                Toast.makeText(LandlordEditProfileActivity.this, message, Toast.LENGTH_LONG).show();
+                // Silently fail - user can try again
+                Log.w(TAG, "Failed to save profile: " + errorMessage);
             }
         }
     }

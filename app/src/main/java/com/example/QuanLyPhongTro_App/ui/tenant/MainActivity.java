@@ -3,13 +3,8 @@ package com.example.QuanLyPhongTro_App.ui.tenant;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-<<<<<<< HEAD
 import android.util.Log;
-=======
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.KeyEvent;
->>>>>>> 72f4d68c29696a544d76cadc9461c37ded9330d8
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;

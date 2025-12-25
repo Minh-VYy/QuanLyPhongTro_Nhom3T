@@ -6,6 +6,7 @@ public class DatPhong {
     private String datPhongId;
     private String phongId;
     private String nguoiThueId;
+    private String chuTroId;  // *** THÊM FIELD NÀY ***
     private String loai;
     private Date batDau;
     private Date ketThuc;
@@ -33,6 +34,9 @@ public class DatPhong {
 
     public String getNguoiThueId() { return nguoiThueId; }
     public void setNguoiThueId(String nguoiThueId) { this.nguoiThueId = nguoiThueId; }
+
+    public String getChuTroId() { return chuTroId; }  // *** THÊM GETTER/SETTER ***
+    public void setChuTroId(String chuTroId) { this.chuTroId = chuTroId; }
 
     public String getLoai() { return loai; }
     public void setLoai(String loai) { this.loai = loai; }
