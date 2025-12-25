@@ -12,10 +12,7 @@ import java.util.ArrayList;
 public class Room implements Serializable {
     // ========== THÔNG TIN CƠ BẢN PHÒNG ==========
     @PrimaryKey(autoGenerate = true)
-    private int id;                    // ID phòng từ database (local)
-
-    @ColumnInfo(name = "phong_id")
-    private String phongId;            // UUID phòng từ SQL Server database
+    private int id;                    // ID phòng từ database
 
     @ColumnInfo(name = "title")
     private String title;              // Tiêu đề phòng
@@ -214,7 +211,6 @@ public class Room implements Serializable {
 
     // ========== GETTERS ==========
     public int getId() { return id; }
-    public String getPhongId() { return phongId; }
     public String getTitle() { return title; }
     public double getPriceValue() { return priceValue; }
     public String getLocation() { return location; }
@@ -239,7 +235,6 @@ public class Room implements Serializable {
 
     // ========== SETTERS ==========
     public void setId(int id) { this.id = id; }
-    public void setPhongId(String phongId) { this.phongId = phongId; }
     public void setTitle(String title) { this.title = title; }
     public void setPriceValue(double priceValue) { this.priceValue = priceValue; }
     public void setLocation(String location) { this.location = location; }

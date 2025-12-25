@@ -17,7 +17,7 @@ public class DatabaseHelper {
     private static final String TAG = "DatabaseHelper";
     
     // Database credentials
-    private static final String IP = "192.168.1.6";
+    private static final String IP = "172.26.98.219";
     private static final String PORT = "1433";
     private static final String DATABASE = "QuanLyPhongTro";
     private static final String USERNAME = "mhoang";
