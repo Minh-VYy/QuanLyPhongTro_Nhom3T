@@ -399,7 +399,7 @@ public class YeuCau extends AppCompatActivity {
                 Connection connection = null;
                 try {
                     Log.d("YeuCau", "🔄 Attempting database connection for booking requests...");
-                    String url = "jdbc:jtds:sqlserver://192.168.0.117:1433/QuanLyPhongTro";
+                    String url = "jdbc:jtds:sqlserver://172.26.98.234:1433/QuanLyPhongTro";
                     String username = "sa";
                     String password = "27012005";
                     
@@ -532,7 +532,7 @@ public class YeuCau extends AppCompatActivity {
                 Connection connection = null;
                 try {
                     Log.d("YeuCau", "🔄 Attempting database connection for payment requests...");
-                    String url = "jdbc:jtds:sqlserver://192.168.0.117:1433/QuanLyPhongTro";
+                    String url = "jdbc:jtds:sqlserver://172.26.98.234:1433/QuanLyPhongTro";
                     String username = "sa";
                     String password = "27012005";
                     
@@ -642,7 +642,7 @@ public class YeuCau extends AppCompatActivity {
                 Connection connection = null;
                 try {
                     Log.d("YeuCau", "🔄 Connecting to database for status update...");
-                    String url = "jdbc:jtds:sqlserver://192.168.0.117:1433/QuanLyPhongTro";
+                    String url = "jdbc:jtds:sqlserver://172.26.98.234:1433/QuanLyPhongTro";
                     String username = "sa";
                     String password = "27012005";
                     

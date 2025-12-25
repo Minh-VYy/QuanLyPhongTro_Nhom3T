@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 public class DatabaseConnector {
 
     // For WiFi connection (recommended)
-    private static final String IP = "192.168.0.117";    // WiFi IP - Updated to match working connection
+    private static final String IP = "172.26.98.234";    // WiFi IP - Updated to match working connection
         // For Android Emulator
     
     private static final String PORT = "1433";

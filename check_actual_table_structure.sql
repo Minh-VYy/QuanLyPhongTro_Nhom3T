@@ -1,0 +1,53 @@
+-- Kiểm tra cấu trúc thật của các bảng
+USE QuanLyPhongTro;
+GO
+
+PRINT '=== KIỂM TRA CẤU TRÚC BẢNG THẬT ===';
+PRINT '';
+
+PRINT '1. Cấu trúc bảng DatPhong:';
+SELECT 
+    COLUMN_NAME,
+    DATA_TYPE,
+    IS_NULLABLE,
+    COLUMN_DEFAULT
+FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE TABLE_NAME = 'DatPhong'
+ORDER BY ORDINAL_POSITION;
+
+PRINT '';
+PRINT '2. Cấu trúc bảng BienLai:';
+SELECT 
+    COLUMN_NAME,
+    DATA_TYPE,
+    IS_NULLABLE,
+    COLUMN_DEFAULT
+FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE TABLE_NAME = 'BienLai'
+ORDER BY ORDINAL_POSITION;
+
+PRINT '';
+PRINT '3. Cấu trúc bảng TrangThaiDatPhong:';
+SELECT 
+    COLUMN_NAME,
+    DATA_TYPE,
+    IS_NULLABLE,
+    COLUMN_DEFAULT
+FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE TABLE_NAME = 'TrangThaiDatPhong'
+ORDER BY ORDINAL_POSITION;
+
+PRINT '';
+PRINT '4. Danh sách tất cả các bảng:';
+SELECT TABLE_NAME 
+FROM INFORMATION_SCHEMA.TABLES 
+WHERE TABLE_TYPE = 'BASE TABLE'
+ORDER BY TABLE_NAME;
+
+PRINT '';
+PRINT '5. Dữ liệu mẫu từ DatPhong (nếu có):';
+SELECT TOP 3 * FROM DatPhong;
+
+PRINT '';
+PRINT '6. Dữ liệu mẫu từ BienLai (nếu có):';
+SELECT TOP 3 * FROM BienLai;
