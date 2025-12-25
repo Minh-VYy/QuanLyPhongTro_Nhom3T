@@ -14,12 +14,12 @@ import java.util.concurrent.Executors;
 public class DatabaseConnector {
 
     // For WiFi connection (recommended)
-    private static final String IP = "192.168.1.11";    // WiFi IP
+    private static final String IP = "192.168.1.6";    // WiFi IP
         // For Android Emulator
     
     private static final String PORT = "1433";
     private static final String DATABASE = "QuanLyPhongTro";
-    private static final String USERNAME = "sa";
+    private static final String USERNAME = "mhoang";
     private static final String PASSWORD = "12345";
     private static final String TAG = "DatabaseConnector";
 

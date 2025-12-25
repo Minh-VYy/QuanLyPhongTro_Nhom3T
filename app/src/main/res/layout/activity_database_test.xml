@@ -4,44 +4,76 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:gravity="center">
+    android:background="@color/mau_trang">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Database Connection Test"
+        android:text="🔧 Database Test Tool"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:layout_marginBottom="32dp" />
-
-    <TextView
-        android:id="@+id/tv_status"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Nhấn nút để test kết nối database"
-        android:textSize="16sp"
-        android:padding="16dp"
-        android:background="@android:color/darker_gray"
-        android:textColor="@android:color/white"
-        android:layout_marginBottom="24dp"
-        android:minHeight="120dp"
-        android:gravity="center" />
+        android:textColor="@color/mau_xanh_chinh"
+        android:gravity="center"
+        android:layout_marginBottom="24dp" />
 
     <Button
-        android:id="@+id/btn_test"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Test Kết Nối"
-        android:textSize="18sp"
-        android:padding="12dp" />
-
-    <TextView
+        android:id="@+id/btnTestConnection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Thông tin kết nối:\nServer: 192.168.0.117:1433\nDatabase: QuanLyPhongTro\nUser: sa"
-        android:textSize="12sp"
-        android:layout_marginTop="24dp"
-        android:gravity="center"
-        android:textColor="@android:color/darker_gray" />
+        android:text="1️⃣ Test Kết Nối Database"
+        android:textColor="@color/mau_trang"
+        android:background="@drawable/button_gradient"
+        android:layout_marginBottom="12dp" />
+
+    <Button
+        android:id="@+id/btnTestPhong"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="2️⃣ Test Load Phòng"
+        android:textColor="@color/mau_trang"
+        android:background="@drawable/button_gradient"
+        android:layout_marginBottom="12dp" />
+
+    <Button
+        android:id="@+id/btnTestDatPhong"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="3️⃣ Test Load Đặt Phòng"
+        android:textColor="@color/mau_trang"
+        android:background="@drawable/button_gradient"
+        android:layout_marginBottom="12dp" />
+
+    <Button
+        android:id="@+id/btnTestYeuCau"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="4️⃣ Test Load Yêu Cầu Hỗ Trợ"
+        android:textColor="@color/mau_trang"
+        android:background="@drawable/button_gradient"
+        android:layout_marginBottom="24dp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#F5F5F5"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/txtResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nhấn nút để test database..."
+            android:textSize="14sp"
+            android:textColor="#000000"
+            android:fontFamily="monospace" />
+    </ScrollView>
 
 </LinearLayout>
