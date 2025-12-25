@@ -1,8 +1,9 @@
 package com.example.QuanLyPhongTro_App.ui.tenant;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -19,13 +20,20 @@ import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
 import com.example.QuanLyPhongTro_App.data.dao.PhongDao;
 import com.example.QuanLyPhongTro_App.data.model.Phong;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
+import com.example.QuanLyPhongTro_App.ui.chatbot.ChatbotActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+/**
+ * TỐI ƯU: Thay AsyncTask bằng ExecutorService + Handler
+ */
 public class MainActivity extends AppCompatActivity {
 
     private Button btnFilter;
@@ -38,6 +46,14 @@ public class MainActivity extends AppCompatActivity {
     private ImageView iconRole;
     private RoomAdapter roomAdapter;
     private ProgressBar progressBar;
+    private FloatingActionButton fabChatbot;
+    
+    // TỐI ƯU: Sử dụng ExecutorService thay vì AsyncTask
+    private ExecutorService executorService;
+    private Handler mainHandler;
+    
+    // Cache để tránh load lại không cần thiết
+    private boolean isDataLoaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,12 +61,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_tenant_home);
 
         sessionManager = new SessionManager(this);
+        
+        // TỐI ƯU: Khởi tạo ExecutorService
+        executorService = Executors.newFixedThreadPool(2);
+        mainHandler = new Handler(Looper.getMainLooper());
 
         initViews();
         setupRoleDropdown();
         setupBottomNavigation();
         setupRoomRecyclerView();
         setupFilterButton();
+        setupChatbot();
     }
 
     private void initViews() {
@@ -61,9 +82,27 @@ public class MainActivity extends AppCompatActivity {
         txtRoleSecondary = roleSwitcher.findViewById(R.id.txtRoleSecondary);
         iconRole = roleSwitcher.findViewById(R.id.iconRole);
         progressBar = findViewById(R.id.progressBar);
+        fabChatbot = findViewById(R.id.fabChatbot);
+    }
+    
+    private void setupChatbot() {
+        if (fabChatbot != null) {
+            fabChatbot.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, ChatbotActivity.class);
+                intent.putExtra("user_type", "tenant");
+                intent.putExtra("context", "home");
+                startActivity(intent);
+            });
+        }
     }
 
     private void setupRoomRecyclerView() {
+        // TỐI ƯU: Cải thiện hiệu suất RecyclerView
+        roomRecyclerView.setHasFixedSize(true);  // Kích thước cố định
+        roomRecyclerView.setItemViewCacheSize(20);  // Cache nhiều item hơn
+        roomRecyclerView.setDrawingCacheEnabled(true);
+        roomRecyclerView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+        
         roomAdapter = new RoomAdapter(roomList, room -> {
             Intent intent = new Intent(MainActivity.this, RoomDetailActivity.class);
             intent.putExtra("room", room);
@@ -76,71 +115,61 @@ public class MainActivity extends AppCompatActivity {
     }
     
     /**
-     * Load danh sách phòng từ database
+     * Load danh sách phòng từ database (TỐI ƯU)
      */
     private void loadRoomsFromDatabase() {
-        new LoadPhongTask().execute();
-    }
-    
-    /**
-     * AsyncTask để load phòng từ database
-     */
-    private class LoadPhongTask extends AsyncTask<Void, Void, List<Phong>> {
-        private String errorMsg = null;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            if (progressBar != null) {
-                progressBar.setVisibility(View.VISIBLE);
-            }
+        if (progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
         }
-
-        @Override
-        protected List<Phong> doInBackground(Void... voids) {
+        
+        executorService.execute(() -> {
             Connection conn = null;
+            List<Phong> phongList = null;
+            String errorMsg = null;
+            
             try {
                 conn = DatabaseHelper.getConnection();
                 PhongDao dao = new PhongDao();
-                return dao.getAllPhongAvailable(conn);
+                phongList = dao.getAllPhongAvailable(conn);
             } catch (Exception e) {
                 errorMsg = e.getMessage();
-                return null;
             } finally {
-                DatabaseHelper.closeConnection(conn);
+                DatabaseHelper.releaseConnection(conn);  // TỐI ƯU: Trả về pool
             }
-        }
-
-        @Override
-        protected void onPostExecute(List<Phong> phongList) {
-            super.onPostExecute(phongList);
-            if (progressBar != null) {
-                progressBar.setVisibility(View.GONE);
-            }
-
-            if (phongList != null && !phongList.isEmpty()) {
-                // Convert Phong to Room và update adapter
-                roomList.clear();
-                for (Phong phong : phongList) {
-                    Room room = convertPhongToRoom(phong);
-                    roomList.add(room);
+            
+            // Update UI trên main thread
+            final List<Phong> finalList = phongList;
+            final String finalError = errorMsg;
+            
+            mainHandler.post(() -> {
+                if (progressBar != null) {
+                    progressBar.setVisibility(View.GONE);
                 }
-                roomAdapter.notifyDataSetChanged();
-                Toast.makeText(MainActivity.this, 
-                    "Đã tải " + phongList.size() + " phòng", 
-                    Toast.LENGTH_SHORT).show();
-            } else {
-                if (errorMsg != null) {
+                
+                if (finalList != null && !finalList.isEmpty()) {
+                    roomList.clear();
+                    for (Phong phong : finalList) {
+                        Room room = convertPhongToRoom(phong);
+                        roomList.add(room);
+                    }
+                    roomAdapter.notifyDataSetChanged();
+                    isDataLoaded = true;
                     Toast.makeText(MainActivity.this, 
-                        "Lỗi kết nối: " + errorMsg, 
-                        Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(MainActivity.this, 
-                        "Không có phòng nào", 
+                        "Đã tải " + finalList.size() + " phòng", 
                         Toast.LENGTH_SHORT).show();
+                } else {
+                    if (finalError != null) {
+                        Toast.makeText(MainActivity.this, 
+                            "Lỗi kết nối: " + finalError, 
+                            Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, 
+                            "Không có phòng nào", 
+                            Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
-        }
+            });
+        });
     }
     
     /**
@@ -152,6 +181,9 @@ public class MainActivity extends AppCompatActivity {
         // ID phòng - Room dùng int, Phong dùng String UUID
         // Tạm thời dùng hashCode để convert
         room.setId(phong.getPhongId() != null ? phong.getPhongId().hashCode() : 0);
+        
+        // Lưu PhongId (UUID) từ database
+        room.setPhongId(phong.getPhongId());
         
         // Thông tin cơ bản
         room.setTitle(phong.getTieuDe());
@@ -213,87 +245,69 @@ public class MainActivity extends AppCompatActivity {
     }
     
     /**
-     * Tìm kiếm phòng với filter
+     * Tìm kiếm phòng với filter (TỐI ƯU)
      */
     private void searchRoomsFromDatabase(String keyword, Long minPrice, Long maxPrice, String quanHuyen) {
-        new SearchPhongTask().execute(keyword, 
-            minPrice != null ? String.valueOf(minPrice) : null,
-            maxPrice != null ? String.valueOf(maxPrice) : null,
-            quanHuyen);
-    }
-    
-    /**
-     * AsyncTask để tìm kiếm phòng
-     */
-    private class SearchPhongTask extends AsyncTask<String, Void, List<Phong>> {
-        private String errorMsg = null;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            if (progressBar != null) {
-                progressBar.setVisibility(View.VISIBLE);
-            }
+        if (progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
         }
-
-        @Override
-        protected List<Phong> doInBackground(String... params) {
+        
+        executorService.execute(() -> {
             Connection conn = null;
+            List<Phong> phongList = null;
+            String errorMsg = null;
+            
             try {
                 conn = DatabaseHelper.getConnection();
                 PhongDao dao = new PhongDao();
                 
-                String keyword = params[0];
-                Long minPrice = params[1] != null ? Long.parseLong(params[1]) : null;
-                Long maxPrice = params[2] != null ? Long.parseLong(params[2]) : null;
-                String quanHuyen = params[3];
-                
-                // Xử lý tên quận (bỏ "Quận " ở đầu nếu có)
-                if (quanHuyen != null && quanHuyen.startsWith("Quận ")) {
-                    quanHuyen = quanHuyen.substring(5);
-                } else if (quanHuyen != null && quanHuyen.startsWith("Huyện ")) {
-                    quanHuyen = quanHuyen.substring(6);
+                // Xử lý tên quận
+                String finalQuanHuyen = quanHuyen;
+                if (finalQuanHuyen != null && finalQuanHuyen.startsWith("Quận ")) {
+                    finalQuanHuyen = finalQuanHuyen.substring(5);
+                } else if (finalQuanHuyen != null && finalQuanHuyen.startsWith("Huyện ")) {
+                    finalQuanHuyen = finalQuanHuyen.substring(6);
                 }
                 
-                return dao.searchPhong(conn, keyword, minPrice, maxPrice, quanHuyen);
+                phongList = dao.searchPhong(conn, keyword, minPrice, maxPrice, finalQuanHuyen);
             } catch (Exception e) {
                 errorMsg = e.getMessage();
-                return null;
             } finally {
-                DatabaseHelper.closeConnection(conn);
+                DatabaseHelper.releaseConnection(conn);  // TỐI ƯU: Trả về pool
             }
-        }
-
-        @Override
-        protected void onPostExecute(List<Phong> phongList) {
-            super.onPostExecute(phongList);
-            if (progressBar != null) {
-                progressBar.setVisibility(View.GONE);
-            }
-
-            if (phongList != null) {
-                roomList.clear();
-                for (Phong phong : phongList) {
-                    Room room = convertPhongToRoom(phong);
-                    roomList.add(room);
+            
+            final List<Phong> finalList = phongList;
+            final String finalError = errorMsg;
+            
+            mainHandler.post(() -> {
+                if (progressBar != null) {
+                    progressBar.setVisibility(View.GONE);
                 }
-                roomAdapter.notifyDataSetChanged();
                 
-                if (phongList.isEmpty()) {
-                    Toast.makeText(MainActivity.this, 
-                        "Không tìm thấy phòng phù hợp", 
-                        Toast.LENGTH_SHORT).show();
+                if (finalList != null) {
+                    roomList.clear();
+                    for (Phong phong : finalList) {
+                        Room room = convertPhongToRoom(phong);
+                        roomList.add(room);
+                    }
+                    roomAdapter.notifyDataSetChanged();
+                    
+                    if (finalList.isEmpty()) {
+                        Toast.makeText(MainActivity.this, 
+                            "Không tìm thấy phòng phù hợp", 
+                            Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, 
+                            "Tìm thấy " + finalList.size() + " phòng", 
+                            Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     Toast.makeText(MainActivity.this, 
-                        "Tìm thấy " + phongList.size() + " phòng", 
-                        Toast.LENGTH_SHORT).show();
+                        "Lỗi tìm kiếm: " + finalError, 
+                        Toast.LENGTH_LONG).show();
                 }
-            } else {
-                Toast.makeText(MainActivity.this, 
-                    "Lỗi tìm kiếm: " + errorMsg, 
-                    Toast.LENGTH_LONG).show();
-            }
-        }
+            });
+        });
     }
 
     private void setupRoleDropdown() {
@@ -372,7 +386,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         applyRoleUI();
-        // Refresh data khi quay lại màn hình
-        loadRoomsFromDatabase();
+        
+        // TỐI ƯU: Chỉ load data lần đầu, không load lại mỗi lần resume
+        if (!isDataLoaded) {
+            loadRoomsFromDatabase();
+        }
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // TỐI ƯU: Dọn dẹp ExecutorService
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
     }
 }
