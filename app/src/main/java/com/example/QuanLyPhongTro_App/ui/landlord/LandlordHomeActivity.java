@@ -2,9 +2,11 @@ package com.example.QuanLyPhongTro_App.ui.landlord;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +17,13 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.sql.Connection;
+import java.text.DecimalFormat;
 import java.text.Normalizer;
 import java.util.regex.Pattern;
 
@@ -36,6 +41,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
+import com.example.QuanLyPhongTro_App.data.model.Phong;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
 import com.example.QuanLyPhongTro_App.ui.tenant.MainActivity;
 import com.example.QuanLyPhongTro_App.ui.chatbot.ChatbotActivity;
@@ -47,6 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LandlordHomeActivity extends AppCompatActivity {
+    private static final String TAG = "LandlordHomeActivity";
 
     private SessionManager sessionManager;
     private RecyclerView rvListings;
@@ -62,6 +70,7 @@ public class LandlordHomeActivity extends AppCompatActivity {
     private FloatingActionButton fabTaoTin;
     private LinearLayout quickActionMenu;
     private boolean isMenuOpen = false;
+    private ProgressBar progressBar;
 
     // Biến cho tìm kiếm và lọc
     private String currentStatusFilter = "all";
@@ -129,6 +138,7 @@ public class LandlordHomeActivity extends AppCompatActivity {
         btnViewAll = findViewById(R.id.btn_view_all);
         fabTaoTin = findViewById(R.id.fab_tao_tin);
         quickActionMenu = findViewById(R.id.quick_action_menu);
+        progressBar = findViewById(R.id.progressBar);
 
         // Khởi tạo các view tìm kiếm
         searchInput = findViewById(R.id.searchInput);
@@ -236,11 +246,6 @@ public class LandlordHomeActivity extends AppCompatActivity {
         allListings.clear();
         filteredListings.clear();
 
-        // Sử dụng danh sách trống vì MockData đã bị xóa
-        List<LandlordListing> listings = new ArrayList<>();
-        allListings.addAll(listings);
-        filteredListings.addAll(listings);
-
         adapter = new ListingAdapter(filteredListings, listing -> {
             Intent intent = new Intent(this, EditTin.class);
             startActivity(intent);
@@ -248,8 +253,140 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
         rvListings.setAdapter(adapter);
 
-        // Cập nhật số lượng tin đăng
-        updateListingCounts();
+        // Load dữ liệu từ database
+        loadLandlordRoomsFromDatabase();
+    }
+    
+    /**
+     * Load danh sách phòng của chủ trọ từ database
+     */
+    private void loadLandlordRoomsFromDatabase() {
+        new LoadLandlordPhongTask().execute();
+    }
+    
+    /**
+     * AsyncTask để load phòng của chủ trọ từ database
+     */
+    private class LoadLandlordPhongTask extends AsyncTask<Void, Void, List<Phong>> {
+        private String errorMsg = null;
+        private LandlordPhongDao.PhongStats stats = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if (progressBar != null) {
+                progressBar.setVisibility(View.VISIBLE);
+            }
+        }
+
+        @Override
+        protected List<Phong> doInBackground(Void... voids) {
+            Connection conn = null;
+            try {
+                Log.d(TAG, "=== LOADING LANDLORD ROOMS FROM DATABASE ===");
+                conn = DatabaseHelper.getConnection();
+                Log.d(TAG, "Database connection successful");
+                
+                // Lấy ChuTroId từ session
+                String chuTroId = sessionManager.getUserId();
+                Log.d(TAG, "Loading rooms for ChuTroId: " + chuTroId);
+                
+                LandlordPhongDao dao = new LandlordPhongDao();
+                
+                // Load danh sách phòng
+                List<Phong> result = dao.getPhongByChuTroId(conn, chuTroId);
+                Log.d(TAG, "Query result: " + (result != null ? result.size() : "null") + " rooms");
+                
+                // Load thống kê
+                stats = dao.getPhongStats(conn, chuTroId);
+                
+                return result;
+            } catch (Exception e) {
+                Log.e(TAG, "Error loading landlord rooms: " + e.getMessage(), e);
+                errorMsg = e.getMessage();
+                return null;
+            } finally {
+                DatabaseHelper.closeConnection(conn);
+                Log.d(TAG, "Database connection closed");
+            }
+        }
+
+        @Override
+        protected void onPostExecute(List<Phong> phongList) {
+            super.onPostExecute(phongList);
+            if (progressBar != null) {
+                progressBar.setVisibility(View.GONE);
+            }
+
+            if (phongList != null) {
+                // Convert Phong to LandlordListing và update adapter
+                allListings.clear();
+                filteredListings.clear();
+                
+                for (Phong phong : phongList) {
+                    LandlordListing listing = convertPhongToLandlordListing(phong);
+                    allListings.add(listing);
+                    filteredListings.add(listing);
+                }
+                
+                adapter.notifyDataSetChanged();
+                
+                // Cập nhật thống kê
+                if (stats != null) {
+                    updateListingCounts(stats);
+                }
+                
+                if (phongList.isEmpty()) {
+                    Toast.makeText(LandlordHomeActivity.this, 
+                        "Chưa có phòng nào. Hãy thêm phòng mới!", 
+                        Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(LandlordHomeActivity.this, 
+                        "Đã tải " + phongList.size() + " phòng", 
+                        Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                if (errorMsg != null) {
+                    Toast.makeText(LandlordHomeActivity.this, 
+                        "Lỗi kết nối: " + errorMsg, 
+                        Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(LandlordHomeActivity.this, 
+                        "Không thể tải dữ liệu phòng", 
+                        Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
+    
+    /**
+     * Convert model Phong từ database sang LandlordListing (UI model)
+     */
+    private LandlordListing convertPhongToLandlordListing(Phong phong) {
+        // Format giá tiền
+        DecimalFormat formatter = new DecimalFormat("#,###");
+        String priceText = formatter.format(phong.getGiaTien()) + " VNĐ/tháng";
+        
+        // Xác định trạng thái hiển thị
+        String displayStatus;
+        if (!phong.isDuyet()) {
+            displayStatus = "Chờ duyệt";
+        } else if (phong.isBiKhoa()) {
+            displayStatus = "Bị khóa";
+        } else {
+            displayStatus = phong.getTrangThai() != null ? phong.getTrangThai() : "Chưa xác định";
+        }
+        
+        // Xác định trạng thái active (phòng được duyệt và không bị khóa)
+        boolean isActive = phong.isDuyet() && !phong.isBiKhoa();
+        
+        return new LandlordListing(
+            phong.getTieuDe(),
+            priceText,
+            displayStatus,
+            isActive,
+            "default_room" // Tạm thời dùng ảnh mặc định
+        );
     }
 
     private void updateListingCounts() {
@@ -267,6 +404,19 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
         if (tvTotal != null) tvTotal.setText(String.valueOf(total));
         if (tvActive != null) tvActive.setText(String.valueOf(activeCount));
+    }
+    
+    /**
+     * Cập nhật số liệu thống kê từ database
+     */
+    private void updateListingCounts(LandlordPhongDao.PhongStats stats) {
+        TextView tvTotal = findViewById(R.id.tv_total_listings);
+        TextView tvActive = findViewById(R.id.tv_active_listings);
+
+        if (tvTotal != null) tvTotal.setText(String.valueOf(stats.totalPhong));
+        if (tvActive != null) tvActive.setText(String.valueOf(stats.activePhong));
+        
+        Log.d(TAG, "Updated listing counts - Total: " + stats.totalPhong + ", Active: " + stats.activePhong);
     }
 
     public void afterTextChanged(Editable s) {
@@ -416,6 +566,8 @@ public class LandlordHomeActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         LandlordBottomNavigationHelper.setupBottomNavigation(this, "home");
+        // Refresh data khi quay lại màn hình
+        loadLandlordRoomsFromDatabase();
     }
 
     // ==================== INTERNAL CLASSES ====================

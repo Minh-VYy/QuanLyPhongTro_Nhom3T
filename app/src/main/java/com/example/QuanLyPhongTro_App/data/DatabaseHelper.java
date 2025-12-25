@@ -13,11 +13,11 @@ public class DatabaseHelper {
     private static final String TAG = "DatabaseHelper";
     
     // Database credentials - THAY ĐỔI THEO MÁY CHỦ CỦA BẠN
-    private static final String IP = "192.168.1.6";
+    private static final String IP = "192.168.0.117";
     private static final String PORT = "1433";
     private static final String DATABASE = "QuanLyPhongTro";
-    private static final String USERNAME = "mhoang";
-    private static final String PASSWORD = "12345";
+    private static final String USERNAME = "sa";
+    private static final String PASSWORD = "27012005";
     
     private static final String DRIVER = "net.sourceforge.jtds.jdbc.Driver";
     private static final String URL = "jdbc:jtds:sqlserver://" + IP + ":" + PORT + "/" + DATABASE;

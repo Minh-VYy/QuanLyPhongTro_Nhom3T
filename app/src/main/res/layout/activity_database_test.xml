@@ -3,77 +3,39 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/mau_trang">
+    android:padding="16dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="🔧 Database Test Tool"
-        android:textSize="24sp"
+        android:text="Database Connection Test"
+        android:textSize="20sp"
         android:textStyle="bold"
-        android:textColor="@color/mau_xanh_chinh"
         android:gravity="center"
-        android:layout_marginBottom="24dp" />
+        android:layout_marginBottom="20dp"/>
 
     <Button
-        android:id="@+id/btnTestConnection"
+        android:id="@+id/btn_test"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="1️⃣ Test Kết Nối Database"
-        android:textColor="@color/mau_trang"
-        android:background="@drawable/button_gradient"
-        android:layout_marginBottom="12dp" />
-
-    <Button
-        android:id="@+id/btnTestPhong"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="2️⃣ Test Load Phòng"
-        android:textColor="@color/mau_trang"
-        android:background="@drawable/button_gradient"
-        android:layout_marginBottom="12dp" />
-
-    <Button
-        android:id="@+id/btnTestDatPhong"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="3️⃣ Test Load Đặt Phòng"
-        android:textColor="@color/mau_trang"
-        android:background="@drawable/button_gradient"
-        android:layout_marginBottom="12dp" />
-
-    <Button
-        android:id="@+id/btnTestYeuCau"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="4️⃣ Test Load Yêu Cầu Hỗ Trợ"
-        android:textColor="@color/mau_trang"
-        android:background="@drawable/button_gradient"
-        android:layout_marginBottom="24dp" />
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone" />
+        android:text="Test Database Connection"
+        android:layout_marginBottom="20dp"/>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="#F5F5F5"
-        android:padding="16dp">
+        android:layout_weight="1">
 
         <TextView
-            android:id="@+id/txtResult"
+            android:id="@+id/tv_result"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Nhấn nút để test database..."
+            android:text="Click button to test..."
             android:textSize="14sp"
-            android:textColor="#000000"
-            android:fontFamily="monospace" />
+            android:fontFamily="monospace"
+            android:background="#f0f0f0"
+            android:padding="12dp"/>
+
     </ScrollView>
 
 </LinearLayout>

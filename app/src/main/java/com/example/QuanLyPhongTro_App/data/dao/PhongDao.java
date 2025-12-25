@@ -19,68 +19,93 @@ public class PhongDao {
      */
     public List<Phong> getAllPhongAvailable(Connection conn) {
         List<Phong> list = new ArrayList<>();
+        
+        // Simplified query - remove problematic JOINs for now
         String query = "SELECT p.PhongId, p.TieuDe, p.DienTich, p.GiaTien, p.TienCoc, " +
                       "p.SoNguoiToiDa, p.TrangThai, p.DiemTrungBinh, p.SoLuongDanhGia, p.MoTa, " +
-                      "nt.DiaChi, qh.Ten AS QuanHuyen, ph.Ten AS Phuong, " +
-                      "(SELECT TOP 1 t.DuongDan FROM PhongAnh pa " +
-                      " JOIN TapTin t ON pa.TapTinId = t.TapTinId " +
-                      " WHERE pa.PhongId = p.PhongId ORDER BY pa.ThuTu) AS AnhDaiDien " +
+                      "nt.DiaChi " +
                       "FROM Phong p " +
-                      "JOIN NhaTro nt ON p.NhaTroId = nt.NhaTroId " +
-                      "LEFT JOIN QuanHuyen qh ON nt.QuanHuyenId = qh.QuanHuyenId " +
-                      "LEFT JOIN Phuong ph ON nt.PhuongId = ph.PhuongId " +
+                      "INNER JOIN NhaTro nt ON p.NhaTroId = nt.NhaTroId " +
                       "WHERE p.IsDuyet = 1 AND p.IsBiKhoa = 0 AND p.IsDeleted = 0 " +
                       "ORDER BY p.CreatedAt DESC";
 
-        Log.d(TAG, "Executing query: " + query);
+        Log.d(TAG, "Executing simplified query: " + query);
         
         try (PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
             
             int count = 0;
+            Log.d(TAG, "Starting to process ResultSet...");
+            
             while (rs.next()) {
                 try {
+                    count++;
+                    Log.d(TAG, "Processing row #" + count);
+                    
                     Phong phong = new Phong();
-                    phong.setPhongId(rs.getString("PhongId"));
-                    phong.setTieuDe(rs.getString("TieuDe"));
-                    phong.setDienTich(rs.getDouble("DienTich"));
-                    phong.setGiaTien(rs.getLong("GiaTien"));
-                    phong.setTienCoc(rs.getLong("TienCoc"));
+                    
+                    // Get basic fields with null checks
+                    String phongId = rs.getString("PhongId");
+                    String tieuDe = rs.getString("TieuDe");
+                    Log.d(TAG, "Row #" + count + " - PhongId: " + phongId + ", TieuDe: " + tieuDe);
+                    
+                    phong.setPhongId(phongId);
+                    phong.setTieuDe(tieuDe != null ? tieuDe : "Chưa có tiêu đề");
+                    
+                    // Handle numeric fields safely
+                    try {
+                        phong.setDienTich(rs.getDouble("DienTich"));
+                    } catch (Exception e) {
+                        Log.w(TAG, "Error getting DienTich for row " + count + ": " + e.getMessage());
+                        phong.setDienTich(0.0);
+                    }
+                    
+                    try {
+                        phong.setGiaTien(rs.getLong("GiaTien"));
+                    } catch (Exception e) {
+                        Log.w(TAG, "Error getting GiaTien for row " + count + ": " + e.getMessage());
+                        phong.setGiaTien(0L);
+                    }
+                    
+                    try {
+                        phong.setTienCoc(rs.getLong("TienCoc"));
+                    } catch (Exception e) {
+                        Log.w(TAG, "Error getting TienCoc for row " + count + ": " + e.getMessage());
+                        phong.setTienCoc(0L);
+                    }
+                    
                     phong.setSoNguoiToiDa(rs.getInt("SoNguoiToiDa"));
                     phong.setTrangThai(rs.getString("TrangThai"));
                     
-                    // Handle null values
+                    // Handle null values for rating
                     float diemTB = rs.getFloat("DiemTrungBinh");
                     phong.setDiemTrungBinh(rs.wasNull() ? 0 : diemTB);
                     
                     phong.setSoLuongDanhGia(rs.getInt("SoLuongDanhGia"));
                     phong.setMoTa(rs.getString("MoTa"));
                     phong.setDiaChiNhaTro(rs.getString("DiaChi"));
-                    phong.setTenQuanHuyen(rs.getString("QuanHuyen"));
-                    phong.setTenPhuong(rs.getString("Phuong"));
                     
-                    // Lấy ảnh đại diện
-                    List<String> anhList = new ArrayList<>();
-                    String anhDaiDien = rs.getString("AnhDaiDien");
-                    if (anhDaiDien != null && !anhDaiDien.isEmpty()) {
-                        anhList.add(anhDaiDien);
-                    }
-                    phong.setDanhSachAnhUrl(anhList);
+                    // Set default values for missing fields
+                    phong.setTenQuanHuyen("Chưa xác định");
+                    phong.setTenPhuong("Chưa xác định");
+                    
+                    // Set empty image list for now
+                    phong.setDanhSachAnhUrl(new ArrayList<>());
                     
                     list.add(phong);
-                    count++;
-                    
-                    Log.d(TAG, "Loaded phong #" + count + ": " + phong.getTieuDe() + 
+                    Log.d(TAG, "Successfully added phong #" + count + ": " + phong.getTieuDe() + 
                           " - " + phong.getGiaTien() + " VND");
+                          
                 } catch (Exception e) {
-                    Log.e(TAG, "Error parsing phong row: " + e.getMessage(), e);
+                    Log.e(TAG, "Error parsing phong row #" + count + ": " + e.getMessage(), e);
+                    // Continue processing other rows
                 }
             }
             
-            Log.d(TAG, "✅ Successfully loaded " + list.size() + " phòng from database");
+            Log.d(TAG, "✅ Successfully processed " + count + " rows, added " + list.size() + " phòng to list");
             
             if (list.isEmpty()) {
-                Log.w(TAG, "⚠️ No rooms found! Check if data exists in database with IsDuyet=1, IsBiKhoa=0, IsDeleted=0");
+                Log.w(TAG, "⚠️ No rooms added to list! Check parsing logic or data format");
             }
             
         } catch (SQLException e) {

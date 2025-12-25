@@ -3,6 +3,7 @@ package com.example.QuanLyPhongTro_App.ui.tenant;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -100,14 +101,21 @@ public class MainActivity extends AppCompatActivity {
         protected List<Phong> doInBackground(Void... voids) {
             Connection conn = null;
             try {
+                Log.d("MainActivity", "=== LOADING ROOMS FROM DATABASE ===");
                 conn = DatabaseHelper.getConnection();
+                Log.d("MainActivity", "Database connection successful");
+                
                 PhongDao dao = new PhongDao();
-                return dao.getAllPhongAvailable(conn);
+                List<Phong> result = dao.getAllPhongAvailable(conn);
+                Log.d("MainActivity", "Query result: " + (result != null ? result.size() : "null") + " rooms");
+                return result;
             } catch (Exception e) {
+                Log.e("MainActivity", "Error loading rooms: " + e.getMessage(), e);
                 errorMsg = e.getMessage();
                 return null;
             } finally {
                 DatabaseHelper.closeConnection(conn);
+                Log.d("MainActivity", "Database connection closed");
             }
         }
 
@@ -204,9 +212,16 @@ public class MainActivity extends AppCompatActivity {
             filterSheet.show(getSupportFragmentManager(), "AdvancedFilter");
         });
         
+        // DEBUG: Long click to open test activity
+        btnFilter.setOnLongClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, TestDatabaseActivity.class);
+            startActivity(intent);
+            return true;
+        });
+        
         // Long click để test database (hidden feature)
         btnFilter.setOnLongClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, DatabaseTestActivity.class);
+            Intent intent = new Intent(MainActivity.this, TestDatabaseActivity.class);
             startActivity(intent);
             return true;
         });

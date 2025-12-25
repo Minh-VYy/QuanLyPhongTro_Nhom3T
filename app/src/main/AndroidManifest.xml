@@ -48,6 +48,7 @@
             android:name=".ui.tenant.MainActivity"
             android:exported="false" />
         <activity android:name=".ui.tenant.RoomDetailActivity" />
+        <activity android:name=".ui.tenant.TestDatabaseActivity" />
         <activity android:name=".ui.tenant.BookingCreateActivity" />
         <activity android:name=".ui.tenant.BookingListActivity" />
         <activity android:name=".ui.tenant.SavedRoomsActivity" />
