@@ -58,90 +58,135 @@ public class EditTin extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_landlord_edit_tin);
-
-        sessionManager = new SessionManager(this);
-
-        // Kiểm tra chế độ edit
-        Intent intent = getIntent();
-        String mode = intent.getStringExtra("mode");
-        if ("edit".equals(mode)) {
-            isEditMode = true;
-            editPhongId = intent.getStringExtra("phongId");
+        
+        try {
+            setContentView(R.layout.activity_landlord_edit_tin);
             
-            // Cập nhật title
-            TextView tvTitle = findViewById(R.id.tv_title_edit);
-            if (tvTitle != null) {
-                tvTitle.setText("Chỉnh sửa tin đăng");
+            sessionManager = new SessionManager(this);
+
+            // Kiểm tra chế độ edit
+            Intent intent = getIntent();
+            if (intent != null) {
+                String mode = intent.getStringExtra("mode");
+                if ("edit".equals(mode)) {
+                    isEditMode = true;
+                    editPhongId = intent.getStringExtra("phongId");
+                    
+                    Log.d(TAG, "Edit mode activated for PhongId: " + editPhongId);
+                    
+                    // Cập nhật title
+                    TextView tvTitle = findViewById(R.id.tv_title_edit);
+                    if (tvTitle != null) {
+                        tvTitle.setText("Chỉnh sửa tin đăng");
+                    }
+                }
+            }
+
+            // Khởi tạo views
+            initViews();
+            
+            // Load dữ liệu để edit nếu cần
+            if (isEditMode && editPhongId != null) {
+                loadDataForEdit();
             }
             
-            // Load dữ liệu để edit
-            loadDataForEdit();
-        }
-
-        //ánh xạ đến layout
-        btnBack = findViewById(R.id.btn_back_edit);
-        edtTieuDe = findViewById(R.id.edt_tieude);
-        edtGia = findViewById(R.id.edt_gia);
-        edtMoTa = findViewById(R.id.edt_mota);
-        areaPickImage = findViewById(R.id.area_pick_image);
-        tvPickHint = findViewById(R.id.tv_pick_hint);
-        imgPreview = findViewById(R.id.img_preview);
-        btnSave = findViewById(R.id.btn_save_tin);
-        cbAc = findViewById(R.id.cb_ac);
-        cbWc = findViewById(R.id.cb_wc);
-        progressBar = findViewById(R.id.progressBar);
-
-        // Null checks để tránh crash
-        if (btnBack == null || edtTieuDe == null || edtGia == null || edtMoTa == null ||
-            areaPickImage == null || tvPickHint == null || imgPreview == null ||
-            btnSave == null || cbAc == null || cbWc == null) {
-            Toast.makeText(this, "Lỗi: Không thể tải giao diện", Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Log.e(TAG, "Error in onCreate: " + e.getMessage(), e);
+            Toast.makeText(this, "Lỗi khởi tạo: " + e.getMessage(), Toast.LENGTH_LONG).show();
             finish();
-            return;
         }
+    }
 
-        btnBack.setOnClickListener(v -> finish());
+    private void initViews() {
+        try {
+            //ánh xạ đến layout
+            btnBack = findViewById(R.id.btn_back_edit);
+            edtTieuDe = findViewById(R.id.edt_tieude);
+            edtGia = findViewById(R.id.edt_gia);
+            edtMoTa = findViewById(R.id.edt_mota);
+            areaPickImage = findViewById(R.id.area_pick_image);
+            tvPickHint = findViewById(R.id.tv_pick_hint);
+            imgPreview = findViewById(R.id.img_preview);
+            btnSave = findViewById(R.id.btn_save_tin);
+            cbAc = findViewById(R.id.cb_ac);
+            cbWc = findViewById(R.id.cb_wc);
+            progressBar = findViewById(R.id.progressBar);
 
-        areaPickImage.setOnClickListener(v -> {
-            // Kiểm tra quyền trước khi mở gallery
-            if (checkStoragePermission()) {
-                openImagePicker();
-            } else {
-                requestStoragePermission();
+            // Null checks để tránh crash
+            if (btnBack == null || edtTieuDe == null || edtGia == null || edtMoTa == null ||
+                areaPickImage == null || tvPickHint == null || imgPreview == null ||
+                btnSave == null || cbAc == null || cbWc == null) {
+                Toast.makeText(this, "Lỗi: Không thể tải giao diện", Toast.LENGTH_LONG).show();
+                finish();
+                return;
             }
-        });
 
-        btnSave.setOnClickListener(v -> savePhongToDatabase());
+            btnBack.setOnClickListener(v -> finish());
+
+            areaPickImage.setOnClickListener(v -> {
+                // Kiểm tra quyền trước khi mở gallery
+                if (checkStoragePermission()) {
+                    openImagePicker();
+                } else {
+                    requestStoragePermission();
+                }
+            });
+
+            btnSave.setOnClickListener(v -> savePhongToDatabase());
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Error in initViews: " + e.getMessage(), e);
+            Toast.makeText(this, "Lỗi khởi tạo giao diện: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            finish();
+        }
     }
 
     /**
      * Load dữ liệu để edit
      */
     private void loadDataForEdit() {
-        if (editPhongId == null) return;
-        
-        // Load từ Intent trước (nhanh hơn) - chỉ để hiển thị tạm
-        Intent intent = getIntent();
-        String title = intent.getStringExtra("title");
-        double price = intent.getDoubleExtra("price", 0);
-        String description = intent.getStringExtra("description");
-        
-        if (title != null && !title.isEmpty()) {
-            edtTieuDe.setText(title);
+        try {
+            if (editPhongId == null || editPhongId.isEmpty()) {
+                Log.e(TAG, "EditPhongId is null or empty");
+                Toast.makeText(this, "Lỗi: Không có ID phòng để chỉnh sửa", Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }
+            
+            Log.d(TAG, "Loading data for edit - PhongId: " + editPhongId);
+            
+            // Load từ Intent trước (nhanh hơn) - chỉ để hiển thị tạm
+            Intent intent = getIntent();
+            if (intent != null) {
+                String title = intent.getStringExtra("title");
+                double price = intent.getDoubleExtra("price", 0);
+                String description = intent.getStringExtra("description");
+                
+                Log.d(TAG, "Intent data - Title: " + title + ", Price: " + price);
+                
+                if (title != null && !title.isEmpty() && edtTieuDe != null) {
+                    edtTieuDe.setText(title);
+                }
+                if (price > 0 && edtGia != null) {
+                    edtGia.setText(String.valueOf((long)price));
+                }
+                if (description != null && !description.isEmpty() && edtMoTa != null) {
+                    edtMoTa.setText(description);
+                }
+            }
+            
+            // Cập nhật button text ngay lập tức
+            if (btnSave != null) {
+                btnSave.setText("Cập nhật tin đăng");
+            }
+            
+            // Không load từ database nữa để tránh crash - chỉ dùng dữ liệu từ Intent
+            Toast.makeText(this, "✅ Đã tải dữ liệu để chỉnh sửa", Toast.LENGTH_SHORT).show();
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Error in loadDataForEdit: " + e.getMessage(), e);
+            Toast.makeText(this, "Lỗi load dữ liệu: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
-        if (price > 0) {
-            edtGia.setText(String.valueOf((long)price));
-        }
-        if (description != null && !description.isEmpty()) {
-            edtMoTa.setText(description);
-        }
-        
-        // Cập nhật button text ngay lập tức
-        btnSave.setText("Cập nhật tin đăng");
-        
-        // Load đầy đủ dữ liệu từ database (để đảm bảo dữ liệu chính xác)
-        new LoadPhongForEditTask().execute(editPhongId);
     }
 
     /**
@@ -528,13 +573,22 @@ public class EditTin extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            if (progressBar != null) {
-                progressBar.setVisibility(View.VISIBLE);
+            try {
+                if (progressBar != null) {
+                    progressBar.setVisibility(View.VISIBLE);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error in onPreExecute: " + e.getMessage(), e);
             }
         }
 
         @Override
         protected Phong doInBackground(String... params) {
+            if (params == null || params.length == 0 || params[0] == null) {
+                errorMsg = "Không có PhongId để load";
+                return null;
+            }
+            
             String phongId = params[0];
             
             Connection conn = null;
@@ -543,7 +597,18 @@ public class EditTin extends AppCompatActivity {
                 Log.d(TAG, "PhongId: " + phongId);
                 
                 conn = DatabaseHelper.getConnection();
+                if (conn == null) {
+                    errorMsg = "Không thể kết nối database";
+                    return null;
+                }
+                
                 String chuTroId = sessionManager.getUserId();
+                if (chuTroId == null) {
+                    errorMsg = "Không thể xác định tài khoản chủ trọ";
+                    return null;
+                }
+                
+                Log.d(TAG, "ChuTroId: " + chuTroId);
                 
                 ManagePhongDao dao = new ManagePhongDao();
                 Phong result = dao.getPhongForEdit(conn, phongId, chuTroId);
@@ -556,7 +621,9 @@ public class EditTin extends AppCompatActivity {
                 errorMsg = e.getMessage();
                 return null;
             } finally {
-                DatabaseHelper.closeConnection(conn);
+                if (conn != null) {
+                    DatabaseHelper.closeConnection(conn);
+                }
             }
         }
 
@@ -564,38 +631,50 @@ public class EditTin extends AppCompatActivity {
         protected void onPostExecute(Phong phong) {
             super.onPostExecute(phong);
             
-            if (progressBar != null) {
-                progressBar.setVisibility(View.GONE);
-            }
+            try {
+                if (progressBar != null) {
+                    progressBar.setVisibility(View.GONE);
+                }
 
-            if (phong != null) {
-                // Điền dữ liệu vào các trường
-                edtTieuDe.setText(phong.getTieuDe());
-                edtGia.setText(String.valueOf(phong.getGiaTien()));
-                
-                // Nếu có mô tả, điền vào trường mô tả
-                if (phong.getMoTa() != null && !phong.getMoTa().isEmpty()) {
-                    edtMoTa.setText(phong.getMoTa());
+                if (phong != null) {
+                    // Điền dữ liệu vào các trường
+                    if (edtTieuDe != null && phong.getTieuDe() != null) {
+                        edtTieuDe.setText(phong.getTieuDe());
+                    }
+                    
+                    if (edtGia != null) {
+                        edtGia.setText(String.valueOf(phong.getGiaTien()));
+                    }
+                    
+                    // Nếu có mô tả, điền vào trường mô tả
+                    if (edtMoTa != null && phong.getMoTa() != null && !phong.getMoTa().isEmpty()) {
+                        edtMoTa.setText(phong.getMoTa());
+                    }
+                    
+                    // Cập nhật button text
+                    if (btnSave != null) {
+                        btnSave.setText("Cập nhật tin đăng");
+                    }
+                    
+                    Toast.makeText(EditTin.this, 
+                        "✅ Đã tải dữ liệu: " + phong.getTieuDe(), 
+                        Toast.LENGTH_SHORT).show();
+                    
+                    Log.d(TAG, "Successfully loaded phong data for editing");
+                    
+                } else {
+                    String message = "❌ Không thể tải dữ liệu tin đăng";
+                    if (errorMsg != null) {
+                        message += "\nLỗi: " + errorMsg;
+                    }
+                    Toast.makeText(EditTin.this, message, Toast.LENGTH_LONG).show();
+                    
+                    Log.e(TAG, "Failed to load phong data: " + errorMsg);
                 }
                 
-                // Cập nhật button text
-                btnSave.setText("Cập nhật tin đăng");
-                
-                Toast.makeText(EditTin.this, 
-                    "✅ Đã tải dữ liệu: " + phong.getTieuDe(), 
-                    Toast.LENGTH_SHORT).show();
-                
-                Log.d(TAG, "Successfully loaded phong data for editing");
-                
-            } else {
-                String message = "❌ Không thể tải dữ liệu tin đăng";
-                if (errorMsg != null) {
-                    message += "\nLỗi: " + errorMsg;
-                }
-                Toast.makeText(EditTin.this, message, Toast.LENGTH_LONG).show();
-                
-                // Có thể quay về trang trước nếu không load được dữ liệu
-                // finish();
+            } catch (Exception e) {
+                Log.e(TAG, "Error in onPostExecute: " + e.getMessage(), e);
+                Toast.makeText(EditTin.this, "Lỗi hiển thị dữ liệu: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
     }
