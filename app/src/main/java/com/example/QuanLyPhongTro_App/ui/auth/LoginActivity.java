@@ -68,7 +68,22 @@ public class LoginActivity extends AppCompatActivity {
     private void setupListeners() {
         btnLogin.setOnClickListener(v -> handleLogin());
         txtForgotPassword.setOnClickListener(v -> Toast.makeText(this, "Chức năng đang phát triển", Toast.LENGTH_SHORT).show());
+        
+        // DEBUG: Long click to open database debug
+        txtForgotPassword.setOnLongClickListener(v -> {
+            Intent intent = new Intent(this, com.example.QuanLyPhongTro_App.ui.debug.DatabaseDebugActivity.class);
+            startActivity(intent);
+            return true;
+        });
+        
         txtGotoRegister.setOnClickListener(v -> showRegisterRoleDialog());
+        
+        // DEBUG: Long click to bypass login for testing
+        btnLogin.setOnLongClickListener(v -> {
+            Toast.makeText(this, "Bypass login - Đăng nhập test", Toast.LENGTH_SHORT).show();
+            bypassLogin();
+            return true;
+        });
     }
 
     private void handleLogin() {
@@ -275,6 +290,35 @@ public class LoginActivity extends AppCompatActivity {
         if (txtTargetRole != null) {
             String roleText = targetRole.equals("landlord") ? "Đăng nhập với vai trò: Chủ Trọ" : "Đăng nhập với vai trò: Người Thuê";
             txtTargetRole.setText(roleText);
+        }
+    }
+    
+    // DEBUG: Bypass login for testing when database is unavailable
+    private void bypassLogin() {
+        if ("landlord".equals(targetRole)) {
+            // Use REAL demo landlord ID from database
+            sessionManager.createLoginSession("00000000-0000-0000-0000-000000000002", "Nguyễn Văn A (Chủ Trọ)", "chutro@test.com", "landlord");
+            sessionManager.setLandlordStatus(true);
+            sessionManager.setDisplayRole("landlord");
+            
+            Toast.makeText(this, "Đăng nhập demo thành công - Chủ Trọ!", Toast.LENGTH_SHORT).show();
+            
+            Intent intent = new Intent(this, com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+        } else {
+            // Use REAL demo tenant ID from database
+            sessionManager.createLoginSession("00000000-0000-0000-0000-000000000001", "Trần Thị B (Người Thuê)", "nguoithue@test.com", "tenant");
+            sessionManager.setLandlordStatus(false);
+            sessionManager.setDisplayRole("tenant");
+            
+            Toast.makeText(this, "Đăng nhập demo thành công - Người Thuê!", Toast.LENGTH_SHORT).show();
+            
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
         }
     }
 }

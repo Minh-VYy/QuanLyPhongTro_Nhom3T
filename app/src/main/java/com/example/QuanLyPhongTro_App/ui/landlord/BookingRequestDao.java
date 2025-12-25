@@ -1,7 +1,6 @@
 package com.example.QuanLyPhongTro_App.ui.landlord;
 
 import android.util.Log;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,16 +11,31 @@ import java.util.List;
 public class BookingRequestDao {
     private static final String TAG = "BookingRequestDao";
 
-    /**
-     * Lấy danh sách yêu cầu đặt phòng của chủ trọ
-     */
     public List<BookingRequest> getBookingRequestsByLandlord(Connection connection, String chuTroId) {
         List<BookingRequest> bookings = new ArrayList<>();
         
+        Log.d(TAG, "=== DEBUGGING BOOKING REQUESTS ===");
+        Log.d(TAG, "Input ChuTroId: " + chuTroId);
+        
+        // Try a simpler query first
+        String simpleQuery = "SELECT COUNT(*) as total FROM DatPhong WHERE ChuTroId = ?";
+        try (PreparedStatement simpleStmt = connection.prepareStatement(simpleQuery)) {
+            simpleStmt.setString(1, chuTroId);
+            try (ResultSet simpleRs = simpleStmt.executeQuery()) {
+                if (simpleRs.next()) {
+                    int directCount = simpleRs.getInt("total");
+                    Log.d(TAG, "Direct ChuTroId match count: " + directCount);
+                }
+            }
+        } catch (SQLException e) {
+            Log.e(TAG, "Simple query error: " + e.getMessage(), e);
+        }
+        
+        // Use simpler query without NhaTro JOIN since ChuTroId is directly in DatPhong
         String query = "SELECT " +
                 "dp.DatPhongId, dp.PhongId, dp.NguoiThueId, dp.ChuTroId, " +
                 "dp.Loai, dp.BatDau, dp.KetThuc, dp.ThoiGianTao, " +
-                "dp.TrangThaiId, dp.GhiChu, dp.SoDatPhong, " +
+                "dp.TrangThaiId, dp.GhiChu, " +
                 "hs.HoTen as TenNguoiThue, " +
                 "p.TieuDe as TenPhong, " +
                 "tt.TenTrangThai " +
@@ -29,18 +43,20 @@ public class BookingRequestDao {
                 "INNER JOIN NguoiDung nd ON dp.NguoiThueId = nd.NguoiDungId " +
                 "INNER JOIN HoSoNguoiDung hs ON nd.NguoiDungId = hs.NguoiDungId " +
                 "INNER JOIN Phong p ON dp.PhongId = p.PhongId " +
-                "INNER JOIN NhaTro nt ON p.NhaTroId = nt.NhaTroId " +
                 "INNER JOIN TrangThaiDatPhong tt ON dp.TrangThaiId = tt.TrangThaiId " +
-                "WHERE nt.ChuTroId = ? " +
+                "WHERE dp.ChuTroId = ? " +
                 "ORDER BY dp.ThoiGianTao DESC";
 
+        Log.d(TAG, "Executing simplified query: " + query);
+        
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, chuTroId);
-            
-            Log.d(TAG, "Executing query for landlord: " + chuTroId);
+            Log.d(TAG, "Query parameter: " + chuTroId);
             
             try (ResultSet rs = stmt.executeQuery()) {
+                int count = 0;
                 while (rs.next()) {
+                    count++;
                     BookingRequest booking = new BookingRequest();
                     booking.setDatPhongId(rs.getString("DatPhongId"));
                     booking.setPhongId(rs.getString("PhongId"));
@@ -55,23 +71,45 @@ public class BookingRequestDao {
                     booking.setTrangThaiId(rs.getInt("TrangThaiId"));
                     booking.setTenTrangThai(rs.getString("TenTrangThai"));
                     booking.setGhiChu(rs.getString("GhiChu"));
-                    booking.setSoDatPhong(rs.getInt("SoDatPhong"));
+                    booking.setSoDatPhong(0);
                     
                     bookings.add(booking);
-                    Log.d(TAG, "Found booking: " + booking.getTenNguoiThue() + " - " + booking.getTenPhong());
+                    Log.d(TAG, "Found booking #" + count + ": " + booking.getTenNguoiThue() + " - " + booking.getTenPhong());
                 }
+                Log.d(TAG, "Total records processed: " + count);
             }
         } catch (SQLException e) {
-            Log.e(TAG, "Error getting booking requests", e);
+            Log.e(TAG, "SQL Error: " + e.getMessage(), e);
+            
+            try {
+                PreparedStatement countStmt = connection.prepareStatement("SELECT COUNT(*) as total FROM DatPhong");
+                ResultSet countRs = countStmt.executeQuery();
+                if (countRs.next()) {
+                    Log.d(TAG, "Total DatPhong records: " + countRs.getInt("total"));
+                }
+                countRs.close();
+                countStmt.close();
+                
+                PreparedStatement landlordStmt = connection.prepareStatement(
+                    "SELECT COUNT(*) as total FROM DatPhong WHERE ChuTroId = ?");
+                landlordStmt.setString(1, chuTroId);
+                ResultSet landlordRs = landlordStmt.executeQuery();
+                if (landlordRs.next()) {
+                    Log.d(TAG, "Records for landlord " + chuTroId + ": " + landlordRs.getInt("total"));
+                }
+                landlordRs.close();
+                landlordStmt.close();
+                
+            } catch (SQLException debugE) {
+                Log.e(TAG, "Debug query error: " + debugE.getMessage(), debugE);
+            }
         }
         
-        Log.d(TAG, "Total bookings found: " + bookings.size());
+        Log.d(TAG, "Final result size: " + bookings.size());
+        Log.d(TAG, "=== END DEBUGGING ===");
         return bookings;
     }
 
-    /**
-     * Cập nhật trạng thái yêu cầu đặt phòng
-     */
     public boolean updateBookingStatus(Connection connection, String datPhongId, int newStatusId) {
         String query = "UPDATE DatPhong SET TrangThaiId = ? WHERE DatPhongId = ?";
         
@@ -88,9 +126,6 @@ public class BookingRequestDao {
         }
     }
 
-    /**
-     * Lấy ID trạng thái theo tên
-     */
     public int getStatusIdByName(Connection connection, String statusName) {
         String query = "SELECT TrangThaiId FROM TrangThaiDatPhong WHERE TenTrangThai = ?";
         
@@ -106,60 +141,6 @@ public class BookingRequestDao {
             Log.e(TAG, "Error getting status ID", e);
         }
         
-        return -1; // Not found
-    }
-
-    /**
-     * Lấy danh sách yêu cầu theo trạng thái
-     */
-    public List<BookingRequest> getBookingRequestsByStatus(Connection connection, String chuTroId, String statusName) {
-        List<BookingRequest> bookings = new ArrayList<>();
-        
-        String query = "SELECT " +
-                "dp.DatPhongId, dp.PhongId, dp.NguoiThueId, dp.ChuTroId, " +
-                "dp.Loai, dp.BatDau, dp.KetThuc, dp.ThoiGianTao, " +
-                "dp.TrangThaiId, dp.GhiChu, dp.SoDatPhong, " +
-                "hs.HoTen as TenNguoiThue, " +
-                "p.TieuDe as TenPhong, " +
-                "tt.TenTrangThai " +
-                "FROM DatPhong dp " +
-                "INNER JOIN NguoiDung nd ON dp.NguoiThueId = nd.NguoiDungId " +
-                "INNER JOIN HoSoNguoiDung hs ON nd.NguoiDungId = hs.NguoiDungId " +
-                "INNER JOIN Phong p ON dp.PhongId = p.PhongId " +
-                "INNER JOIN NhaTro nt ON p.NhaTroId = nt.NhaTroId " +
-                "INNER JOIN TrangThaiDatPhong tt ON dp.TrangThaiId = tt.TrangThaiId " +
-                "WHERE nt.ChuTroId = ? AND tt.TenTrangThai = ? " +
-                "ORDER BY dp.ThoiGianTao DESC";
-
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, chuTroId);
-            stmt.setString(2, statusName);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    BookingRequest booking = new BookingRequest();
-                    booking.setDatPhongId(rs.getString("DatPhongId"));
-                    booking.setPhongId(rs.getString("PhongId"));
-                    booking.setNguoiThueId(rs.getString("NguoiThueId"));
-                    booking.setChuTroId(rs.getString("ChuTroId"));
-                    booking.setTenNguoiThue(rs.getString("TenNguoiThue"));
-                    booking.setTenPhong(rs.getString("TenPhong"));
-                    booking.setLoai(rs.getString("Loai"));
-                    booking.setBatDau(rs.getTimestamp("BatDau"));
-                    booking.setKetThuc(rs.getTimestamp("KetThuc"));
-                    booking.setThoiGianTao(rs.getTimestamp("ThoiGianTao"));
-                    booking.setTrangThaiId(rs.getInt("TrangThaiId"));
-                    booking.setTenTrangThai(rs.getString("TenTrangThai"));
-                    booking.setGhiChu(rs.getString("GhiChu"));
-                    booking.setSoDatPhong(rs.getInt("SoDatPhong"));
-                    
-                    bookings.add(booking);
-                }
-            }
-        } catch (SQLException e) {
-            Log.e(TAG, "Error getting booking requests by status", e);
-        }
-        
-        return bookings;
+        return -1;
     }
 }

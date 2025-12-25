@@ -55,6 +55,7 @@
         <activity android:name=".ui.tenant.ProfileActivity" />
         <activity android:name=".ui.tenant.EditProfileActivity" />
         <activity android:name=".ui.tenant.DatabaseTestActivity" />
+        <activity android:name=".ui.debug.DatabaseDebugActivity" />
         <activity
             android:name=".ui.tenant.MessageDetailActivity"
             android:exported="false"
