@@ -10,5 +10,22 @@
         android:layout_height="match_parent"
         android:padding="8dp" />
 
+    <TextView
+        android:id="@+id/emptyView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Chưa có lịch hẹn nào"
+        android:textSize="16sp"
+        android:textColor="@color/text_secondary"
+        android:visibility="gone" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
 </FrameLayout>
 
