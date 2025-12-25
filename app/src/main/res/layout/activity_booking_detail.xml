@@ -124,7 +124,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_calendar"
-                    android:tint="@color/primary" />
+                    app:tint="@color/primary" />
 
                 <TextView
                     android:id="@+id/tvBookingDate"
@@ -146,7 +146,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_time"
-                    android:tint="@color/primary" />
+                    app:tint="@color/primary" />
 
                 <TextView
                     android:id="@+id/tvBookingTime"

@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
 import com.example.QuanLyPhongTro_App.ui.tenant.MessageDetailActivity;
 import com.example.QuanLyPhongTro_App.utils.LandlordBottomNavigationHelper;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
@@ -36,6 +37,9 @@ import java.util.Locale;
 import java.util.Set;
 
 public class YeuCau extends AppCompatActivity {
+    
+    private static final int DATABASE_TIMEOUT_MS = 20000; // 20 seconds
+    private static final int RETRY_DELAY_MS = 100;
 
     private TextView btnDatLich, btnTinNhan, btnThanhToan;
     private RecyclerView rvBookings, rvMessages, rvPayments;
@@ -311,19 +315,46 @@ public class YeuCau extends AppCompatActivity {
     
     private int getStatusIdFromName(String statusName) {
         switch (statusName) {
-            case "DaXacNhan": return 2;
-            case "DaHuy": return 3;
-            case "ChoXacNhan": 
-            default: return 1;
+            case "ChoXacNhan":
+            case "Chờ xác nhận":
+                return 1;
+            case "DaXacNhan":
+            case "Đã xác nhận":
+                return 2;
+            case "DangThue":
+            case "Đang thuê":
+                return 3;
+            case "DaHoanThanh":
+            case "Đã hoàn thành":
+                return 4;
+            case "DaHuy":
+            case "Đã hủy":
+                return 5;
+            default:
+                Log.w("YeuCau", "Unknown status name: " + statusName + ", defaulting to 1");
+                return 1;
         }
     }
     
     private String getStatusDisplayText(String statusName) {
         switch (statusName) {
-            case "DaXacNhan": return "chấp nhận";
-            case "DaHuy": return "từ chối";
-            case "ChoXacNhan": return "đặt về chờ xác nhận";
-            default: return "cập nhật";
+            case "DaXacNhan":
+            case "Đã xác nhận":
+                return "chấp nhận";
+            case "DaHuy":
+            case "Đã hủy":
+                return "từ chối";
+            case "ChoXacNhan":
+            case "Chờ xác nhận":
+                return "đặt về chờ xác nhận";
+            case "DangThue":
+            case "Đang thuê":
+                return "chuyển sang đang thuê";
+            case "DaHoanThanh":
+            case "Đã hoàn thành":
+                return "hoàn thành";
+            default:
+                return "cập nhật";
         }
     }
 
@@ -399,11 +430,7 @@ public class YeuCau extends AppCompatActivity {
                 Connection connection = null;
                 try {
                     Log.d("YeuCau", "🔄 Attempting database connection for booking requests...");
-                    String url = "jdbc:jtds:sqlserver://172.26.98.234:1433/QuanLyPhongTro";
-                    String username = "sa";
-                    String password = "27012005";
-                    
-                    connection = DriverManager.getConnection(url, username, password);
+                    connection = DatabaseHelper.getConnection();
                     Log.d("YeuCau", "✅ Database connection successful");
                     
                     result[0] = bookingDao.getBookingRequestsByLandlord(connection, landlordId);
@@ -438,7 +465,7 @@ public class YeuCau extends AppCompatActivity {
             }
             
             if (!completed[0]) {
-                Log.e("YeuCau", "⏰ Database query timeout after 15 seconds");
+                Log.e("YeuCau", "⏰ Database query timeout after " + (DATABASE_TIMEOUT_MS/1000) + " seconds");
                 error[0] = "Database query timeout";
             }
             
@@ -642,11 +669,7 @@ public class YeuCau extends AppCompatActivity {
                 Connection connection = null;
                 try {
                     Log.d("YeuCau", "🔄 Connecting to database for status update...");
-                    String url = "jdbc:jtds:sqlserver://172.26.98.234:1433/QuanLyPhongTro";
-                    String username = "sa";
-                    String password = "27012005";
-                    
-                    connection = DriverManager.getConnection(url, username, password);
+                    connection = DatabaseHelper.getConnection();
                     Log.d("YeuCau", "✅ Database connection successful for update");
                     
                     // Verify booking ownership

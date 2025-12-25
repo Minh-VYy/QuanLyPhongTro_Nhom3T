@@ -85,22 +85,73 @@ public class BookingRequestDao {
     }
 
     public boolean updateBookingStatus(Connection connection, String datPhongId, int newStatusId) {
-        String query = "UPDATE DatPhong SET TrangThaiId = ? WHERE DatPhongId = ?";
+        Log.d(TAG, "=== UPDATING BOOKING STATUS ===");
+        Log.d(TAG, "DatPhongId: " + datPhongId + ", NewStatusId: " + newStatusId);
         
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, newStatusId);
-            stmt.setString(2, datPhongId);
+        // Start transaction
+        try {
+            connection.setAutoCommit(false);
             
-            int rowsAffected = stmt.executeUpdate();
-            Log.d(TAG, "Updated booking status. Rows affected: " + rowsAffected);
-            return rowsAffected > 0;
+            // First verify the booking exists
+            String checkQuery = "SELECT TrangThaiId FROM DatPhong WHERE DatPhongId = ?";
+            try (PreparedStatement checkStmt = connection.prepareStatement(checkQuery)) {
+                checkStmt.setString(1, datPhongId);
+                try (ResultSet rs = checkStmt.executeQuery()) {
+                    if (!rs.next()) {
+                        Log.e(TAG, "❌ Booking not found: " + datPhongId);
+                        connection.rollback();
+                        return false;
+                    }
+                    int currentStatus = rs.getInt("TrangThaiId");
+                    Log.d(TAG, "Current status: " + currentStatus + " → New status: " + newStatusId);
+                }
+            }
+            
+            // Update the status
+            String updateQuery = "UPDATE DatPhong SET TrangThaiId = ?, UpdatedAt = GETDATE() WHERE DatPhongId = ?";
+            try (PreparedStatement updateStmt = connection.prepareStatement(updateQuery)) {
+                updateStmt.setInt(1, newStatusId);
+                updateStmt.setString(2, datPhongId);
+                
+                int rowsAffected = updateStmt.executeUpdate();
+                Log.d(TAG, "Update result - Rows affected: " + rowsAffected);
+                
+                if (rowsAffected > 0) {
+                    connection.commit();
+                    Log.d(TAG, "✅ Booking status updated successfully");
+                    return true;
+                } else {
+                    connection.rollback();
+                    Log.e(TAG, "❌ No rows affected during update");
+                    return false;
+                }
+            }
+            
         } catch (SQLException e) {
-            Log.e(TAG, "Error updating booking status: " + e.getMessage(), e);
+            Log.e(TAG, "❌ SQL Error updating booking status: " + e.getMessage(), e);
+            try {
+                connection.rollback();
+                Log.d(TAG, "Transaction rolled back");
+            } catch (SQLException rollbackEx) {
+                Log.e(TAG, "Error during rollback: " + rollbackEx.getMessage(), rollbackEx);
+            }
             return false;
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                Log.e(TAG, "Error resetting auto-commit: " + e.getMessage(), e);
+            }
         }
     }
 
     public int getStatusIdByName(Connection connection, String statusName) {
+        Log.d(TAG, "=== GETTING STATUS ID ===");
+        Log.d(TAG, "Looking for status: " + statusName);
+        
+        // Map common status names to IDs (fallback)
+        int fallbackId = getFallbackStatusId(statusName);
+        
         String query = "SELECT TrangThaiId FROM TrangThaiDatPhong WHERE TenTrangThai = ?";
         
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -108,13 +159,41 @@ public class BookingRequestDao {
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt("TrangThaiId");
+                    int statusId = rs.getInt("TrangThaiId");
+                    Log.d(TAG, "✅ Found status ID: " + statusId + " for " + statusName);
+                    return statusId;
+                } else {
+                    Log.w(TAG, "⚠️ Status not found in DB, using fallback: " + fallbackId);
+                    return fallbackId;
                 }
             }
         } catch (SQLException e) {
-            Log.e(TAG, "Error getting status ID: " + e.getMessage(), e);
+            Log.e(TAG, "❌ Error getting status ID: " + e.getMessage(), e);
+            Log.w(TAG, "Using fallback status ID: " + fallbackId);
+            return fallbackId;
         }
-        
-        return 1; // Default to "Chờ xác nhận"
+    }
+    
+    private int getFallbackStatusId(String statusName) {
+        switch (statusName) {
+            case "ChoXacNhan":
+            case "Chờ xác nhận":
+                return 1;
+            case "DaXacNhan":
+            case "Đã xác nhận":
+                return 2;
+            case "DangThue":
+            case "Đang thuê":
+                return 3;
+            case "DaHoanThanh":
+            case "Đã hoàn thành":
+                return 4;
+            case "DaHuy":
+            case "Đã hủy":
+                return 5;
+            default:
+                Log.w(TAG, "Unknown status name: " + statusName + ", defaulting to 1");
+                return 1;
+        }
     }
 }

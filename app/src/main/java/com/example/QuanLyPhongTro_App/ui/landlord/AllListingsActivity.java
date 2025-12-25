@@ -437,8 +437,9 @@ public class AllListingsActivity extends AppCompatActivity {
             }
             holder.tvStatus.setText(displayStatus);
             
-            // Xác định trạng thái active
-            boolean isActive = phong.isDuyet() && !phong.isBiKhoa();
+            // Xác định trạng thái active - Mặc định bật cho phòng không bị khóa
+            // (Bỏ điều kiện isDuyet vì phòng đã tự động duyệt khi tạo)
+            boolean isActive = !phong.isBiKhoa();
             holder.swActive.setChecked(isActive);
 
             // Đổi màu trạng thái

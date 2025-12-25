@@ -407,8 +407,9 @@ public class LandlordHomeActivity extends AppCompatActivity {
             displayStatus = phong.getTrangThai() != null ? phong.getTrangThai() : "Chưa xác định";
         }
         
-        // Xác định trạng thái active (phòng được duyệt và không bị khóa)
-        boolean isActive = phong.isDuyet() && !phong.isBiKhoa();
+        // Xác định trạng thái active - Mặc định bật cho phòng không bị khóa
+        // (Bỏ điều kiện isDuyet vì phòng đã tự động duyệt khi tạo)
+        boolean isActive = !phong.isBiKhoa();
         
         return new LandlordListing(
             phong.getPhongId(),

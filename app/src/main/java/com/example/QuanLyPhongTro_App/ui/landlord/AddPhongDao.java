@@ -26,10 +26,10 @@ public class AddPhongDao {
             // Tạo PhongId mới
             String phongId = UUID.randomUUID().toString();
 
-            // Insert phòng mới
+            // Insert phòng mới - Tự động duyệt khi đăng tin
             String insertQuery = "INSERT INTO Phong (PhongId, NhaTroId, TieuDe, GiaTien, TienCoc, " +
-                               "DienTich, SoNguoiToiDa, TrangThai, DiemTrungBinh, SoLuongDanhGia, CreatedAt) " +
-                               "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
+                               "DienTich, SoNguoiToiDa, TrangThai, DiemTrungBinh, SoLuongDanhGia, IsDuyet, CreatedAt) " +
+                               "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, GETDATE())";
 
             try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
                 stmt.setString(1, phongId);
@@ -42,11 +42,12 @@ public class AddPhongDao {
                 stmt.setString(8, "Còn trống"); // TrangThai mặc định
                 stmt.setFloat(9, 0.0f); // DiemTrungBinh mặc định 0
                 stmt.setInt(10, 0); // SoLuongDanhGia mặc định 0
+                // IsDuyet = 1 được set trực tiếp trong query (tự động duyệt)
 
                 int result = stmt.executeUpdate();
                 
                 if (result > 0) {
-                    Log.d(TAG, "✅ Successfully added phong: " + tieuDe + " with ID: " + phongId);
+                    Log.d(TAG, "✅ Successfully added and auto-approved phong: " + tieuDe + " with ID: " + phongId);
                     return true;
                 } else {
                     Log.e(TAG, "❌ Failed to add phong: " + tieuDe);
