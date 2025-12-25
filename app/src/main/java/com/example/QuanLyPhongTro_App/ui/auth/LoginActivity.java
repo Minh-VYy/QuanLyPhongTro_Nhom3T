@@ -34,7 +34,11 @@ public class LoginActivity extends AppCompatActivity {
     private String targetRole = "tenant";
 
     // --- Database Credentials --- 
+<<<<<<< HEAD
     private static final String IP = "172.26.98.234";  // Fixed IP to match computer
+=======
+    private static final String IP = "172.26.98.219";  // Fixed IP to match computer
+>>>>>>> 72f4d68c29696a544d76cadc9461c37ded9330d8
     private static final String PORT = "1433";
     private static final String DATABASE = "QuanLyPhongTro";
     private static final String USERNAME = "sa";

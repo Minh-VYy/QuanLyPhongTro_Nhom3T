@@ -350,30 +350,44 @@ public class PhongDao {
 
         List<Object> params = new ArrayList<>();
         
+        // Tìm kiếm theo từ khóa (tiêu đề, mô tả, địa chỉ, quận, phường)
         if (keyword != null && !keyword.trim().isEmpty()) {
-            query.append("AND (p.TieuDe LIKE ? OR p.MoTa LIKE ? OR nt.DiaChi LIKE ?) ");
+            query.append("AND (p.TieuDe COLLATE Latin1_General_CI_AI LIKE ? " +
+                        "OR p.MoTa COLLATE Latin1_General_CI_AI LIKE ? " +
+                        "OR nt.DiaChi COLLATE Latin1_General_CI_AI LIKE ? " +
+                        "OR qh.Ten COLLATE Latin1_General_CI_AI LIKE ? " +
+                        "OR ph.Ten COLLATE Latin1_General_CI_AI LIKE ?) ");
             String searchPattern = "%" + keyword + "%";
             params.add(searchPattern);
             params.add(searchPattern);
             params.add(searchPattern);
+            params.add(searchPattern);
+            params.add(searchPattern);
+            
+            Log.d(TAG, "Searching with keyword: " + keyword);
         }
         
         if (minPrice != null) {
             query.append("AND p.GiaTien >= ? ");
             params.add(minPrice);
+            Log.d(TAG, "Min price: " + minPrice);
         }
         
         if (maxPrice != null) {
             query.append("AND p.GiaTien <= ? ");
             params.add(maxPrice);
+            Log.d(TAG, "Max price: " + maxPrice);
         }
         
         if (quanHuyen != null && !quanHuyen.trim().isEmpty()) {
             query.append("AND qh.Ten = ? ");
             params.add(quanHuyen);
+            Log.d(TAG, "District: " + quanHuyen);
         }
         
         query.append("ORDER BY p.CreatedAt DESC");
+
+        Log.d(TAG, "Executing search query: " + query.toString());
 
         try (PreparedStatement stmt = conn.prepareStatement(query.toString())) {
             for (int i = 0; i < params.size(); i++) {
@@ -382,33 +396,42 @@ public class PhongDao {
             
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                Phong phong = new Phong();
-                phong.setPhongId(rs.getString("PhongId"));
-                phong.setTieuDe(rs.getString("TieuDe"));
-                phong.setDienTich(rs.getDouble("DienTich"));
-                phong.setGiaTien(rs.getLong("GiaTien"));
-                phong.setTienCoc(rs.getLong("TienCoc"));
-                phong.setSoNguoiToiDa(rs.getInt("SoNguoiToiDa"));
-                phong.setTrangThai(rs.getString("TrangThai"));
-                phong.setDiemTrungBinh(rs.getFloat("DiemTrungBinh"));
-                phong.setSoLuongDanhGia(rs.getInt("SoLuongDanhGia"));
-                phong.setMoTa(rs.getString("MoTa"));
-                phong.setDiaChiNhaTro(rs.getString("DiaChi"));
-                phong.setTenQuanHuyen(rs.getString("QuanHuyen"));
-                phong.setTenPhuong(rs.getString("Phuong"));
-                
-                List<String> anhList = new ArrayList<>();
-                String anhDaiDien = rs.getString("AnhDaiDien");
-                if (anhDaiDien != null) {
-                    anhList.add(anhDaiDien);
+                try {
+                    Phong phong = new Phong();
+                    phong.setPhongId(rs.getString("PhongId"));
+                    phong.setTieuDe(rs.getString("TieuDe"));
+                    phong.setDienTich(rs.getDouble("DienTich"));
+                    phong.setGiaTien(rs.getLong("GiaTien"));
+                    phong.setTienCoc(rs.getLong("TienCoc"));
+                    phong.setSoNguoiToiDa(rs.getInt("SoNguoiToiDa"));
+                    phong.setTrangThai(rs.getString("TrangThai"));
+                    
+                    float diemTB = rs.getFloat("DiemTrungBinh");
+                    phong.setDiemTrungBinh(rs.wasNull() ? 0 : diemTB);
+                    
+                    phong.setSoLuongDanhGia(rs.getInt("SoLuongDanhGia"));
+                    phong.setMoTa(rs.getString("MoTa"));
+                    phong.setDiaChiNhaTro(rs.getString("DiaChi"));
+                    phong.setTenQuanHuyen(rs.getString("QuanHuyen"));
+                    phong.setTenPhuong(rs.getString("Phuong"));
+                    
+                    List<String> anhList = new ArrayList<>();
+                    String anhDaiDien = rs.getString("AnhDaiDien");
+                    if (anhDaiDien != null && !anhDaiDien.isEmpty()) {
+                        anhList.add(anhDaiDien);
+                    }
+                    phong.setDanhSachAnhUrl(anhList);
+                    
+                    list.add(phong);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error parsing search result row: " + e.getMessage(), e);
                 }
-                phong.setDanhSachAnhUrl(anhList);
-                
-                list.add(phong);
             }
-            Log.d(TAG, "Search found " + list.size() + " phòng");
+            Log.d(TAG, "✅ Search found " + list.size() + " phòng");
         } catch (SQLException e) {
-            Log.e(TAG, "Error searching phòng: " + e.getMessage(), e);
+            Log.e(TAG, "❌ Error searching phòng: " + e.getMessage(), e);
+            Log.e(TAG, "SQL State: " + e.getSQLState());
+            Log.e(TAG, "Error Code: " + e.getErrorCode());
         }
         return list;
     }
