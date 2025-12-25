@@ -46,7 +46,7 @@ public class DatabaseDebugActivity extends AppCompatActivity {
             @Override
             public void onConnectionSuccess(Connection connection) {
                 runOnUiThread(() -> {
-                    tvStatus.setText("✅ Kết nối database thành công!\n\nDatabase: QuanLyPhongTro\nIP: 192.168.0.117:1433");
+                    tvStatus.setText("✅ Kết nối database thành công!\n\nDatabase: QuanLyPhongTro\nIP: 172.26.98.234:1433");
                     Toast.makeText(DatabaseDebugActivity.this, "Kết nối thành công!", Toast.LENGTH_SHORT).show();
                 });
                 
