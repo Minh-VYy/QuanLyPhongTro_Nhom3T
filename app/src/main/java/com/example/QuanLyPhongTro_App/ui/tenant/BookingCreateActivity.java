@@ -218,25 +218,12 @@ public class BookingCreateActivity extends AppCompatActivity {
                 DatPhong datPhong = new DatPhong();
                 
                 // Lấy PhongId từ currentRoom
-                // Lưu ý: Cần đảm bảo Room có phongId từ database khi load
-                // Nếu Room.id là local id, cần thêm field phongIdFromDb
                 String phongId = null;
                 
-                if (currentRoom != null) {
-                    // Tạm thời sử dụng một phòng mẫu từ database
-                    // TODO: Cần cập nhật Room model để lưu PhongId từ database
-                    // Hoặc truyền PhongId qua Intent khi mở BookingCreateActivity
-                    
-                    // Lấy phòng đầu tiên từ database để test
-                    PhongDao phongDao = new PhongDao();
-                    List<Phong> phongList = phongDao.getAllPhongAvailable(conn);
-                    if (!phongList.isEmpty()) {
-                        phongId = phongList.get(0).getPhongId();
-                    }
-                }
-                
-                if (phongId == null) {
-                    final String finalError = "Không tìm thấy thông tin phòng trong database. Vui lòng chọn phòng từ danh sách.";
+                if (currentRoom != null && currentRoom.getPhongId() != null) {
+                    phongId = currentRoom.getPhongId();
+                } else {
+                    final String finalError = "Không tìm thấy thông tin phòng. Vui lòng chọn phòng từ danh sách.";
                     runOnUiThread(() -> {
                         Toast.makeText(this, finalError, Toast.LENGTH_LONG).show();
                         btnConfirmBooking.setEnabled(true);
