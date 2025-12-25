@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,8 +42,13 @@ import com.example.QuanLyPhongTro_App.ui.tenant.MainActivity;
 import com.example.QuanLyPhongTro_App.ui.chatbot.ChatbotActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.LandlordBottomNavigationHelper;
+import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
+import com.example.QuanLyPhongTro_App.data.Phong.LandlordPhong;
+import com.example.QuanLyPhongTro_App.data.Phong.LandlordPhongDAO;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import android.os.AsyncTask;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +68,7 @@ public class LandlordHomeActivity extends AppCompatActivity {
     private FloatingActionButton fabTaoTin;
     private LinearLayout quickActionMenu;
     private boolean isMenuOpen = false;
+    private ProgressBar progressBar;
 
     // Biến cho tìm kiếm và lọc
     private String currentStatusFilter = "all";
@@ -133,6 +140,12 @@ public class LandlordHomeActivity extends AppCompatActivity {
         // Khởi tạo các view tìm kiếm
         searchInput = findViewById(R.id.searchInput);
         searchButton = findViewById(R.id.searchButton);
+        
+        // Khởi tạo ProgressBar
+        progressBar = findViewById(R.id.progressBar);
+        if (progressBar != null) {
+            progressBar.setVisibility(View.GONE);
+        }
     }
 
     private void setupFAB() {
@@ -236,11 +249,6 @@ public class LandlordHomeActivity extends AppCompatActivity {
         allListings.clear();
         filteredListings.clear();
 
-        // Sử dụng danh sách trống vì MockData đã bị xóa
-        List<LandlordListing> listings = new ArrayList<>();
-        allListings.addAll(listings);
-        filteredListings.addAll(listings);
-
         adapter = new ListingAdapter(filteredListings, listing -> {
             Intent intent = new Intent(this, EditTin.class);
             startActivity(intent);
@@ -248,25 +256,157 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
         rvListings.setAdapter(adapter);
 
-        // Cập nhật số lượng tin đăng
-        updateListingCounts();
+        // Load dữ liệu từ database
+        loadRoomsFromDatabase();
     }
+    
+    /**
+     * Load danh sách phòng từ database
+     */
+    private void loadRoomsFromDatabase() {
+        new LoadPhongTask().execute();
+        new LoadStatsTask().execute();
+    }
+    
+    /**
+     * AsyncTask để load phòng từ database
+     */
+    private class LoadPhongTask extends AsyncTask<Void, Void, List<LandlordPhong>> {
+        private String errorMsg = null;
 
-    private void updateListingCounts() {
-        int total = allListings.size();
-        int activeCount = 0;
-
-        for (LandlordListing listing : allListings) {
-            if (listing.isActive) {
-                activeCount++;
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if (progressBar != null) {
+                progressBar.setVisibility(View.VISIBLE);
             }
         }
 
-        TextView tvTotal = findViewById(R.id.tv_total_listings);
-        TextView tvActive = findViewById(R.id.tv_active_listings);
+        @Override
+        protected List<LandlordPhong> doInBackground(Void... voids) {
+            Connection conn = null;
+            try {
+                // Lấy ChuTroId từ session
+                String chuTroId = sessionManager.getUserId();
+                if (chuTroId == null || chuTroId.isEmpty()) {
+                    errorMsg = "Không tìm thấy thông tin chủ trọ";
+                    return null;
+                }
+                
+                // Mở connection
+                conn = DatabaseHelper.getConnection();
+                
+                // Load phòng từ database
+                LandlordPhongDAO dao = new LandlordPhongDAO();
+                return dao.getPhongByChuTroId(conn, chuTroId);
+                
+            } catch (Exception e) {
+                errorMsg = e.getMessage();
+                android.util.Log.e("LandlordHome", "Error loading phong: " + e.getMessage(), e);
+                return null;
+            } finally {
+                DatabaseHelper.closeConnection(conn);
+            }
+        }
 
-        if (tvTotal != null) tvTotal.setText(String.valueOf(total));
-        if (tvActive != null) tvActive.setText(String.valueOf(activeCount));
+        @Override
+        protected void onPostExecute(List<LandlordPhong> phongList) {
+            super.onPostExecute(phongList);
+            if (progressBar != null) {
+                progressBar.setVisibility(View.GONE);
+            }
+
+            if (phongList != null && !phongList.isEmpty()) {
+                // Convert LandlordPhong to LandlordListing
+                allListings.clear();
+                filteredListings.clear();
+                
+                for (LandlordPhong phong : phongList) {
+                    LandlordListing listing = convertLandlordPhongToListing(phong);
+                    allListings.add(listing);
+                    filteredListings.add(listing);
+                }
+                
+                adapter.notifyDataSetChanged();
+                Toast.makeText(LandlordHomeActivity.this, 
+                    "Đã tải " + phongList.size() + " phòng", 
+                    Toast.LENGTH_SHORT).show();
+                    
+            } else {
+                if (errorMsg != null) {
+                    Toast.makeText(LandlordHomeActivity.this, 
+                        "Lỗi: " + errorMsg, 
+                        Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(LandlordHomeActivity.this, 
+                        "Chưa có phòng nào", 
+                        Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
+    
+    /**
+     * AsyncTask để load thống kê
+     */
+    private class LoadStatsTask extends AsyncTask<Void, Void, int[]> {
+        @Override
+        protected int[] doInBackground(Void... voids) {
+            Connection conn = null;
+            try {
+                String chuTroId = sessionManager.getUserId();
+                if (chuTroId == null) {
+                    return new int[]{0, 0};
+                }
+                
+                conn = DatabaseHelper.getConnection();
+                LandlordPhongDAO dao = new LandlordPhongDAO();
+                
+                int total = dao.getTotalPhongCount(conn, chuTroId);
+                int active = dao.getActivePhongCount(conn, chuTroId);
+                
+                return new int[]{total, active};
+            } catch (Exception e) {
+                android.util.Log.e("LandlordHome", "Error loading stats: " + e.getMessage());
+                return new int[]{0, 0};
+            } finally {
+                DatabaseHelper.closeConnection(conn);
+            }
+        }
+
+        @Override
+        protected void onPostExecute(int[] stats) {
+            super.onPostExecute(stats);
+            TextView tvTotal = findViewById(R.id.tv_total_listings);
+            TextView tvActive = findViewById(R.id.tv_active_listings);
+            
+            if (tvTotal != null) tvTotal.setText(String.valueOf(stats[0]));
+            if (tvActive != null) tvActive.setText(String.valueOf(stats[1]));
+        }
+    }
+    
+    /**
+     * Convert LandlordPhong sang LandlordListing
+     */
+    private LandlordListing convertLandlordPhongToListing(LandlordPhong phong) {
+        String title = phong.getTieuDe();
+        String price = formatPrice(phong.getGiaTien());
+        String status = phong.getStatusDisplay();
+        boolean isActive = phong.isActive();
+        String imageName = "room_1"; // Default image
+        
+        return new LandlordListing(title, price, status, isActive, imageName);
+    }
+    
+    /**
+     * Format giá tiền
+     */
+    private String formatPrice(long giaTien) {
+        long trieu = giaTien / 1000000;
+        if (trieu == 0) {
+            return (giaTien / 1000) + " nghìn/tháng";
+        }
+        return trieu + " triệu/tháng";
     }
 
     public void afterTextChanged(Editable s) {
@@ -416,6 +556,8 @@ public class LandlordHomeActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         LandlordBottomNavigationHelper.setupBottomNavigation(this, "home");
+        // Refresh dữ liệu khi quay lại màn hình
+        loadRoomsFromDatabase();
     }
 
     // ==================== INTERNAL CLASSES ====================

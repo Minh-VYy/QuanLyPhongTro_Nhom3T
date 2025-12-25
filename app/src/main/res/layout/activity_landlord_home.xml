@@ -378,6 +378,15 @@
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false" />
 
+            <!-- ProgressBar để hiển thị khi đang load dữ liệu -->
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="32dp"
+                android:visibility="gone" />
+
             <!-- Bottom padding -->
             <View
                 android:layout_width="match_parent"
