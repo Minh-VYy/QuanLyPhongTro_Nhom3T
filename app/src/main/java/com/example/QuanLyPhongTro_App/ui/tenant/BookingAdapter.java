@@ -1,6 +1,8 @@
 package com.example.QuanLyPhongTro_App.ui.tenant;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,17 +14,29 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
+import com.example.QuanLyPhongTro_App.data.dao.DatPhongDao;
 
+import java.sql.Connection;
 import java.util.List;
 
 public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingViewHolder> {
 
     private Context context;
     private List<Booking> bookingList;
+    private OnBookingActionListener listener;
+
+    public interface OnBookingActionListener {
+        void onBookingCancelled();
+    }
 
     public BookingAdapter(Context context, List<Booking> bookingList) {
         this.context = context;
         this.bookingList = bookingList;
+    }
+
+    public void setOnBookingActionListener(OnBookingActionListener listener) {
+        this.listener = listener;
     }
 
     @NonNull
@@ -68,13 +82,79 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
         }
 
         holder.btnDetail.setOnClickListener(v -> {
-            Toast.makeText(context, "Xem chi tiết: " + booking.getTitle(), Toast.LENGTH_SHORT).show();
+            try {
+                String bookingId = booking.getId();
+                if (bookingId == null || bookingId.isEmpty()) {
+                    Toast.makeText(context, "Không tìm thấy ID đặt lịch", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                
+                Intent intent = new Intent(context, BookingDetailActivity.class);
+                intent.putExtra(BookingDetailActivity.EXTRA_BOOKING_ID, bookingId);
+                context.startActivity(intent);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(context, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         });
 
         holder.btnCancel.setOnClickListener(v -> {
-            Toast.makeText(context, "Huỷ lịch: " + booking.getTitle(), Toast.LENGTH_SHORT).show();
-            // TODO: Implement cancel booking
+            showCancelConfirmDialog(booking, position);
         });
+    }
+
+    private void showCancelConfirmDialog(Booking booking, int position) {
+        new AlertDialog.Builder(context)
+                .setTitle("Hủy lịch hẹn")
+                .setMessage("Bạn có chắc chắn muốn hủy lịch hẹn này?")
+                .setPositiveButton("Hủy lịch", (dialog, which) -> {
+                    cancelBooking(booking, position);
+                })
+                .setNegativeButton("Không", null)
+                .show();
+    }
+
+    private void cancelBooking(Booking booking, int position) {
+        new Thread(() -> {
+            Connection conn = null;
+            boolean success = false;
+
+            try {
+                conn = DatabaseHelper.getConnection();
+                DatPhongDao dao = new DatPhongDao();
+                
+                // Cập nhật trạng thái thành 4 (Đã hủy)
+                success = dao.updateTrangThai(conn, booking.getId(), 4);
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (conn != null) {
+                    DatabaseHelper.releaseConnection(conn);
+                }
+            }
+
+            final boolean finalSuccess = success;
+            
+            if (context instanceof android.app.Activity) {
+                ((android.app.Activity) context).runOnUiThread(() -> {
+                    if (finalSuccess) {
+                        Toast.makeText(context, "Đã hủy lịch hẹn", Toast.LENGTH_SHORT).show();
+                        
+                        // Cập nhật UI
+                        booking.setStatus("cancelled");
+                        notifyItemChanged(position);
+                        
+                        // Thông báo cho fragment reload
+                        if (listener != null) {
+                            listener.onBookingCancelled();
+                        }
+                    } else {
+                        Toast.makeText(context, "Không thể hủy lịch hẹn. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }).start();
     }
 
     @Override
