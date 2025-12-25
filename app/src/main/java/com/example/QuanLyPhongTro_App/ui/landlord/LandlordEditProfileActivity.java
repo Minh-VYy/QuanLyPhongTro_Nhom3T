@@ -1,7 +1,10 @@
 package com.example.QuanLyPhongTro_App.ui.landlord;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -15,11 +18,24 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.ui.tenant.DatabaseConnector;
+import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.sql.Connection;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class LandlordEditProfileActivity extends AppCompatActivity {
+
+    private static final String TAG = "LandlordEditProfile";
+    private SessionManager sessionManager;
+    private UserProfileDao userProfileDao;
+    private UserProfileDao.UserProfile currentProfile;
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
     private ImageView btnBack, ivAvatar, ivIdDocument;
     private LinearLayout btnChangeAvatar;
@@ -33,9 +49,12 @@ public class LandlordEditProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landlord_edit_profile);
 
+        sessionManager = new SessionManager(this);
+        userProfileDao = new UserProfileDao();
+
         initViews();
         setupListeners();
-        loadProfileData();
+        loadProfileDataFromDatabase();
     }
 
     private void initViews() {
@@ -86,44 +105,328 @@ public class LandlordEditProfileActivity extends AppCompatActivity {
     }
 
     private void loadProfileData() {
-        // TODO: Load actual landlord profile data from SessionManager or Database
-        // For now, using placeholder data from layout (already set in XML)
+        // Fallback method - load basic data from session
+        String userName = sessionManager.getUserName();
+        String userEmail = sessionManager.getUserEmail();
+        
+        if (userName != null && !userName.trim().isEmpty()) {
+            etFullName.setText(userName);
+        }
+        
+        if (userEmail != null && !userEmail.trim().isEmpty()) {
+            etEmail.setText(userEmail);
+        }
+        
+        // Set default gender
+        rbMale.setChecked(true);
+        
+        Log.d(TAG, "Loaded fallback profile data from session");
+    }
 
-        // Set initial gender (example)
-        // if (landlord.getGender().equals("Nam")) {
-        //    rbMale.setChecked(true);
-        // } else {
-        //    rbFemale.setChecked(true);
-        // }
-        rbMale.setChecked(true); // Default to Male for placeholder
+    private void loadProfileDataFromDatabase() {
+        String userId = sessionManager.getUserId();
+        if (userId == null) {
+            Log.w(TAG, "No user ID found in session, using fallback data");
+            loadProfileData();
+            return;
+        }
+
+        // Check if userId was passed from intent
+        String intentUserId = getIntent().getStringExtra("userId");
+        if (intentUserId != null) {
+            userId = intentUserId;
+        }
+
+        Log.d(TAG, "Loading profile data for user: " + userId);
+        new LoadProfileTask().execute(userId);
+    }
+
+    private void updateUIWithProfile(UserProfileDao.UserProfile profile) {
+        if (profile == null) {
+            Log.w(TAG, "Profile is null, using fallback data");
+            loadProfileData();
+            return;
+        }
+
+        currentProfile = profile;
+
+        // Basic info
+        if (profile.getHoTen() != null) {
+            etFullName.setText(profile.getHoTen());
+        }
+        
+        if (profile.getDienThoai() != null) {
+            etPhone.setText(profile.getDienThoai());
+        }
+        
+        if (profile.getEmail() != null) {
+            etEmail.setText(profile.getEmail());
+        }
+        
+        if (profile.getDiaChi() != null) {
+            etAddress.setText(profile.getDiaChi());
+        }
+
+        // Date of birth
+        if (profile.getNgaySinh() != null) {
+            String formattedDate = dateFormat.format(profile.getNgaySinh());
+            etDob.setText(formattedDate);
+        }
+
+        // Gender
+        if (profile.getGioiTinh() != null) {
+            if (profile.getGioiTinh().equalsIgnoreCase("Nam") || profile.getGioiTinh().equalsIgnoreCase("Male")) {
+                rbMale.setChecked(true);
+            } else if (profile.getGioiTinh().equalsIgnoreCase("Nữ") || profile.getGioiTinh().equalsIgnoreCase("Female")) {
+                rbFemale.setChecked(true);
+            }
+        } else {
+            rbMale.setChecked(true); // Default
+        }
+
+        // Bank info
+        if (profile.getTenNganHang() != null) {
+            etBankName.setText(profile.getTenNganHang());
+        }
+        
+        if (profile.getSoTaiKhoan() != null) {
+            etAccountNumber.setText(profile.getSoTaiKhoan());
+        }
+        
+        if (profile.getTenChuTaiKhoan() != null) {
+            etAccountHolderName.setText(profile.getTenChuTaiKhoan());
+        }
+
+        Log.d(TAG, "✅ UI updated with profile data");
+        Log.d(TAG, "👤 Name: " + profile.getHoTen());
+        Log.d(TAG, "📧 Email: " + profile.getEmail());
+        Log.d(TAG, "📱 Phone: " + profile.getDienThoai());
     }
 
     private void saveProfile() {
-        String fullName = etFullName.getText().toString();
-        String phone = etPhone.getText().toString();
-        String email = etEmail.getText().toString();
-        String address = etAddress.getText().toString();
-        String dob = etDob.getText().toString();
-
-        int selectedGenderId = rgGender.getCheckedRadioButtonId();
-        String gender = "";
-        if (selectedGenderId != -1) {
-            RadioButton selectedRadioButton = findViewById(selectedGenderId);
-            gender = selectedRadioButton.getText().toString();
+        if (currentProfile == null) {
+            Toast.makeText(this, "Không thể lưu: Chưa tải được thông tin hồ sơ", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        String bankName = etBankName.getText().toString();
-        String accountNumber = etAccountNumber.getText().toString();
-        String accountHolderName = etAccountHolderName.getText().toString();
+        // Validate required fields
+        String fullName = etFullName.getText().toString().trim();
+        String phone = etPhone.getText().toString().trim();
+        String email = etEmail.getText().toString().trim();
 
-        // TODO: Implement actual save logic (e.g., update SessionManager, send to server)
-        String message = "Lưu thay đổi hồ sơ Chủ trọ: " +
-                "\nHọ tên: " + fullName +
-                "\nNgày sinh: " + dob +
-                "\nGiới tính: " + gender +
-                "\nNgân hàng: " + bankName;
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        if (fullName.isEmpty()) {
+            etFullName.setError("Vui lòng nhập họ tên");
+            etFullName.requestFocus();
+            return;
+        }
 
-        finish();
+        if (email.isEmpty()) {
+            etEmail.setError("Vui lòng nhập email");
+            etEmail.requestFocus();
+            return;
+        }
+
+        // Update profile object with form data
+        currentProfile.setHoTen(fullName);
+        currentProfile.setDienThoai(phone);
+        currentProfile.setEmail(email);
+        currentProfile.setDiaChi(etAddress.getText().toString().trim());
+
+        // Handle date of birth
+        String dobText = etDob.getText().toString().trim();
+        if (!dobText.isEmpty()) {
+            try {
+                Date dob = dateFormat.parse(dobText);
+                currentProfile.setNgaySinh(dob);
+            } catch (ParseException e) {
+                Log.w(TAG, "Invalid date format: " + dobText);
+                etDob.setError("Định dạng ngày không hợp lệ (dd/MM/yyyy)");
+                etDob.requestFocus();
+                return;
+            }
+        }
+
+        // Handle gender
+        int selectedGenderId = rgGender.getCheckedRadioButtonId();
+        if (selectedGenderId != -1) {
+            RadioButton selectedRadioButton = findViewById(selectedGenderId);
+            String gender = selectedRadioButton.getText().toString();
+            currentProfile.setGioiTinh(gender);
+        }
+
+        // Handle bank info
+        currentProfile.setTenNganHang(etBankName.getText().toString().trim());
+        currentProfile.setSoTaiKhoan(etAccountNumber.getText().toString().trim());
+        currentProfile.setTenChuTaiKhoan(etAccountHolderName.getText().toString().trim());
+
+        // Save to database
+        Log.d(TAG, "Saving profile to database...");
+        new SaveProfileTask().execute(currentProfile);
+    }
+}
+
+    /**
+     * AsyncTask to load user profile from database
+     */
+    private class LoadProfileTask extends AsyncTask<String, Void, UserProfileDao.UserProfile> {
+        private String errorMessage;
+
+        @Override
+        protected UserProfileDao.UserProfile doInBackground(String... params) {
+            String userId = params[0];
+            UserProfileDao.UserProfile profile = null;
+
+            try {
+                DatabaseConnector.connect(new DatabaseConnector.ConnectionCallback() {
+                    @Override
+                    public void onConnectionSuccess(Connection connection) {
+                        try {
+                            UserProfileDao.UserProfile loadedProfile = userProfileDao.getUserProfile(connection, userId);
+                            synchronized (LoadProfileTask.this) {
+                                LoadProfileTask.this.profile = loadedProfile;
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error loading profile: " + e.getMessage(), e);
+                            errorMessage = e.getMessage();
+                        } finally {
+                            try {
+                                connection.close();
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error closing connection", e);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onConnectionFailed(String error) {
+                        Log.e(TAG, "Database connection failed: " + error);
+                        errorMessage = error;
+                    }
+                });
+
+                // Wait for connection callback to complete
+                Thread.sleep(3000);
+
+                synchronized (this) {
+                    return this.profile;
+                }
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error in LoadProfileTask: " + e.getMessage(), e);
+                errorMessage = e.getMessage();
+                return null;
+            }
+        }
+
+        private UserProfileDao.UserProfile profile;
+
+        @Override
+        protected void onPostExecute(UserProfileDao.UserProfile profile) {
+            if (profile != null) {
+                updateUIWithProfile(profile);
+            } else {
+                Log.w(TAG, "Failed to load profile from database: " + errorMessage);
+                Toast.makeText(LandlordEditProfileActivity.this, 
+                    "Không thể tải thông tin hồ sơ. Sử dụng dữ liệu tạm thời.", 
+                    Toast.LENGTH_SHORT).show();
+                loadProfileData(); // Fallback to session data
+            }
+        }
+    }
+
+    /**
+     * AsyncTask to save user profile to database
+     */
+    private class SaveProfileTask extends AsyncTask<UserProfileDao.UserProfile, Void, Boolean> {
+        private String errorMessage;
+
+        @Override
+        protected void onPreExecute() {
+            // Disable save button to prevent multiple saves
+            btnSave.setEnabled(false);
+            btnSave.setText("Đang lưu...");
+        }
+
+        @Override
+        protected Boolean doInBackground(UserProfileDao.UserProfile... params) {
+            UserProfileDao.UserProfile profile = params[0];
+            boolean success = false;
+
+            try {
+                DatabaseConnector.connect(new DatabaseConnector.ConnectionCallback() {
+                    @Override
+                    public void onConnectionSuccess(Connection connection) {
+                        try {
+                            boolean saveResult = userProfileDao.updateUserProfile(connection, profile);
+                            synchronized (SaveProfileTask.this) {
+                                SaveProfileTask.this.success = saveResult;
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error saving profile: " + e.getMessage(), e);
+                            errorMessage = e.getMessage();
+                        } finally {
+                            try {
+                                connection.close();
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error closing connection", e);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onConnectionFailed(String error) {
+                        Log.e(TAG, "Database connection failed: " + error);
+                        errorMessage = error;
+                    }
+                });
+
+                // Wait for connection callback to complete
+                Thread.sleep(3000);
+
+                synchronized (this) {
+                    return this.success;
+                }
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error in SaveProfileTask: " + e.getMessage(), e);
+                errorMessage = e.getMessage();
+                return false;
+            }
+        }
+
+        private boolean success;
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            // Re-enable save button
+            btnSave.setEnabled(true);
+            btnSave.setText("Lưu thay đổi");
+
+            if (success) {
+                Toast.makeText(LandlordEditProfileActivity.this, 
+                    "✅ Cập nhật hồ sơ thành công!", 
+                    Toast.LENGTH_SHORT).show();
+                
+                // Update session manager with new data
+                if (currentProfile != null) {
+                    sessionManager.createLoginSession(
+                        currentProfile.getNguoiDungId(),
+                        currentProfile.getHoTen(),
+                        currentProfile.getEmail(),
+                        sessionManager.getUserType()
+                    );
+                }
+                
+                // Return success result to calling activity
+                setResult(RESULT_OK);
+                finish();
+            } else {
+                String message = "❌ Không thể lưu hồ sơ";
+                if (errorMessage != null) {
+                    message += ": " + errorMessage;
+                }
+                Toast.makeText(LandlordEditProfileActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+        }
     }
 }
