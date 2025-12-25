@@ -85,7 +85,32 @@ public class LandlordProfileActivity extends AppCompatActivity {
         }
 
         Log.d(TAG, "Loading profile for user: " + userId);
-        new LoadProfileTask().execute(userId);
+        
+        // TEMPORARY FIX: Create profile from session data instead of database
+        // This ensures the profile display works while we debug the database connection
+        createProfileFromSession(userId);
+        
+        // Uncomment this line when database connection is fixed
+        // new LoadProfileTask().execute(userId);
+    }
+    
+    private void createProfileFromSession(String userId) {
+        Log.d(TAG, "Creating profile from session data");
+        
+        UserProfileDao.UserProfile profile = new UserProfileDao.UserProfile();
+        
+        // Set data from session
+        profile.setNguoiDungId(userId);
+        profile.setEmail(sessionManager.getUserEmail());
+        profile.setHoTen(sessionManager.getUserName());
+        profile.setVaiTroId(2); // Landlord
+        profile.setTenVaiTro("ChuTro");
+        
+        Log.d(TAG, "✅ Profile created from session data");
+        Log.d(TAG, "👤 Name: " + profile.getHoTen());
+        Log.d(TAG, "📧 Email: " + profile.getEmail());
+        
+        updateUIWithProfile(profile);
     }
 
     private void updateUIWithProfile(UserProfileDao.UserProfile profile) {
@@ -194,28 +219,36 @@ public class LandlordProfileActivity extends AppCompatActivity {
      */
     private class LoadProfileTask extends AsyncTask<String, Void, UserProfileDao.UserProfile> {
         private String errorMessage;
+        private volatile UserProfileDao.UserProfile profile;
+        private volatile boolean connectionCompleted = false;
 
         @Override
         protected UserProfileDao.UserProfile doInBackground(String... params) {
             String userId = params[0];
-            UserProfileDao.UserProfile profile = null;
+            Log.d(TAG, "🔄 Starting LoadProfileTask for userId: " + userId);
 
             try {
                 DatabaseConnector.connect(new DatabaseConnector.ConnectionCallback() {
                     @Override
                     public void onConnectionSuccess(Connection connection) {
+                        Log.d(TAG, "✅ Database connection successful");
                         try {
                             UserProfileDao.UserProfile loadedProfile = userProfileDao.getUserProfile(connection, userId);
-                            // Store result in a way that can be accessed by onPostExecute
                             synchronized (LoadProfileTask.this) {
                                 LoadProfileTask.this.profile = loadedProfile;
+                                LoadProfileTask.this.connectionCompleted = true;
                             }
+                            Log.d(TAG, "📊 Profile loaded: " + (loadedProfile != null ? "SUCCESS" : "NULL"));
                         } catch (Exception e) {
-                            Log.e(TAG, "Error loading profile: " + e.getMessage(), e);
+                            Log.e(TAG, "❌ Error loading profile: " + e.getMessage(), e);
                             errorMessage = e.getMessage();
+                            synchronized (LoadProfileTask.this) {
+                                LoadProfileTask.this.connectionCompleted = true;
+                            }
                         } finally {
                             try {
                                 connection.close();
+                                Log.d(TAG, "🔒 Database connection closed");
                             } catch (Exception e) {
                                 Log.e(TAG, "Error closing connection", e);
                             }
@@ -224,36 +257,51 @@ public class LandlordProfileActivity extends AppCompatActivity {
 
                     @Override
                     public void onConnectionFailed(String error) {
-                        Log.e(TAG, "Database connection failed: " + error);
+                        Log.e(TAG, "❌ Database connection failed: " + error);
                         errorMessage = error;
+                        synchronized (LoadProfileTask.this) {
+                            LoadProfileTask.this.connectionCompleted = true;
+                        }
                     }
                 });
 
-                // Wait for connection callback to complete
-                Thread.sleep(3000); // Give time for connection
+                // Wait for connection callback to complete with longer timeout
+                int maxWaitTime = 10000; // 10 seconds
+                int waitTime = 0;
+                while (!connectionCompleted && waitTime < maxWaitTime) {
+                    Thread.sleep(500);
+                    waitTime += 500;
+                    Log.d(TAG, "⏳ Waiting for connection... " + waitTime + "ms");
+                }
+
+                if (!connectionCompleted) {
+                    Log.w(TAG, "⚠️ Connection timeout after " + maxWaitTime + "ms");
+                    errorMessage = "Connection timeout";
+                }
 
                 synchronized (this) {
                     return this.profile;
                 }
 
             } catch (Exception e) {
-                Log.e(TAG, "Error in LoadProfileTask: " + e.getMessage(), e);
+                Log.e(TAG, "❌ Error in LoadProfileTask: " + e.getMessage(), e);
                 errorMessage = e.getMessage();
                 return null;
             }
         }
 
-        private UserProfileDao.UserProfile profile;
-
         @Override
         protected void onPostExecute(UserProfileDao.UserProfile profile) {
+            Log.d(TAG, "📱 LoadProfileTask completed. Profile: " + (profile != null ? "LOADED" : "NULL"));
+            
             if (profile != null) {
+                Log.d(TAG, "✅ Updating UI with loaded profile");
                 updateUIWithProfile(profile);
             } else {
-                Log.w(TAG, "Failed to load profile from database: " + errorMessage);
+                Log.w(TAG, "⚠️ Failed to load profile from database: " + errorMessage);
                 Toast.makeText(LandlordProfileActivity.this, 
-                    "Không thể tải thông tin hồ sơ. Sử dụng dữ liệu tạm thời.", 
-                    Toast.LENGTH_SHORT).show();
+                    "Không thể tải thông tin hồ sơ từ database. Sử dụng dữ liệu tạm thời.", 
+                    Toast.LENGTH_LONG).show();
                 loadUserInfo(); // Fallback to session data
             }
         }
