@@ -41,6 +41,7 @@
                 android:layout_weight="1" />
 
             <ImageView
+                android:id="@+id/btnMessages"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_message"
@@ -113,6 +114,7 @@
                     android:text="Bộ lọc"
                     android:textColor="@color/white"
                     android:textSize="12sp" />
+
 
                 <Button
                     android:id="@+id/btnPriceFilter"
@@ -331,19 +333,5 @@
 
     </LinearLayout>
 
-    <!-- Chatbot FAB - Draggable -->
-    <com.example.QuanLyPhongTro_App.ui.chatbot.DraggableChatbotView
-        android:id="@+id/fabChatbot"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="80dp"
-        android:src="@drawable/ic_chatbot"
-        android:contentDescription="Trợ lý AI"
-        app:tint="@android:color/white"
-        app:backgroundTint="#2196F3"
-        app:elevation="6dp"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -13,7 +13,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.QuanLyPhongTro_App.R;
 import com.example.QuanLyPhongTro_App.ui.tenant.MainActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
+import com.example.QuanLyPhongTro_App.utils.AccountManager;
 import com.google.android.material.textfield.TextInputEditText;
+
+import org.json.JSONObject;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -21,6 +24,7 @@ public class LoginActivity extends AppCompatActivity {
     private Button btnLogin;
     private TextView txtForgotPassword, txtGotoRegister, txtTargetRole;
     private SessionManager sessionManager;
+    private AccountManager accountManager;
     private String targetRole = "tenant"; // Mặc định là người thuê
 
     @Override
@@ -29,6 +33,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         sessionManager = new SessionManager(this);
+        accountManager = new AccountManager(this);
 
         // Lấy targetRole từ Intent (nếu có)
         if (getIntent().hasExtra("targetRole")) {
@@ -77,28 +82,59 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        if (password.length() < 8) {
-            Toast.makeText(this, "Mật khẩu phải có ít nhất 8 ký tự", Toast.LENGTH_SHORT).show();
+        android.util.Log.d("LoginActivity", "Password length: " + password.length());
+
+        if (password.length() < 6) {
+            Toast.makeText(this, "Mật khẩu phải có ít nhất 6 ký tự", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // TODO: Gọi API đăng nhập thực tế
-        // Database sẽ trả về thông tin user và role (tenant/landlord)
+        // Show loading
+        btnLogin.setEnabled(false);
+        btnLogin.setText("Đang xác thực...");
 
-        // DEMO ACCOUNT:
-        // Người thuê: tenant@demo.com / password123
-        // Chủ trọ: landlord@demo.com / password123
+        // Call API login ONLY - NO FALLBACK
+        android.util.Log.d("LoginActivity", "Calling API login with email: " + emailPhone);
+        accountManager.loginAPI(emailPhone, password, new AccountManager.AuthCallback() {
+            @Override
+            public void onSuccess(String message) {
+                android.util.Log.d("LoginActivity", "✅ API login success: " + message);
+                // API login successful, get user info from session
+                SessionManager sm = new SessionManager(LoginActivity.this);
+                String token = sm.getToken();
+                if (token != null && !token.isEmpty()) {
+                    android.util.Log.d("LoginActivity", "Token saved: " + token.substring(0, Math.min(20, token.length())) + "...");
 
-        if (emailPhone.equals("tenant@demo.com") && password.equals("password123")) {
-            loginSuccess(emailPhone, "tenant_001", "Nguyễn Văn A", "tenant");
-        } else if (emailPhone.equals("landlord@demo.com") && password.equals("password123")) {
-            loginSuccess(emailPhone, "landlord_001", "Trần Thị B", "landlord");
-        } else {
-            // Giả lập đăng nhập theo targetRole cho demo
-            String userName = targetRole.equals("landlord") ? "Chủ Trọ Demo" : "Người Thuê Demo";
-            String userId = targetRole.equals("landlord") ? "landlord_demo" : "tenant_demo";
-            loginSuccess(emailPhone, userId, userName, targetRole);
-        }
+                    // Get user info from session (saved in AccountManager.loginAPI)
+                    String userId = sm.getUserId();
+                    String userName = sm.getUserName();
+                    String userEmail = sm.getUserEmail();
+                    String userRole = sm.getUserRole();
+
+                    android.util.Log.d("LoginActivity", "User role from session: " + userRole);
+
+                    // Login successful with correct role
+                    runOnUiThread(() -> loginSuccess(userEmail, userId, userName, userRole));
+                } else {
+                    runOnUiThread(() -> {
+                        btnLogin.setEnabled(true);
+                        btnLogin.setText("Đăng Nhập");
+                        Toast.makeText(LoginActivity.this, "❌ Lỗi: Token không được lưu", Toast.LENGTH_SHORT).show();
+                    });
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                android.util.Log.e("LoginActivity", "❌ API login FAILED: " + error);
+                runOnUiThread(() -> {
+                    btnLogin.setEnabled(true);
+                    btnLogin.setText("Đăng Nhập");
+                    // Show full error message from API
+                    Toast.makeText(LoginActivity.this, "❌ Đăng nhập thất bại:\n" + error, Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 
     private void loginSuccess(String email, String userId, String userName, String userType) {

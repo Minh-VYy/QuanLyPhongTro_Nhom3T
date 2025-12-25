@@ -6,25 +6,25 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.ChatThread;
-import com.example.QuanLyPhongTro_App.data.MockData;
+import com.example.QuanLyPhongTro_App.data.response.ChatThreadDto;
+import com.example.QuanLyPhongTro_App.data.repository.ChatThreadRepository;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ChatListActivity extends AppCompatActivity {
+    private static final String TAG = "ChatListActivity";
 
     private RecyclerView recyclerViewChatList;
-    private SessionManager sessionManager;
+    private ChatThreadListAdapter adapter;
     private String currentUserEmail;
-    private String currentUserName;
-    private boolean isTenant;
+    private String userRole;
+    private SessionManager sessionManager;
+    private ChatThreadRepository chatThreadRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +32,7 @@ public class ChatListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat_list);
 
         sessionManager = new SessionManager(this);
+        chatThreadRepository = new ChatThreadRepository();
         initViews();
         loadChatList();
     }
@@ -39,93 +40,135 @@ public class ChatListActivity extends AppCompatActivity {
     private void initViews() {
         recyclerViewChatList = findViewById(R.id.recycler_view_chat_list);
         recyclerViewChatList.setLayoutManager(new LinearLayoutManager(this));
+
+        currentUserEmail = sessionManager.getUserEmail();
+        userRole = sessionManager.getUserRole();
+
+        if (currentUserEmail == null) {
+            currentUserEmail = getIntent().getStringExtra("user_id");
+        }
+        if (userRole == null) {
+            userRole = getIntent().getStringExtra("user_role");
+            if (userRole == null) {
+                userRole = "tenant";
+            }
+        }
+
+        Log.d(TAG, "Current user: " + currentUserEmail + ", Role: " + userRole);
+
+        // Check if user is logged in
+        if (currentUserEmail == null || currentUserEmail.isEmpty()) {
+            Log.e(TAG, "❌ User email is null or empty");
+            Toast.makeText(this, "Vui lòng đăng nhập trước", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
     }
 
     private void loadChatList() {
-        // Lấy thông tin người dùng đã đăng nhập
-        try {
-            // use email as current user id
-            currentUserEmail = sessionManager.getUserEmail();
-            currentUserName = sessionManager.getUserName();
-            isTenant = "tenant".equals(sessionManager.getUserType());
+        Log.d(TAG, "========== Loading Chat Threads ==========");
 
-            android.util.Log.d("ChatList", "[DEBUG] start loadChatList - userEmail=" + currentUserEmail + ", userName=" + currentUserName + ", isTenant=" + isTenant);
+        // Get userId (GUID) from session - must be actual GUID from JWT
+        String userId = sessionManager.getUserId();
+        String userEmail = sessionManager.getUserEmail();
 
-            List<ChatThread> chatThreads = new ArrayList<>();
+        Log.d(TAG, "userId from session: " + userId);
+        Log.d(TAG, "userEmail from session: " + userEmail);
 
-            if (isTenant) {
-                // Tenant - lấy danh sách chủ trọ từ các phòng
-                chatThreads = createTenantChatThreads();
-            } else {
-                // Landlord - lấy danh sách người thuê (from MockData bookings)
-                android.util.Log.d("ChatList", "[DEBUG] calling MockData.getChatThreadsForLandlord with " + currentUserEmail);
-                chatThreads = MockData.getChatThreadsForLandlord(currentUserEmail);
-                android.util.Log.d("ChatList", "[DEBUG] got " + chatThreads.size() + " threads for landlord");
+        // ⚠️ CRITICAL: userId MUST be actual GUID from JWT token
+        // C# backend expects GUID format: "00000000-0000-0000-0000-000000000000"
+        // NOT email, NOT generated UUID
+
+        if (userId == null || userId.isEmpty()) {
+            Log.e(TAG, "❌ userId is NULL - JWT token not extracted!");
+            Log.e(TAG, "This means login didn't properly save/extract JWT token");
+
+            // Try to re-extract from current token
+            String token = sessionManager.getToken();
+            if (token != null && !token.isEmpty()) {
+                Log.d(TAG, "Attempting to re-save token to extract userId...");
+                sessionManager.saveToken(token); // This will trigger extraction
+                userId = sessionManager.getUserId();
+                Log.d(TAG, "After re-extraction, userId: " + userId);
             }
 
-            if (chatThreads.isEmpty()) {
-                Toast.makeText(this, "Chưa có cuộc trò chuyện nào", Toast.LENGTH_SHORT).show();
-            }
+            if (userId == null || userId.isEmpty()) {
+                Log.e(TAG, "❌ FATAL: Cannot get userId even after re-extraction");
+                Toast.makeText(this,
+                    "❌ Lỗi: Không thể xác định user ID từ token.\nVui lòng đăng nhập lại.",
+                    Toast.LENGTH_LONG).show();
 
-            ChatListAdapter chatListAdapter = new ChatListAdapter(chatThreads, currentUserEmail, thread -> {
-                Intent intent = new Intent(ChatListActivity.this, ChatActivity.class);
-                intent.putExtra("thread_id", thread.getThreadId());
-                intent.putExtra("user_id", currentUserEmail);
+                // Redirect to login
+                Intent intent = new Intent(this, com.example.QuanLyPhongTro_App.ui.auth.LoginActivity.class);
                 startActivity(intent);
-            });
-
-            recyclerViewChatList.setAdapter(chatListAdapter);
-
-        } catch (Exception e) {
-            android.util.Log.e("ChatList", "Error loading chat: ", e);
-            Toast.makeText(this, "Lỗi tải chat: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                finish();
+                return;
+            }
         }
+
+        // Validate userId format (must be valid GUID)
+        if (!isValidGUID(userId)) {
+            Log.e(TAG, "❌ userId is not a valid GUID: " + userId);
+            Toast.makeText(this,
+                "❌ Lỗi: User ID không hợp lệ.\nVui lòng đăng nhập lại.",
+                Toast.LENGTH_LONG).show();
+
+            // Redirect to login
+            Intent intent = new Intent(this, com.example.QuanLyPhongTro_App.ui.auth.LoginActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
+        final String finalUserId = userId;
+        Log.d(TAG, "✅ Final userId (GUID): " + finalUserId);
+        Log.d(TAG, "Calling: GET /api/Chat/contacts?userId=" + finalUserId);
+
+        chatThreadRepository.getChatThreads(finalUserId, new ChatThreadRepository.ThreadsCallback() {
+            @Override
+            public void onSuccess(List<ChatThreadDto> threads) {
+                Log.d(TAG, "✅ SUCCESS: Got " + threads.size() + " threads");
+                runOnUiThread(() -> {
+                    if (threads.isEmpty()) {
+                        Toast.makeText(ChatListActivity.this, "Chưa có cuộc trò chuyện nào", Toast.LENGTH_SHORT).show();
+                    }
+
+                    adapter = new ChatThreadListAdapter(threads, thread -> {
+                        Intent intent = new Intent(ChatListActivity.this, ChatActivity.class);
+                        intent.putExtra("thread_id", thread.getThreadId());
+                        intent.putExtra("user_id", finalUserId);
+                        intent.putExtra("user_name", sessionManager.getUserName());  // ✅ Pass current user name
+                        intent.putExtra("other_user_id", thread.getOtherUserId());  // ✅ FIXED: Use generic otherUserId
+                        intent.putExtra("other_user_name", thread.getLandlordName());
+                        startActivity(intent);
+                    });
+
+                    recyclerViewChatList.setAdapter(adapter);
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                Log.e(TAG, "❌ FAILED - Error: " + error);
+                runOnUiThread(() -> {
+                    Toast.makeText(ChatListActivity.this, "Lỗi: " + error, Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 
     /**
-     * Tạo danh sách chat thread cho Tenant
-     * - Lấy từ danh sách phòng (MockData)
-     * - Mỗi phòng = 1 chủ trọ = 1 thread chat
+     * Validate if string is a valid GUID format
+     * Format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
      */
-    private List<ChatThread> createTenantChatThreads() {
-        List<ChatThread> threads = new ArrayList<>();
-        List<Room> rooms = MockData.getRooms();
-        android.util.Log.d("ChatList", "[DEBUG] createTenantChatThreads - rooms count=" + rooms.size());
-        Set<String> seenLandlords = new HashSet<>();
-
-        for (Room room : rooms) {
-            String landlordName = room.getLandlordName();
-            android.util.Log.d("ChatList", "[DEBUG] room landlordName=" + landlordName);
-
-            // Map landlordName -> landlordEmail
-            String landlordEmail = MockData.findEmailByFullNameAndType(landlordName, "landlord");
-            android.util.Log.d("ChatList", "[DEBUG] mapped landlordEmail=" + landlordEmail);
-            if (landlordEmail == null) continue;
-
-            // Tránh duplicate chủ trọ
-            if (!seenLandlords.contains(landlordEmail)) {
-                seenLandlords.add(landlordEmail);
-
-                // Tạo thread chat
-                ChatThread thread = MockData.createChatThread(
-                        currentUserEmail,
-                        landlordEmail
-                );
-
-                // Thêm tin nhắn mẫu
-                if (thread.getMessages().isEmpty()) {
-                    MockData.sendChatMessage(
-                            thread.getThreadId(),
-                            currentUserEmail,
-                            "Xin chào, tôi quan tâm đến các phòng của bạn"
-                    );
-                }
-
-                threads.add(thread);
-            }
+    private boolean isValidGUID(String guid) {
+        if (guid == null || guid.isEmpty()) {
+            return false;
         }
 
-        android.util.Log.d("ChatList", "[DEBUG] createTenantChatThreads - threads created=" + threads.size());
-        return threads;
+        // GUID regex pattern
+        String guidPattern = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
+        return guid.matches(guidPattern);
     }
 }
+

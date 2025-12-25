@@ -1,6 +1,8 @@
 package com.example.QuanLyPhongTro_App.ui.tenant;
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import androidx.appcompat.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -14,11 +16,15 @@ public class MessageDetailActivity extends AppCompatActivity {
     private TextView tvRequesterName, tvBookingTime, tvRoomName, tvFullContent;
     private Button btnReply, btnDelete;
     private long messageId;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message_detail);
+
+        // Initialize SessionManager
+        sessionManager = new SessionManager(this);
 
         // 1. Khởi tạo Views
         initViews();
@@ -72,23 +78,28 @@ public class MessageDetailActivity extends AppCompatActivity {
 
     private void setupActionButtons() {
         // 1. Phản hồi/Chat
-        btnReply.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // *** LOGIC THỰC TẾ: Chuyển sang màn hình Chat/Reply ***
-                Toast.makeText(MessageDetailActivity.this, "Chuyển sang Chat với ID: " + messageId, Toast.LENGTH_SHORT).show();
+        btnReply.setOnClickListener(v -> {
+            // Get landlord info from Intent extras
+            String landlordEmail = getIntent().getStringExtra("landlord_email");
+            String landlordName = getIntent().getStringExtra("landlord_name");
+            String tenantEmail = sessionManager.getUserEmail();
+
+            if (landlordEmail == null) {
+                Toast.makeText(this, "Không tìm thấy thông tin chủ trọ", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            Intent intent = new Intent(MessageDetailActivity.this, ChatActivity.class);
+            intent.putExtra("user_id", tenantEmail);
+            intent.putExtra("other_user_id", landlordEmail);
+            intent.putExtra("other_user_name", landlordName);
+            startActivity(intent);
         });
 
         // 2. Xóa
-        btnDelete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // *** LOGIC THỰC TẾ: Gọi API xóa tin nhắn ***
-                // Sau khi xóa thành công, thông báo và kết thúc Activity
-                Toast.makeText(MessageDetailActivity.this, "Đã xóa tin nhắn ID: " + messageId, Toast.LENGTH_SHORT).show();
-                finish();
-            }
+        btnDelete.setOnClickListener(v -> {
+            Toast.makeText(MessageDetailActivity.this, "Đã xóa tin nhắn ID: " + messageId, Toast.LENGTH_SHORT).show();
+            finish();
         });
     }
 }

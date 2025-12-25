@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.QuanLyPhongTro_App.R;
 import com.example.QuanLyPhongTro_App.ui.tenant.MainActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
+import com.example.QuanLyPhongTro_App.utils.AccountManager;
 
 public class DangKyChuTroActivity extends AppCompatActivity {
 
@@ -36,6 +37,7 @@ public class DangKyChuTroActivity extends AppCompatActivity {
     private TextView chuyenNguoiThueDangKyChuTro;
     private TextView dangNhapChuTro;
     private SessionManager sessionManager;
+    private AccountManager accountManager;
     private static final int REQUEST_IMAGE_PICK = 2;
     private Uri hinhGiayToUri;
 
@@ -45,6 +47,7 @@ public class DangKyChuTroActivity extends AppCompatActivity {
         setContentView(R.layout.activity_landlord_register);
 
         sessionManager = new SessionManager(this);
+        accountManager = new AccountManager(this);
 
         // Ẩn ActionBar
         if (getSupportActionBar() != null) {
@@ -144,6 +147,7 @@ public class DangKyChuTroActivity extends AppCompatActivity {
             return;
         }
 
+
         if (sdt.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập số điện thoại", Toast.LENGTH_SHORT).show();
             return;
@@ -194,20 +198,40 @@ public class DangKyChuTroActivity extends AppCompatActivity {
             return;
         }
 
-        // TODO: Gửi dữ liệu lên server (bao gồm ảnh giấy tờ)
-        // Khi đăng ký Chủ trọ -> tự động có cả quyền Người thuê
+        // Show loading
+        btnDangKyChuTro.setEnabled(false);
+        btnDangKyChuTro.setText("Đang đăng ký...");
 
-        String userId = "landlord_" + System.currentTimeMillis();
+        // VaiTroId: 2 = ChuTro (landlord)
+        accountManager.registerAPI(email, matKhau, hoTen, sdt, 2, new AccountManager.AuthCallback() {
+            @Override
+            public void onSuccess(String message) {
+                android.util.Log.d("DangKyChuTroActivity", "API register success");
+                runOnUiThread(() -> {
+                    Toast.makeText(DangKyChuTroActivity.this, "Đăng ký thành công! Tài khoản của bạn có thể dùng cho cả Người thuê và Chủ trọ.", Toast.LENGTH_LONG).show();
 
-        // Lưu session với role = "landlord" (có cả quyền tenant)
-        sessionManager.createLoginSession(userId, hoTen, email, "landlord");
+                    // Lưu session
+                    sessionManager.createLoginSession(email, hoTen, email, "landlord");
+                    sessionManager.setLandlordStatus(true);
+                    sessionManager.setDisplayRole("landlord");
 
-        Toast.makeText(this, "Đăng ký thành công! Tài khoản của bạn có thể dùng cho cả Người thuê và Chủ trọ.", Toast.LENGTH_LONG).show();
+                    // Chuyển về LandlordHomeActivity
+                    Intent intent = new Intent(DangKyChuTroActivity.this, com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                });
+            }
 
-        // Chuyển về MainActivity (có thể chuyển giữa 2 role)
-        Intent intent = new Intent(DangKyChuTroActivity.this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
+            @Override
+            public void onError(String error) {
+                android.util.Log.d("DangKyChuTroActivity", "❌ API register failed: " + error);
+                runOnUiThread(() -> {
+                    btnDangKyChuTro.setEnabled(true);
+                    btnDangKyChuTro.setText("Đăng Ký");
+                    Toast.makeText(DangKyChuTroActivity.this, "Đăng ký thất bại: " + error, Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
     }
 }

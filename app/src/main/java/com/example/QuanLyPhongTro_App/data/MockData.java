@@ -5,8 +5,14 @@ import com.example.QuanLyPhongTro_App.ui.tenant.Booking;
 import com.example.QuanLyPhongTro_App.ui.tenant.Notification;
 import com.example.QuanLyPhongTro_App.ui.tenant.Room;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class chứa tất cả dữ liệu tĩnh cho ứng dụng (Tenant + Landlord)

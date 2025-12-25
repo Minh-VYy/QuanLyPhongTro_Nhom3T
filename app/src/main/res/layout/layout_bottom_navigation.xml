@@ -96,6 +96,7 @@
 
     </LinearLayout>
 
+
     <!-- Tôi -->
     <LinearLayout
         android:id="@+id/navProfile"

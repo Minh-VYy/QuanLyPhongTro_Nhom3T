@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.ui.chatbot.ChatbotActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
 
@@ -149,10 +150,13 @@ public class ProfileActivity extends AppCompatActivity {
             }
 
             // ===== MENU TRỢ GIÚP =====
-            // Khi click: Hiển thị Toast (tạm thời, chưa phát triển đầy đủ)
+            // Khi click: Mở ChatbotActivity để hỏi trợ lý AI
             if (menuHelp != null) {
                 menuHelp.setOnClickListener(v -> {
-                    Toast.makeText(this, "Trợ giúp", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(this, ChatbotActivity.class);
+                    intent.putExtra("user_type", "tenant");
+                    intent.putExtra("context", "help");
+                    startActivity(intent);
                 });
             }
 

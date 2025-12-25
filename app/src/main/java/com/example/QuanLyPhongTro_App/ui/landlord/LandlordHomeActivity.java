@@ -1,28 +1,20 @@
 package com.example.QuanLyPhongTro_App.ui.landlord;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.Switch;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -35,7 +27,6 @@ import com.example.QuanLyPhongTro_App.R;
 import com.example.QuanLyPhongTro_App.data.MockData;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
 import com.example.QuanLyPhongTro_App.ui.tenant.MainActivity;
-import com.example.QuanLyPhongTro_App.ui.chatbot.ChatbotActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.LandlordBottomNavigationHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -51,7 +42,7 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
     private SessionManager sessionManager;
     private RecyclerView rvListings;
-    private FloatingActionButton fabAddListing, fabChatbot;
+    private FloatingActionButton fabAddListing;
     private View roleSwitcher;
     private TextView txtRolePrimary;
     private ImageView iconRole;
@@ -86,20 +77,9 @@ public class LandlordHomeActivity extends AppCompatActivity {
         setupQuickActions();
         setupBottomNavigation();
         setupFAB();
-        setupChatbot();
+        setupMessagesButton();
     }
 
-    private void setupChatbot() {
-        fabChatbot = findViewById(R.id.fabChatbot);
-        if (fabChatbot != null) {
-            fabChatbot.setOnClickListener(v -> {
-                Intent intent = new Intent(LandlordHomeActivity.this, ChatbotActivity.class);
-                intent.putExtra("user_type", "landlord");
-                intent.putExtra("context", "home");
-                startActivity(intent);
-            });
-        }
-    }
 
     private void initViews() {
         rvListings = findViewById(R.id.rv_grid_listings);
@@ -117,6 +97,16 @@ public class LandlordHomeActivity extends AppCompatActivity {
         fabTaoTin = findViewById(R.id.fab_tao_tin);
         quickActionMenu = findViewById(R.id.quick_action_menu);
     }
+
+    private void setupMessagesButton() {
+        if (btnMessages != null) {
+            btnMessages.setOnClickListener(v -> {
+                Intent intent = new Intent(LandlordHomeActivity.this, LandlordChatListActivity.class);
+                startActivity(intent);
+            });
+        }
+    }
+
     private void setupFAB() {
         fabTaoTin.setOnClickListener(v -> {
             if (isMenuOpen) {

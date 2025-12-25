@@ -4,26 +4,25 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.MockData;
 
 import com.example.QuanLyPhongTro_App.ui.auth.DangKyNguoiThueActivity;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
-import com.example.QuanLyPhongTro_App.ui.chatbot.ChatbotActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 
@@ -53,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Room> originalRoomList;
     // Quản lý phiên làm việc
     private SessionManager sessionManager;
-    private FloatingActionButton fabChatbot;
     private View roleSwitcher;
     private TextView txtRolePrimary;
     // Hiển thị tùy chọn chuyển vai trò
@@ -64,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
     private EditText searchInput;
     // Nút tìm kiếm
     private ImageButton searchButton;
+    // Icon tin nhắn
+    private ImageView btnMessages;
 
     /**
      * PHƯƠNG THỨC: onCreate()
@@ -78,8 +78,10 @@ public class MainActivity extends AppCompatActivity {
         // Khởi tạo SessionManager để quản lý đăng nhập
         sessionManager = new SessionManager(this);
 
-        // Khởi tạo dữ liệu phòng từ MockData
-        initRoomList();
+        // Initialize roomList BEFORE setting up views
+        roomList = new ArrayList<>();
+        originalRoomList = new ArrayList<>();
+
         // Khởi tạo các view từ layout
         initViews();
         // Thiết lập dropdown chọn vai trò
@@ -92,20 +94,136 @@ public class MainActivity extends AppCompatActivity {
         setupFilterButton();
         // Thiết lập tìm kiếm
         setupSearch();
-        setupChatbot();
+
+        // Load rooms from API AFTER views are set up
+        loadRoomsFromAPI();
     }
 
     /**
-     * PHƯƠNG THỨC: initRoomList()
-     * CHỨC NĂNG: Tải danh sách phòng từ MockData
-     * - Lấy phòng từ MockData.getRooms()
-     * - Lưu vào ArrayList roomList và originalRoomList
+     * PHƯƠNG THỨC: loadRoomsFromAPI()
+     * Load rooms from API endpoint with fallback to MockData
      */
-    private void initRoomList() {
-        // Tạo ArrayList mới và thêm tất cả phòng từ MockData
-        roomList = new ArrayList<>(MockData.getRooms());
-        // Lưu bản sao gốc để dùng cho tìm kiếm
-        originalRoomList = new ArrayList<>(MockData.getRooms());
+    private void loadRoomsFromAPI() {
+        Log.d("MainActivity", "Loading rooms from API...");
+
+        com.example.QuanLyPhongTro_App.data.repository.RoomRepository roomRepository =
+            new com.example.QuanLyPhongTro_App.data.repository.RoomRepository();
+
+        // Get first page with price range 0 - 10,000,000
+        roomRepository.getRooms(1, 50, 0, 10000000, new com.example.QuanLyPhongTro_App.data.repository.RoomRepository.RoomsCallback() {
+            @Override
+            public void onSuccess(java.util.List<com.example.QuanLyPhongTro_App.data.repository.RoomRepository.RoomDto> rooms, int totalCount) {
+                Log.d("MainActivity", "✅ Got " + rooms.size() + " rooms from API");
+
+                // Convert RoomDto to Room
+                ArrayList<Room> convertedRooms = convertRoomDtosToRooms(rooms);
+
+                // Update UI on main thread
+                runOnUiThread(() -> {
+                    // If API returns empty or null, use MockData as fallback
+                    if (convertedRooms == null || convertedRooms.isEmpty()) {
+                        Log.w("MainActivity", "⚠️ API returned no rooms, using MockData");
+                        loadMockDataFallback();
+                    } else {
+                        // Clear and update the lists
+                        roomList.clear();
+                        roomList.addAll(convertedRooms);
+                        originalRoomList.clear();
+                        originalRoomList.addAll(convertedRooms);
+
+                        // Notify adapter of data change
+                        if (roomRecyclerView != null && roomRecyclerView.getAdapter() != null) {
+                            roomRecyclerView.getAdapter().notifyDataSetChanged();
+                        }
+
+                        Toast.makeText(MainActivity.this, "Đã tải " + rooms.size() + " phòng", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                Log.e("MainActivity", "❌ Error loading rooms: " + error);
+
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity.this, "Đang tải dữ liệu mẫu...", Toast.LENGTH_SHORT).show();
+                    // Load MockData as fallback when API fails
+                    loadMockDataFallback();
+                });
+            }
+        });
+    }
+
+    /**
+     * Load MockData as fallback when API fails or returns no data
+     */
+    private void loadMockDataFallback() {
+        Log.d("MainActivity", "Loading MockData fallback...");
+
+        // Get mock data from MockData class
+        java.util.List<Room> mockRooms = com.example.QuanLyPhongTro_App.data.MockData.getRooms();
+
+        if (mockRooms != null && !mockRooms.isEmpty()) {
+            roomList.clear();
+            roomList.addAll(new ArrayList<>(mockRooms));
+            originalRoomList.clear();
+            originalRoomList.addAll(new ArrayList<>(mockRooms));
+
+            // Notify adapter
+            if (roomRecyclerView != null && roomRecyclerView.getAdapter() != null) {
+                roomRecyclerView.getAdapter().notifyDataSetChanged();
+            }
+
+            Log.d("MainActivity", "✅ Loaded " + mockRooms.size() + " rooms from MockData");
+            Toast.makeText(this, "Đã tải " + mockRooms.size() + " phòng (dữ liệu mẫu)", Toast.LENGTH_SHORT).show();
+        } else {
+            Log.e("MainActivity", "❌ MockData is also empty!");
+            Toast.makeText(this, "Không có dữ liệu phòng", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Convert RoomDto list to Room list (for adapter compatibility)
+     */
+    private ArrayList<Room> convertRoomDtosToRooms(java.util.List<com.example.QuanLyPhongTro_App.data.repository.RoomRepository.RoomDto> roomDtos) {
+        ArrayList<Room> rooms = new ArrayList<>();
+
+        for (com.example.QuanLyPhongTro_App.data.repository.RoomRepository.RoomDto dto : roomDtos) {
+            // Use simple constructor for demo
+            String priceText = formatPrice(dto.getGiaTien());
+            String location = "Phòng trọ"; // Default location
+
+            Room room = new Room(
+                dto.getTieuDe() != null ? dto.getTieuDe() : "Phòng",
+                priceText,
+                location,
+                android.R.drawable.ic_menu_gallery // Default image
+            );
+
+            // Note: Room class uses private fields, so we can't set them directly
+            // The Room constructor should be called with all needed data
+            // If we need to add description, we should modify Room class or use full constructor
+
+            rooms.add(room);
+        }
+
+        return rooms;
+    }
+
+    /**
+     * Format price from long to string (e.g., 2500000 -> "2.5 triệu")
+     */
+    private String formatPrice(Long price) {
+        if (price == null) return "0 đ";
+
+        if (price >= 1_000_000) {
+            double million = price / 1_000_000.0;
+            return String.format("%.1f triệu", million);
+        } else if (price >= 1_000) {
+            double thousand = price / 1_000.0;
+            return String.format("%.0f nghìn", thousand);
+        }
+        return price + " đ";
     }
 
     /**
@@ -129,6 +247,29 @@ public class MainActivity extends AppCompatActivity {
         searchInput = findViewById(R.id.searchInput);
         // Nút tìm kiếm
         searchButton = findViewById(R.id.searchButton);
+        // Icon tin nhắn
+        btnMessages = findViewById(R.id.btnMessages);
+
+        // Setup message button click listener
+        setupMessagesButton();
+    }
+
+    private void setupMessagesButton() {
+        if (btnMessages != null) {
+            btnMessages.setOnClickListener(v -> {
+                if (!sessionManager.isLoggedIn()) {
+                    Toast.makeText(this, "Vui lòng đăng nhập để nhắn tin", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(this, LoginActivity.class);
+                    intent.putExtra("targetRole", "tenant");
+                    startActivity(intent);
+                    return;
+                }
+
+                // Mở ChatListActivity để xem danh sách tin nhắn
+                Intent intent = new Intent(MainActivity.this, ChatListActivity.class);
+                startActivity(intent);
+            });
+        }
     }
 
     /**
@@ -237,17 +378,6 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationHelper.setupBottomNavigation(this, "home");
     }
 
-    private void setupChatbot() {
-        fabChatbot = findViewById(R.id.fabChatbot);
-        if (fabChatbot != null) {
-            fabChatbot.setOnClickListener(v -> {
-                Intent intent = new Intent(MainActivity.this, ChatbotActivity.class);
-                intent.putExtra("user_type", "tenant");
-                intent.putExtra("context", "home");
-                startActivity(intent);
-            });
-        }
-    }
 
     /**
      * PHƯƠNG THỨC: checkLoginRequired()
@@ -297,8 +427,13 @@ public class MainActivity extends AppCompatActivity {
      * - Gắn sự kiện click: Khi click vào phòng -> mở RoomDetailActivity
      */
     private void setupRoomRecyclerView() {
+        // Ensure roomList is not null
+        if (roomList == null) {
+            roomList = new ArrayList<>();
+        }
+
         // Tạo adapter với callback khi click vào phòng
-        RoomAdapter roomAdapter = new RoomAdapter(roomList, room -> {
+        RoomAdapter adapter = new RoomAdapter(roomList, room -> {
             // Khi click vào một phòng:
             // 1. Tạo intent mở RoomDetailActivity
             Intent intent = new Intent(MainActivity.this, RoomDetailActivity.class);
@@ -309,7 +444,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Gắn adapter vào RecyclerView
-        roomRecyclerView.setAdapter(roomAdapter);
+        roomRecyclerView.setAdapter(adapter);
     }
 
     /**
@@ -329,12 +464,12 @@ public class MainActivity extends AppCompatActivity {
     public void showAdvancedFilter() {
         // Tạo BottomSheet filter
         AdvancedFilterBottomSheet filterSheet = AdvancedFilterBottomSheet.newInstance();
-        
+
         // Thiết lập listener để nhận kết quả lọc
         filterSheet.setFilterListener(filters -> {
             applyFilters(filters);
         });
-        
+
         // Hiển thị BottomSheet
         filterSheet.show(getSupportFragmentManager(), "AdvancedFilter");
     }
@@ -347,11 +482,11 @@ public class MainActivity extends AppCompatActivity {
     private void applyFilters(Bundle filters) {
         // Lấy danh sách phòng gốc
         ArrayList<Room> filteredList = new ArrayList<>(originalRoomList);
-        
+
         // 1. Lọc theo giá
         float minPrice = filters.getFloat("minPrice", 0.5f);
         float maxPrice = filters.getFloat("maxPrice", 10.0f);
-        
+
         ArrayList<Room> priceFiltered = new ArrayList<>();
         for (Room room : filteredList) {
             double priceInMillions = room.getPriceValue() / 1000000.0;
@@ -360,7 +495,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         filteredList = priceFiltered;
-        
+
         // 2. Lọc theo khu vực
         String selectedArea = filters.getString("area");
         if (selectedArea != null && !selectedArea.isEmpty()) {
@@ -372,7 +507,7 @@ public class MainActivity extends AppCompatActivity {
             }
             filteredList = areaFiltered;
         }
-        
+
         // 3. Lọc theo loại phòng (nếu có)
         ArrayList<String> roomTypes = filters.getStringArrayList("roomTypes");
         if (roomTypes != null && !roomTypes.isEmpty()) {
@@ -402,14 +537,14 @@ public class MainActivity extends AppCompatActivity {
                 filteredList = typeFiltered;
             }
         }
-        
+
         // 4. Lọc theo tiện nghi (nếu có)
         ArrayList<String> amenities = filters.getStringArrayList("amenities");
         if (amenities != null && !amenities.isEmpty()) {
             ArrayList<Room> amenityFiltered = new ArrayList<>();
             for (Room room : filteredList) {
                 boolean hasAllAmenities = true;
-                
+
                 // Kiểm tra amenities field trước
                 if (room.getAmenities() != null && !room.getAmenities().isEmpty()) {
                     for (String amenity : amenities) {
@@ -422,7 +557,7 @@ public class MainActivity extends AppCompatActivity {
                     // Fallback: Kiểm tra description nếu amenities không có
                     String description = room.getDescription() != null ? room.getDescription().toLowerCase() : "";
                     String title = room.getTitle().toLowerCase();
-                    
+
                     for (String amenity : amenities) {
                         boolean hasAmenity = false;
                         if (amenity.equals("Máy lạnh") && (description.contains("máy lạnh") || description.contains("điều hòa") || title.contains("điều hòa"))) {
@@ -434,14 +569,14 @@ public class MainActivity extends AppCompatActivity {
                         } else if (amenity.equals("WC riêng") && (description.contains("wc riêng") || description.contains("toilet riêng"))) {
                             hasAmenity = true;
                         }
-                        
+
                         if (!hasAmenity) {
                             hasAllAmenities = false;
                             break;
                         }
                     }
                 }
-                
+
                 if (hasAllAmenities) {
                     amenityFiltered.add(room);
                 }
@@ -450,15 +585,15 @@ public class MainActivity extends AppCompatActivity {
                 filteredList = amenityFiltered;
             }
         }
-        
+
         // Cập nhật RecyclerView với danh sách đã lọc
         roomList.clear();
         roomList.addAll(filteredList);
         roomRecyclerView.getAdapter().notifyDataSetChanged();
-        
+
         // Xóa text tìm kiếm khi áp dụng filter
         searchInput.setText("");
-        
+
         // Hiển thị thông báo kết quả
         String message = "Tìm thấy " + filteredList.size() + " phòng phù hợp";
         android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show();
@@ -536,8 +671,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Hiển thị thông báo kết quả (tùy chọn)
         if (searchResults.isEmpty()) {
-            android.widget.Toast.makeText(this, 
-                "Không tìm thấy phòng phù hợp", 
+            android.widget.Toast.makeText(this,
+                "Không tìm thấy phòng phù hợp",
                 android.widget.Toast.LENGTH_SHORT).show();
         }
     }
@@ -551,7 +686,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private String removeVietnameseAccents(String str) {
         if (str == null) return "";
-        
+
         // Bảng chuyển đổi các ký tự có dấu sang không dấu
         str = str.replaceAll("[àáạảãâầấậẩẫăằắặẳẵ]", "a");
         str = str.replaceAll("[èéẹẻẽêềếệểễ]", "e");
@@ -560,7 +695,7 @@ public class MainActivity extends AppCompatActivity {
         str = str.replaceAll("[ùúụủũưừứựửữ]", "u");
         str = str.replaceAll("[ỳýỵỷỹ]", "y");
         str = str.replaceAll("đ", "d");
-        
+
         str = str.replaceAll("[ÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴ]", "A");
         str = str.replaceAll("[ÈÉẸẺẼÊỀẾỆỂỄ]", "E");
         str = str.replaceAll("[ÌÍỊỈĨ]", "I");
@@ -568,7 +703,7 @@ public class MainActivity extends AppCompatActivity {
         str = str.replaceAll("[ÙÚỤỦŨƯỪỨỰỬỮ]", "U");
         str = str.replaceAll("[ỲÝỴỶỸ]", "Y");
         str = str.replaceAll("Đ", "D");
-        
+
         return str;
     }
 

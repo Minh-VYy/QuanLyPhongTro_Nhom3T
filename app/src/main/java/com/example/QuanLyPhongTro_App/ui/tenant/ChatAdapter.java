@@ -65,6 +65,26 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
         return messages.size();
     }
 
+    /**
+     * Update messages from API
+     */
+    public void updateMessages(List<ChatMessage> newMessages) {
+        this.messages.clear();
+        this.messages.addAll(newMessages);
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Add a single message (for optimistic updates)
+     */
+    public void addMessage(ChatMessage message) {
+        this.messages.add(message);
+        notifyItemInserted(this.messages.size() - 1);
+    }
+
+    /**
+     * Inner class for message view holder
+     */
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
         private TextView tvMessageContent;
         private TextView tvMessageTime;

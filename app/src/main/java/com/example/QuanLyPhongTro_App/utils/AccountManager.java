@@ -1,252 +1,25 @@
 package com.example.QuanLyPhongTro_App.utils;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-
-import com.example.QuanLyPhongTro_App.data.MockData;
 import com.example.QuanLyPhongTro_App.data.request.LoginRequest;
 import com.example.QuanLyPhongTro_App.data.request.RegisterRequest;
 import com.example.QuanLyPhongTro_App.data.response.LoginResponse;
 import com.example.QuanLyPhongTro_App.data.response.GenericResponse;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * AccountManager - Quản lý đăng ký và lưu trữ tài khoản người dùng
- * Sử dụng SharedPreferences để lưu trữ dữ liệu tài khoản cục bộ
+ * AccountManager - Quản lý đăng nhập/đăng ký qua API
+ * Không sử dụng local accounts nữa (đã xóa)
  */
 public class AccountManager {
-    private static final String PREF_NAME = "UserAccounts";
-    private static final String KEY_ACCOUNTS = "accounts";
-
-    private SharedPreferences pref;
-    private SharedPreferences.Editor editor;
     private Context context;
 
     public AccountManager(Context context) {
         this.context = context;
-        this.pref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        this.editor = pref.edit();
-
-        // Ensure MockData is initialized for chat persistence
-        MockData.init(context);
-
-        // Khởi tạo pre-created accounts nếu chưa có
-        if (!isInitialized()) {
-            android.util.Log.d("AccountManager", "Initializing pre-created accounts...");
-            initializePreCreatedAccounts();
-        } else {
-            android.util.Log.d("AccountManager", "Accounts already initialized");
-        }
     }
-
-    /**
-     * Kiểm tra xem app đã khởi tạo accounts hay chưa
-     */
-    private boolean isInitialized() {
-        return pref.contains(KEY_ACCOUNTS);
-    }
-
-    /**
-     * Khởi tạo pre-created accounts (Người thuê và Chủ trọ)
-     */
-    private void initializePreCreatedAccounts() {
-        JSONArray accounts = new JSONArray();
-        try {
-            // Tenant 1
-            JSONObject tenant1 = new JSONObject();
-            tenant1.put("email", "tenant1@gmail.com");
-            tenant1.put("password", "123456");
-            tenant1.put("fullName", "Nguyễn Văn A");
-            tenant1.put("phoneNumber", "0905111111");
-            tenant1.put("userType", "tenant");
-            accounts.put(tenant1);
-
-            // Tenant 2
-            JSONObject tenant2 = new JSONObject();
-            tenant2.put("email", "tenant2@gmail.com");
-            tenant2.put("password", "123456");
-            tenant2.put("fullName", "Trần Thị X");
-            tenant2.put("phoneNumber", "0905222222");
-            tenant2.put("userType", "tenant");
-            accounts.put(tenant2);
-
-            // Tenant 3
-            JSONObject tenant3 = new JSONObject();
-            tenant3.put("email", "tenant3@gmail.com");
-            tenant3.put("password", "123456");
-            tenant3.put("fullName", "Hoàng Thị Y");
-            tenant3.put("phoneNumber", "0905333333");
-            tenant3.put("userType", "tenant");
-            accounts.put(tenant3);
-
-            // Landlord 1
-            JSONObject landlord1 = new JSONObject();
-            landlord1.put("email", "landlord1@gmail.com");
-            landlord1.put("password", "123456");
-            landlord1.put("fullName", "Nguyễn Văn Chủ");
-            landlord1.put("phoneNumber", "0905444444");
-            landlord1.put("userType", "landlord");
-            accounts.put(landlord1);
-
-            // Landlord 2
-            JSONObject landlord2 = new JSONObject();
-            landlord2.put("email", "landlord2@gmail.com");
-            landlord2.put("password", "123456");
-            landlord2.put("fullName", "Trần Thị B");
-            landlord2.put("phoneNumber", "0905555555");
-            landlord2.put("userType", "landlord");
-            accounts.put(landlord2);
-
-            // Landlord 3
-            JSONObject landlord3 = new JSONObject();
-            landlord3.put("email", "landlord3@gmail.com");
-            landlord3.put("password", "123456");
-            landlord3.put("fullName", "Lê Văn C");
-            landlord3.put("phoneNumber", "0905666666");
-            landlord3.put("userType", "landlord");
-            accounts.put(landlord3);
-
-            editor.putString(KEY_ACCOUNTS, accounts.toString());
-            editor.apply();
-            android.util.Log.d("AccountManager", "Pre-created accounts initialized successfully!");
-            android.util.Log.d("AccountManager", "Total accounts: " + accounts.length());
-        } catch (JSONException e) {
-            android.util.Log.e("AccountManager", "Error initializing accounts: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Đăng ký tài khoản mới
-     * @return true nếu đăng ký thành công, false nếu email đã tồn tại
-     */
-    public boolean registerAccount(String email, String password, String fullName, String phoneNumber, String userType) {
-        try {
-            // Kiểm tra email đã tồn tại hay chưa
-            if (getAccount(email) != null) {
-                return false; // Email đã tồn tại
-            }
-
-            JSONArray accounts = getAccounts();
-            JSONObject newAccount = new JSONObject();
-            newAccount.put("email", email);
-            newAccount.put("password", password);
-            newAccount.put("fullName", fullName);
-            newAccount.put("phoneNumber", phoneNumber);
-            newAccount.put("userType", userType);
-
-            accounts.put(newAccount);
-            editor.putString(KEY_ACCOUNTS, accounts.toString());
-            editor.apply();
-            return true;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
-     * Xác thực đăng nhập
-     * @return JSONObject chứa thông tin tài khoản nếu đúng, null nếu sai
-     */
-    public JSONObject loginAccount(String email, String password) {
-        try {
-            JSONObject account = getAccount(email);
-            if (account != null) {
-                android.util.Log.d("AccountManager", "Account found for " + email);
-                String storedPassword = account.getString("password");
-                android.util.Log.d("AccountManager", "Stored password: " + storedPassword + ", Input: " + password);
-                if (storedPassword.equals(password)) {
-                    android.util.Log.d("AccountManager", "Password match!");
-                    return account;
-                } else {
-                    android.util.Log.d("AccountManager", "Password mismatch!");
-                }
-            } else {
-                android.util.Log.d("AccountManager", "No account found for " + email);
-            }
-            return null;
-        } catch (JSONException e) {
-            android.util.Log.e("AccountManager", "Login error: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Lấy thông tin tài khoản bằng email
-     */
-    public JSONObject getAccount(String email) {
-        try {
-            JSONArray accounts = getAccounts();
-            for (int i = 0; i < accounts.length(); i++) {
-                JSONObject account = accounts.getJSONObject(i);
-                if (account.getString("email").equals(email)) {
-                    return account;
-                }
-            }
-            return null;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Lấy danh sách tất cả tài khoản
-     */
-    private JSONArray getAccounts() {
-        try {
-            String accountsJson = pref.getString(KEY_ACCOUNTS, "[]");
-            return new JSONArray(accountsJson);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return new JSONArray();
-        }
-    }
-
-    /**
-     * Kiểm tra email đã tồn tại hay chưa
-     */
-    public boolean emailExists(String email) {
-        return getAccount(email) != null;
-    }
-
-    /**
-     * Lấy danh sách tài khoản theo loại (tenant hoặc landlord)
-     */
-    public JSONArray getAccountsByType(String userType) {
-        JSONArray result = new JSONArray();
-        try {
-            JSONArray accounts = getAccounts();
-            for (int i = 0; i < accounts.length(); i++) {
-                JSONObject account = accounts.getJSONObject(i);
-                if (account.getString("userType").equals(userType)) {
-                    result.put(account);
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
-
-    /**
-     * Xóa tất cả tài khoản (dùng cho testing)
-     */
-    public void clearAllAccounts() {
-        editor.remove(KEY_ACCOUNTS);
-        editor.apply();
-    }
-
-    // ==================== API METHODS ====================
 
     /**
      * Gọi API login
@@ -256,42 +29,180 @@ public class AccountManager {
      */
     public void loginAPI(String email, String password, AuthCallback callback) {
         try {
+            android.util.Log.d("AccountManager", "=== LOGIN API CALL ===");
+            android.util.Log.d("AccountManager", "Email: " + email);
+            android.util.Log.d("AccountManager", "Password: " + password);
+            android.util.Log.d("AccountManager", "Password length: " + password.length());
+            android.util.Log.d("AccountManager", "URL: http://18.140.64.80:5000/api/nguoidung/login");
+            android.util.Log.d("AccountManager", "Request Body: {\"Email\":\"" + email + "\",\"Password\":\"" + password + "\"}");
+
             ApiService apiService = ApiClient.getRetrofit().create(ApiService.class);
             LoginRequest request = new LoginRequest(email, password);
 
             apiService.login(request).enqueue(new Callback<LoginResponse>() {
                 @Override
                 public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
-                    android.util.Log.d("AccountManager", "Login response code: " + response.code());
+                    android.util.Log.d("AccountManager", "--- LOGIN RESPONSE ---");
+                    android.util.Log.d("AccountManager", "Response Code: " + response.code());
+                    android.util.Log.d("AccountManager", "Is Successful: " + response.isSuccessful());
+                    android.util.Log.d("AccountManager", "Message: " + response.message());
+
+                    if (response.body() != null && response.body().getToken() != null) {
+                        android.util.Log.d("AccountManager", "Token received: " + response.body().getToken().substring(0, Math.min(50, response.body().getToken().length())) + "...");
+                    }
 
                     if (response.isSuccessful() && response.body() != null) {
                         String token = response.body().getToken();
                         if (token != null && !token.isEmpty()) {
-                            android.util.Log.d("AccountManager", "Login successful, token received");
+                            android.util.Log.d("AccountManager", "✅ LOGIN SUCCESS");
+
+                            // Extract role from JWT token
+                            String roleString = JwtTokenParser.getRoleFromToken(token);
+                            String userId = JwtTokenParser.getUserIdFromToken(token);
+
+                            android.util.Log.d("AccountManager", "Role from JWT: " + roleString);
+                            android.util.Log.d("AccountManager", "User ID from JWT: " + userId);
+
                             SessionManager sessionManager = new SessionManager(context);
                             sessionManager.saveToken(token);
-                            // Set token in ApiClient for future requests
+
+                            // ⚡ CRITICAL: Get userId AFTER saveToken, which extracts from JWT
+                            String extractedUserId = sessionManager.getUserId();
+
+                            // Save user info
+                            String email = response.body().email != null ? response.body().email : "user@example.com";
+                            String hoTen = response.body().hoTen != null ? response.body().hoTen : email;
+
+                            // ✅ Use extracted userId from JWT, NOT email!
+                            String finalUserId = extractedUserId != null && !extractedUserId.isEmpty() ? extractedUserId : email;
+
+                            android.util.Log.d("AccountManager", "Extracted userId from JWT: " + extractedUserId);
+                            android.util.Log.d("AccountManager", "Final userId to save: " + finalUserId);
+
+                            sessionManager.createLoginSession(
+                                finalUserId,
+                                hoTen,
+                                email,
+                                roleString
+                            );
+                            sessionManager.setDisplayRole(roleString);
+
                             ApiClient.setToken(token);
+
+                            // ⚡ CRITICAL FIX: If userId still not a valid GUID, call /api/nguoidung/me
+                            if (extractedUserId == null || extractedUserId.isEmpty() || extractedUserId.equals(email)) {
+                                android.util.Log.w("AccountManager", "⚠️ userId not extracted from JWT or = email");
+                                android.util.Log.w("AccountManager", "Calling /api/nguoidung/me to get real GUID...");
+
+                                // Call /me API to get userId
+                                ApiService api = ApiClient.getRetrofit().create(ApiService.class);
+                                api.getUserProfile().enqueue(new Callback<GenericResponse<Object>>() {
+                                    @Override
+                                    public void onResponse(Call<GenericResponse<Object>> call, Response<GenericResponse<Object>> meResponse) {
+                                        if (meResponse.isSuccessful() && meResponse.body() != null && meResponse.body().data != null) {
+                                            try {
+                                                com.google.gson.Gson gson = new com.google.gson.Gson();
+                                                java.util.Map<String, Object> userData = gson.fromJson(
+                                                    gson.toJson(meResponse.body().data),
+                                                    java.util.Map.class
+                                                );
+
+                                                Object userIdObj = userData.get("nguoiDungId");
+                                                if (userIdObj == null) userIdObj = userData.get("NguoiDungId"); // Try PascalCase
+
+                                                if (userIdObj != null) {
+                                                    String userIdFromApi = userIdObj.toString();
+                                                    android.util.Log.d("AccountManager", "✅ Got userId from /me API: " + userIdFromApi);
+
+                                                    // Manually save userId to SharedPreferences
+                                                    android.content.SharedPreferences.Editor editor = context
+                                                        .getSharedPreferences("UserSession", Context.MODE_PRIVATE)
+                                                        .edit();
+                                                    editor.putString("userId", userIdFromApi);
+                                                    editor.apply();
+
+                                                    android.util.Log.d("AccountManager", "✅ Manually saved userId to session");
+                                                } else {
+                                                    android.util.Log.e("AccountManager", "❌ nguoiDungId not found in /me response");
+                                                }
+                                            } catch (Exception e) {
+                                                android.util.Log.e("AccountManager", "❌ Error parsing /me response: " + e.getMessage());
+                                                e.printStackTrace();
+                                            }
+                                        } else {
+                                            android.util.Log.e("AccountManager", "❌ /me API failed: " + meResponse.code());
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<GenericResponse<Object>> call, Throwable t) {
+                                        android.util.Log.e("AccountManager", "❌ /me API network error: " + t.getMessage());
+                                    }
+                                });
+                            } else {
+                                android.util.Log.d("AccountManager", "✅ userId already extracted from JWT: " + extractedUserId);
+                            }
+
+                            // Pass token as message (backward compatible)
                             callback.onSuccess(token);
                         } else {
-                            android.util.Log.e("AccountManager", "Token is null or empty");
-                            callback.onError("Token is null or empty");
+                            android.util.Log.e("AccountManager", "❌ Token is null or empty in response");
+                            callback.onError("Backend returned empty token");
                         }
                     } else {
-                        String errorMsg = response.message() != null ? response.message() : "Login failed";
-                        android.util.Log.e("AccountManager", "Login failed: " + errorMsg);
+                        String errorBody = "";
+                        try {
+                            if (response.errorBody() != null) {
+                                errorBody = response.errorBody().string();
+                                android.util.Log.e("AccountManager", "Error response body: " + errorBody);
+                            }
+                        } catch (Exception e) {
+                            errorBody = "Unable to parse error body";
+                        }
+
+                        // Phân biệt các lỗi HTTP
+                        String errorMsg = "";
+                        if (response.code() == 401) {
+                            android.util.Log.e("AccountManager", "❌ 401 UNAUTHORIZED");
+                            android.util.Log.e("AccountManager", "=====================================");
+                            android.util.Log.e("AccountManager", "NGUYÊN NHÂN CÓ THỂ:");
+                            android.util.Log.e("AccountManager", "1. Email: " + email + " không tồn tại trên backend");
+                            android.util.Log.e("AccountManager", "2. Password: " + password + " không khớp với PasswordHash");
+                            android.util.Log.e("AccountManager", "3. Backend yêu cầu PasswordHash (hashed) chứ không phải plain password");
+                            android.util.Log.e("AccountManager", "4. Endpoint login có require authorization khác");
+                            android.util.Log.e("AccountManager", "=====================================");
+                            errorMsg = "❌ Lỗi 401: Xác thực thất bại\n\nKiểm tra:\n- Email có tồn tại?\n- Password đúng?\n- Backend có hash password?";
+                        } else if (response.code() == 400) {
+                            android.util.Log.e("AccountManager", "❌ 400 BAD REQUEST");
+                            android.util.Log.e("AccountManager", "Dữ liệu gửi không đúng định dạng hoặc validate fail");
+                            errorMsg = "❌ Lỗi 400: Dữ liệu không hợp lệ";
+                        } else if (response.code() == 403) {
+                            android.util.Log.e("AccountManager", "❌ 403 FORBIDDEN");
+                            errorMsg = "❌ Lỗi 403: Không có quyền truy cập";
+                        } else if (response.code() == 500) {
+                            android.util.Log.e("AccountManager", "❌ 500 SERVER ERROR");
+                            errorMsg = "❌ Lỗi 500: Server lỗi nội bộ";
+                        } else {
+                            errorMsg = "❌ Login failed (" + response.code() + "): " + response.message();
+                        }
+
+                        android.util.Log.e("AccountManager", "Error body: " + errorBody);
                         callback.onError(errorMsg);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<LoginResponse> call, Throwable t) {
-                    android.util.Log.e("AccountManager", "Login API error: " + t.getMessage());
+                    android.util.Log.e("AccountManager", "❌ LOGIN API NETWORK ERROR");
+                    android.util.Log.e("AccountManager", "Error: " + t.getMessage());
+                    android.util.Log.e("AccountManager", "Cause: " + (t.getCause() != null ? t.getCause().getMessage() : "No cause"));
+                    t.printStackTrace();
                     callback.onError("Network error: " + t.getMessage());
                 }
             });
         } catch (Exception e) {
-            android.util.Log.e("AccountManager", "Exception in loginAPI: " + e.getMessage());
+            android.util.Log.e("AccountManager", "❌ Exception in loginAPI: " + e.getMessage());
+            e.printStackTrace();
             callback.onError("Exception: " + e.getMessage());
         }
     }

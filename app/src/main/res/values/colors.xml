@@ -44,4 +44,9 @@
     <!-- Chatbot colors -->
     <color name="chip_background">#E3F2FD</color>
 
+    <color name="color_primary">#1F2937</color>
+    <color name="color_primary_dark">#111827</color>
+    <color name="color_accent">#3B82F6</color>
+    <color name="text_dark">#1F2937</color>
+    <color name="text_light">#6B7280</color>
 </resources>

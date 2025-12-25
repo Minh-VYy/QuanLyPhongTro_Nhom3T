@@ -13,6 +13,7 @@ import com.example.QuanLyPhongTro_App.data.request.RegisterRequest;
 import com.example.QuanLyPhongTro_App.data.response.LoginResponse;
 import com.example.QuanLyPhongTro_App.data.response.GenericResponse;
 import com.example.QuanLyPhongTro_App.ui.tenant.Room;
+import com.example.QuanLyPhongTro_App.data.response.ChatThreadDto;
 
 /**
  * Retrofit API Service - định nghĩa toàn bộ endpoints
@@ -37,14 +38,22 @@ public interface ApiService {
     @POST("/api/nguoidung/register")
     Call<GenericResponse<Object>> register(@Body RegisterRequest request);
 
+    /**
+     * GET /api/nguoidung/me
+     * Authenticated - Get current user profile
+     * Response: { nguoiDungId, email, hoTen, vaiTroId, ... }
+     */
+    @GET("/api/nguoidung/me")
+    Call<GenericResponse<Object>> getUserProfile();
+
     // ==================== PHÒNG ENDPOINTS ====================
 
     /**
      * GET /api/phong?page=1&pageSize=10&minPrice=0&maxPrice=5000000
-     * Public - không cần token
+     * Public - không cần token - Lấy danh sách phòng đã duyệt
      */
     @GET("/api/phong")
-    Call<GenericResponse<List<Room>>> getRooms(
+    Call<GenericResponse<List<Object>>> getRooms(
             @Query("page") int page,
             @Query("pageSize") int pageSize,
             @Query("minPrice") long minPrice,
@@ -56,7 +65,7 @@ public interface ApiService {
      * Public - lấy chi tiết phòng
      */
     @GET("/api/phong/{id}")
-    Call<GenericResponse<Room>> getRoomDetail(@Path("id") String roomId);
+    Call<GenericResponse<Object>> getRoomDetail(@Path("id") String roomId);
 
     // ==================== THÔNG BÁO ENDPOINTS ====================
 
@@ -74,27 +83,58 @@ public interface ApiService {
     Call<GenericResponse<Object>> markNotificationAsRead(@Path("id") String notificationId);
 
     // ==================== CHAT ENDPOINTS ====================
+    // ⚠️ IMPORTANT: C# backend uses /api/Chat/send (capital C) not /api/chat/send
 
     /**
-     * POST /api/tinnhan
+     * POST /api/Chat/send (note: capital C)
      * Send message
+     * Body: { FromUserId, ToUserId, Content, MessageType }
      */
-    @POST("/api/tinnhan")
+    @POST("/api/Chat/send")
     Call<GenericResponse<Object>> sendMessage(@Body Object messageRequest);
 
     /**
-     * GET /api/tinnhan/conversation/{otherUserId}
-     * Get message history with another user
+     * GET /api/Chat/history?user1={userId1}&user2={userId2}&page=1&pageSize=50
+     * Get message history between two users - Returns JSON ARRAY directly, not wrapped
      */
-    @GET("/api/tinnhan/conversation/{otherUserId}")
-    Call<GenericResponse<List<Object>>> getMessageHistory(@Path("otherUserId") String otherUserId);
+    @GET("/api/Chat/history")
+    Call<List<Object>> getMessageHistory(
+            @Query("user1") String user1,
+            @Query("user2") String user2,
+            @Query("page") int page,
+            @Query("pageSize") int pageSize
+    );
 
     /**
-     * PUT /api/tinnhan/{otherUserId}/read
-     * Mark messages as read
+     * GET /api/Chat/contacts?userId={userId}
+     * Get list of chat contacts (threads) - Returns JSON ARRAY directly, not wrapped
      */
-    @PUT("/api/tinnhan/{otherUserId}/read")
-    Call<GenericResponse<Object>> markMessagesAsRead(@Path("otherUserId") String otherUserId);
+    @GET("/api/Chat/contacts")
+    Call<List<Object>> getChatContacts(@Query("userId") String userId);
+
+    /**
+     * PUT /api/Chat/read/{messageId}
+     * Mark message as read
+     */
+    @PUT("/api/Chat/read/{messageId}")
+    Call<GenericResponse<Object>> markMessageAsRead(@Path("messageId") String messageId);
+
+    /**
+     * PUT /api/Chat/read-all?fromUserId={fromId}&toUserId={toId}
+     * Mark all messages as read
+     */
+    @PUT("/api/Chat/read-all")
+    Call<GenericResponse<Object>> markAllMessagesAsRead(
+            @Query("fromUserId") String fromUserId,
+            @Query("toUserId") String toUserId
+    );
+
+    /**
+     * GET /api/Chat/unread-count?userId={userId}
+     * Get unread message count
+     */
+    @GET("/api/Chat/unread-count")
+    Call<GenericResponse<Object>> getUnreadCount(@Query("userId") String userId);
 
     // ==================== ĐẶT PHÒNG ENDPOINTS ====================
 
@@ -112,4 +152,3 @@ public interface ApiService {
     @GET("/api/datphong/my-bookings")
     Call<GenericResponse<List<Object>>> getMyBookings();
 }
-

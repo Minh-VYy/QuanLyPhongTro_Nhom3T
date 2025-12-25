@@ -11,6 +11,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.utils.AccountManager;
+import com.example.QuanLyPhongTro_App.utils.SessionManager;
 
 
 public class DangKyNguoiThueActivity extends AppCompatActivity {
@@ -25,11 +27,17 @@ public class DangKyNguoiThueActivity extends AppCompatActivity {
     private Button btnDangKyThue;
     private TextView chuyenChuTroDangKyThue;
     private TextView dangNhapThue;
+    private AccountManager accountManager;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tenant_register);
+
+        // Khởi tạo AccountManager và SessionManager
+        accountManager = new AccountManager(this);
+        sessionManager = new SessionManager(this);
 
         // Ẩn ActionBar
         if (getSupportActionBar() != null) {
@@ -92,6 +100,7 @@ public class DangKyNguoiThueActivity extends AppCompatActivity {
             return;
         }
 
+
         if (sdt.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập số điện thoại", Toast.LENGTH_SHORT).show();
             return;
@@ -127,11 +136,40 @@ public class DangKyNguoiThueActivity extends AppCompatActivity {
             return;
         }
 
-        Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
+        // Show loading
+        btnDangKyThue.setEnabled(false);
+        btnDangKyThue.setText("Đang đăng ký...");
 
-        // Chuyển về màn hình Splash hoặc Login sau khi đăng ký thành công
-        Intent intent = new Intent(DangKyNguoiThueActivity.this, SplashActivity.class);
-        startActivity(intent);
-        finish();
+        // VaiTroId: 3 = NguoiThue (tenant)
+        accountManager.registerAPI(email, matKhau, hoTen, sdt, 3, new AccountManager.AuthCallback() {
+            @Override
+            public void onSuccess(String message) {
+                android.util.Log.d("DangKyNguoiThueActivity", "API register success");
+                runOnUiThread(() -> {
+                    Toast.makeText(DangKyNguoiThueActivity.this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
+
+                    // Lưu session
+                    sessionManager.createLoginSession(email, hoTen, email, "tenant");
+                    sessionManager.setLandlordStatus(false);
+                    sessionManager.setDisplayRole("tenant");
+
+                    // Chuyển về màn hình chính của người thuê
+                    Intent intent = new Intent(DangKyNguoiThueActivity.this, com.example.QuanLyPhongTro_App.ui.tenant.MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                android.util.Log.e("DangKyNguoiThueActivity", "❌ API register failed: " + error);
+                runOnUiThread(() -> {
+                    btnDangKyThue.setEnabled(true);
+                    btnDangKyThue.setText("Đăng Ký");
+                    Toast.makeText(DangKyNguoiThueActivity.this, "Đăng ký thất bại: " + error, Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
     }
 }

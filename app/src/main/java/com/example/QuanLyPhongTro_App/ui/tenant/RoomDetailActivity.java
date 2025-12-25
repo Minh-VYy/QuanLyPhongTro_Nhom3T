@@ -399,7 +399,7 @@ public class RoomDetailActivity extends AppCompatActivity {
     private void showContactOptions() {
         new AlertDialog.Builder(this)
                 .setTitle("Liên hệ chủ trọ")
-                .setItems(new String[]{"Gọi điện", "Nhắn tin", "Chat trong app"}, (dialog, which) -> {
+                .setItems(new String[]{"Gọi điện", "Nhắn tin"}, (dialog, which) -> {
                     switch (which) {
                         case 0: // Gọi điện
                             Intent callIntent = new Intent(Intent.ACTION_DIAL);
@@ -410,9 +410,6 @@ public class RoomDetailActivity extends AppCompatActivity {
                             Intent smsIntent = new Intent(Intent.ACTION_VIEW);
                             smsIntent.setData(Uri.parse("sms:0123456789"));
                             startActivity(smsIntent);
-                            break;
-                        case 2: // Chat
-                            Toast.makeText(this, "Tính năng chat đang phát triển", Toast.LENGTH_SHORT).show();
                             break;
                     }
                 })
