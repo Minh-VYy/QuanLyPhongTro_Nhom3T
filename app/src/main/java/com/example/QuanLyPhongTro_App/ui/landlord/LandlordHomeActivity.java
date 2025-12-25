@@ -1,5 +1,6 @@
 package com.example.QuanLyPhongTro_App.ui.landlord;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -42,6 +43,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
 import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
+import com.example.QuanLyPhongTro_App.data.dao.PhongDao;
 import com.example.QuanLyPhongTro_App.data.model.Phong;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
 import com.example.QuanLyPhongTro_App.ui.tenant.MainActivity;
@@ -81,6 +83,13 @@ public class LandlordHomeActivity extends AppCompatActivity {
     private List<LandlordListing> allListings = new ArrayList<>();
     private List<LandlordListing> filteredListings = new ArrayList<>();
     private ListingAdapter adapter;
+
+    // Interface cho callback
+    public interface OnListingActionListener {
+        void onEditClick(LandlordListing listing);
+        void onDeleteClick(LandlordListing listing);
+        void onToggleActive(LandlordListing listing, boolean isActive);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,6 +152,13 @@ public class LandlordHomeActivity extends AppCompatActivity {
         // Khởi tạo các view tìm kiếm
         searchInput = findViewById(R.id.searchInput);
         searchButton = findViewById(R.id.searchButton);
+        
+        // DEBUG: Long click search button to open test activity
+        searchButton.setOnLongClickListener(v -> {
+            Intent intent = new Intent(LandlordHomeActivity.this, TestLandlordDatabaseActivity.class);
+            startActivity(intent);
+            return true;
+        });
     }
 
     private void setupFAB() {
@@ -216,6 +232,14 @@ public class LandlordHomeActivity extends AppCompatActivity {
             intent.putExtra("defaultTab", "yeucau");
             startActivity(intent);
         });
+        
+        // DEBUG: Thêm debug action vào menu
+        findViewById(R.id.menu_add_listing).setOnLongClickListener(v -> {
+            closeQuickActionMenu();
+            Intent intent = new Intent(this, TestLandlordDatabaseActivity.class);
+            startActivity(intent);
+            return true;
+        });
     }
 
     private void setupRoleSwitcher() {
@@ -246,9 +270,21 @@ public class LandlordHomeActivity extends AppCompatActivity {
         allListings.clear();
         filteredListings.clear();
 
-        adapter = new ListingAdapter(filteredListings, listing -> {
-            Intent intent = new Intent(this, EditTin.class);
-            startActivity(intent);
+        adapter = new ListingAdapter(filteredListings, new OnListingActionListener() {
+            @Override
+            public void onEditClick(LandlordListing listing) {
+                editListing(listing);
+            }
+
+            @Override
+            public void onDeleteClick(LandlordListing listing) {
+                deleteListing(listing);
+            }
+
+            @Override
+            public void onToggleActive(LandlordListing listing, boolean isActive) {
+                toggleListingActive(listing, isActive);
+            }
         });
 
         rvListings.setAdapter(adapter);
@@ -269,7 +305,6 @@ public class LandlordHomeActivity extends AppCompatActivity {
      */
     private class LoadLandlordPhongTask extends AsyncTask<Void, Void, List<Phong>> {
         private String errorMsg = null;
-        private LandlordPhongDao.PhongStats stats = null;
 
         @Override
         protected void onPreExecute() {
@@ -291,14 +326,11 @@ public class LandlordHomeActivity extends AppCompatActivity {
                 String chuTroId = sessionManager.getUserId();
                 Log.d(TAG, "Loading rooms for ChuTroId: " + chuTroId);
                 
-                LandlordPhongDao dao = new LandlordPhongDao();
+                PhongDao dao = new PhongDao();
                 
                 // Load danh sách phòng
                 List<Phong> result = dao.getPhongByChuTroId(conn, chuTroId);
                 Log.d(TAG, "Query result: " + (result != null ? result.size() : "null") + " rooms");
-                
-                // Load thống kê
-                stats = dao.getPhongStats(conn, chuTroId);
                 
                 return result;
             } catch (Exception e) {
@@ -331,10 +363,8 @@ public class LandlordHomeActivity extends AppCompatActivity {
                 
                 adapter.notifyDataSetChanged();
                 
-                // Cập nhật thống kê
-                if (stats != null) {
-                    updateListingCounts(stats);
-                }
+                // Cập nhật thống kê đơn giản
+                updateListingCounts();
                 
                 if (phongList.isEmpty()) {
                     Toast.makeText(LandlordHomeActivity.this, 
@@ -381,8 +411,10 @@ public class LandlordHomeActivity extends AppCompatActivity {
         boolean isActive = phong.isDuyet() && !phong.isBiKhoa();
         
         return new LandlordListing(
+            phong.getPhongId(),
             phong.getTieuDe(),
             priceText,
+            phong.getGiaTien(),
             displayStatus,
             isActive,
             "default_room" // Tạm thời dùng ảnh mặc định
@@ -404,19 +436,6 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
         if (tvTotal != null) tvTotal.setText(String.valueOf(total));
         if (tvActive != null) tvActive.setText(String.valueOf(activeCount));
-    }
-    
-    /**
-     * Cập nhật số liệu thống kê từ database
-     */
-    private void updateListingCounts(LandlordPhongDao.PhongStats stats) {
-        TextView tvTotal = findViewById(R.id.tv_total_listings);
-        TextView tvActive = findViewById(R.id.tv_active_listings);
-
-        if (tvTotal != null) tvTotal.setText(String.valueOf(stats.totalPhong));
-        if (tvActive != null) tvActive.setText(String.valueOf(stats.activePhong));
-        
-        Log.d(TAG, "Updated listing counts - Total: " + stats.totalPhong + ", Active: " + stats.activePhong);
     }
 
     public void afterTextChanged(Editable s) {
@@ -533,6 +552,12 @@ public class LandlordHomeActivity extends AppCompatActivity {
         }
         if (btnQuickStats != null) {
             btnQuickStats.setOnClickListener(v -> startActivity(new Intent(this, LandlordStatsActivity.class)));
+            // DEBUG: Long click stats button to open test activity
+            btnQuickStats.setOnLongClickListener(v -> {
+                Intent intent = new Intent(this, TestLandlordDatabaseActivity.class);
+                startActivity(intent);
+                return true;
+            });
         }
         if (btnMenu != null) {
             btnMenu.setOnClickListener(v -> Toast.makeText(this, "Menu", Toast.LENGTH_SHORT).show());
@@ -546,6 +571,12 @@ public class LandlordHomeActivity extends AppCompatActivity {
         }
         if (btnViewAll != null) {
             btnViewAll.setOnClickListener(v -> startActivity(new Intent(this, AllListingsActivity.class)));
+            // DEBUG: Long click to open test manage phong activity
+            btnViewAll.setOnLongClickListener(v -> {
+                Intent intent = new Intent(this, TestManagePhongActivity.class);
+                startActivity(intent);
+                return true;
+            });
         }
     }
 
@@ -570,19 +601,177 @@ public class LandlordHomeActivity extends AppCompatActivity {
         loadLandlordRoomsFromDatabase();
     }
 
+    /**
+     * Chỉnh sửa tin đăng
+     */
+    private void editListing(LandlordListing listing) {
+        Intent intent = new Intent(this, EditTin.class);
+        intent.putExtra("mode", "edit");
+        intent.putExtra("phongId", listing.phongId);
+        intent.putExtra("title", listing.title);
+        intent.putExtra("price", listing.priceValue);
+        intent.putExtra("description", ""); // Sẽ load từ database
+        startActivityForResult(intent, 1001);
+    }
+
+    /**
+     * Xóa tin đăng
+     */
+    private void deleteListing(LandlordListing listing) {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Xác nhận xóa")
+            .setMessage("Bạn có chắc muốn xóa tin đăng \"" + listing.title + "\"?")
+            .setPositiveButton("Xóa", (dialog, which) -> {
+                new DeletePhongTask().execute(listing.phongId, listing.title);
+            })
+            .setNegativeButton("Hủy", null)
+            .show();
+    }
+
+    /**
+     * Toggle trạng thái hoạt động
+     */
+    private void toggleListingActive(LandlordListing listing, boolean isActive) {
+        new ToggleActiveTask().execute(listing.phongId, String.valueOf(isActive), listing.title);
+    }
+
+    /**
+     * AsyncTask để xóa phòng
+     */
+    private class DeletePhongTask extends AsyncTask<String, Void, Boolean> {
+        private String errorMsg = null;
+        private String deletedTitle = null;
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            String phongId = params[0];
+            deletedTitle = params[1];
+            
+            Connection conn = null;
+            try {
+                Log.d(TAG, "=== DELETING PHONG ===");
+                Log.d(TAG, "PhongId: " + phongId);
+                
+                conn = DatabaseHelper.getConnection();
+                String chuTroId = sessionManager.getUserId();
+                
+                ManagePhongDao dao = new ManagePhongDao();
+                boolean result = dao.deletePhong(conn, phongId, chuTroId);
+                
+                Log.d(TAG, "Delete result: " + result);
+                return result;
+                
+            } catch (Exception e) {
+                Log.e(TAG, "Error deleting phong: " + e.getMessage(), e);
+                errorMsg = e.getMessage();
+                return false;
+            } finally {
+                DatabaseHelper.closeConnection(conn);
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if (success) {
+                Toast.makeText(LandlordHomeActivity.this, 
+                    "✅ Đã xóa: " + deletedTitle, 
+                    Toast.LENGTH_SHORT).show();
+                
+                // Refresh danh sách
+                loadLandlordRoomsFromDatabase();
+            } else {
+                String message = "❌ Không thể xóa tin đăng";
+                if (errorMsg != null) {
+                    message += "\nLỗi: " + errorMsg;
+                }
+                Toast.makeText(LandlordHomeActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    /**
+     * AsyncTask để toggle trạng thái hoạt động
+     */
+    private class ToggleActiveTask extends AsyncTask<String, Void, Boolean> {
+        private String errorMsg = null;
+        private String phongTitle = null;
+        private boolean newActiveState = false;
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            String phongId = params[0];
+            newActiveState = Boolean.parseBoolean(params[1]);
+            phongTitle = params[2];
+            
+            Connection conn = null;
+            try {
+                Log.d(TAG, "=== TOGGLING PHONG ACTIVE ===");
+                Log.d(TAG, "PhongId: " + phongId + ", Active: " + newActiveState);
+                
+                conn = DatabaseHelper.getConnection();
+                String chuTroId = sessionManager.getUserId();
+                
+                ManagePhongDao dao = new ManagePhongDao();
+                boolean result = dao.togglePhongActive(conn, phongId, chuTroId, newActiveState);
+                
+                Log.d(TAG, "Toggle result: " + result);
+                return result;
+                
+            } catch (Exception e) {
+                Log.e(TAG, "Error toggling phong active: " + e.getMessage(), e);
+                errorMsg = e.getMessage();
+                return false;
+            } finally {
+                DatabaseHelper.closeConnection(conn);
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if (success) {
+                String status = newActiveState ? "kích hoạt" : "tắt";
+                Toast.makeText(LandlordHomeActivity.this, 
+                    "✅ Đã " + status + ": " + phongTitle, 
+                    Toast.LENGTH_SHORT).show();
+                
+                // Refresh danh sách
+                loadLandlordRoomsFromDatabase();
+            } else {
+                String message = "❌ Không thể thay đổi trạng thái";
+                if (errorMsg != null) {
+                    message += "\nLỗi: " + errorMsg;
+                }
+                Toast.makeText(LandlordHomeActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
+        if (requestCode == 1001 && resultCode == Activity.RESULT_OK) {
+            // Refresh danh sách sau khi edit
+            loadLandlordRoomsFromDatabase();
+        }
+    }
+
     // ==================== INTERNAL CLASSES ====================
 
     static class LandlordListing {
-        String title, price, status, imageName;
+        String phongId, title, price, status, imageName;
+        double priceValue;
         boolean isActive;
 
-        LandlordListing(String title, String price, String status,
+        LandlordListing(String phongId, String title, String price, double priceValue, String status,
                         boolean isActive, String imageName) {
+            this.phongId = phongId;
             this.title = title;
             this.price = price;
+            this.priceValue = priceValue;
             this.status = status;
             this.isActive = isActive;
-            this.imageName = imageName; // ⭐ BẮT BUỘC
+            this.imageName = imageName;
         }
     }
 
@@ -593,11 +782,11 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
     static class ListingAdapter extends RecyclerView.Adapter<ListingAdapter.ViewHolder> {
         private List<LandlordListing> listings;
-        private final OnListingClickListener listener;
+        private final OnListingActionListener actionListener;
 
-        ListingAdapter(List<LandlordListing> listings, OnListingClickListener listener) {
+        ListingAdapter(List<LandlordListing> listings, OnListingActionListener actionListener) {
             this.listings = listings;
-            this.listener = listener;
+            this.actionListener = actionListener;
         }
 
         // Thêm phương thức updateList
@@ -630,12 +819,34 @@ public class LandlordHomeActivity extends AppCompatActivity {
             else if ("Chờ xử lý".equals(listing.status)) colorRes = R.color.warning;
             holder.tvStatus.setTextColor(holder.itemView.getContext().getResources().getColor(colorRes));
 
+            // Switch listener
             holder.swActive.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 listing.isActive = isChecked;
-                holder.tvStatus.setText(isChecked ? "Còn trống" : "Không hoạt động");
+                if (actionListener != null) {
+                    actionListener.onToggleActive(listing, isChecked);
+                }
             });
 
-            holder.itemView.setOnClickListener(v -> listener.onListingClick(listing));
+            // Edit button listener
+            holder.btnEdit.setOnClickListener(v -> {
+                if (actionListener != null) {
+                    actionListener.onEditClick(listing);
+                }
+            });
+
+            // Delete button listener
+            holder.btnDelete.setOnClickListener(v -> {
+                if (actionListener != null) {
+                    actionListener.onDeleteClick(listing);
+                }
+            });
+
+            // Item click listener (for viewing details)
+            holder.itemView.setOnClickListener(v -> {
+                if (actionListener != null) {
+                    actionListener.onEditClick(listing); // Mặc định click item = edit
+                }
+            });
         }
 
         @Override
@@ -647,6 +858,7 @@ public class LandlordHomeActivity extends AppCompatActivity {
             TextView tvTitle, tvPrice, tvStatus;
             Switch swActive;
             ImageView imgRoom;
+            ImageButton btnEdit, btnDelete;
 
             ViewHolder(View itemView) {
                 super(itemView);
@@ -655,6 +867,8 @@ public class LandlordHomeActivity extends AppCompatActivity {
                 tvPrice = itemView.findViewById(R.id.tv_price_item);
                 tvStatus = itemView.findViewById(R.id.tv_status_item);
                 swActive = itemView.findViewById(R.id.switch_active);
+                btnEdit = itemView.findViewById(R.id.btn_edit);
+                btnDelete = itemView.findViewById(R.id.btn_delete);
             }
         }
     }
