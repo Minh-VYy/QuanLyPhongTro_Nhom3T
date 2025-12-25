@@ -34,11 +34,11 @@ public class LoginActivity extends AppCompatActivity {
     private String targetRole = "tenant";
 
     // --- Database Credentials --- 
-    private static final String IP = "192.168.0.117";  // Fixed IP to match computer
+    private static final String IP = "192.168.1.6";  // Fixed IP to match computer
     private static final String PORT = "1433";
     private static final String DATABASE = "QuanLyPhongTro";
-    private static final String USERNAME = "sa";
-    private static final String PASSWORD = "27012005";
+    private static final String USERNAME = "mhoang";
+    private static final String PASSWORD = "12345";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

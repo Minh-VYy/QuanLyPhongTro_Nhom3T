@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Filter Button Text Color Selector
+    Màu text thay đổi theo trạng thái của filter button
+    - Selected state: text trắng (trên nền xanh)
+    - Unselected state: text xanh (trên nền trắng)
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- Selected state: text trắng -->
+    <item android:state_selected="true" android:color="@color/text_on_primary" />
+    
+    <!-- Pressed state: text trắng -->
+    <item android:state_pressed="true" android:color="@color/text_on_primary" />
+    
+    <!-- Default state: text xanh -->
+    <item android:color="@color/text_primary_blue" />
+    
+</selector>

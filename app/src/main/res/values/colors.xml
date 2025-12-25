@@ -6,7 +6,21 @@
     <color name="primary_light">#DBEAFE</color>
     <color name="primary_TT">#FF2196F3</color>
 
-    <!-- Các màu phụ đã từng sử dụng -->
+    <!-- Hệ thống màu xanh dương mới cho tenant UI -->
+    <color name="primary_blue">#4a90e2</color>
+    <color name="primary_blue_dark">#3a7bd5</color>
+    <color name="primary_blue_light">#63b3ed</color>
+    <color name="primary_blue_lighter">#e3f2fd</color>
+    
+    <!-- Màu gradient cho buttons -->
+    <color name="gradient_start">#4a90e2</color>
+    <color name="gradient_end">#63b3ed</color>
+    
+    <!-- Màu text trên nền xanh và text xanh -->
+    <color name="text_on_primary">#FFFFFF</color>
+    <color name="text_primary_blue">#4a90e2</color>
+
+    <!-- Các màu phụ đã từng sử dụng (từ main) -->
     <color name="orange_primary">#F97316</color>
     <color name="orange_light">#FFEDD5</color>
     <color name="mint_primary">#10B981</color>
@@ -20,7 +34,7 @@
     <!-- Màu chữ -->
     <color name="text_primary">#333333</color>
     <color name="text_secondary">#666666</color>
-    <color name="text_tertiary">#999999</color> <!-- Thêm lại màu bị thiếu -->
+    <color name="text_tertiary">#999999</color>
     <color name="muted">#6C757D</color>
 
     <!-- Màu trạng thái -->
@@ -29,7 +43,7 @@
     <color name="warning">#F59E0B</color>
     <color name="error">#EF4444</color>
 
-    <!-- Các màu cũ để tương thích (NGUYÊN NHÂN GÂY LỖI) -->
+    <!-- Các màu cũ để tương thích -->
     <color name="colorPrimary">#10B981</color>
     <color name="mau_trang">#FFFFFF</color>
     <color name="mau_xam">#999999</color>

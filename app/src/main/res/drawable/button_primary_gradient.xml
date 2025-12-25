@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Primary Button với Gradient Xanh Dương
+    Sử dụng cho các nút chính như "Đặt lịch xem", "Liên hệ", "Xem chi tiết"
+    Gradient từ primary_blue (#4a90e2) đến primary_blue_light (#63b3ed)
+    Corner radius 12dp để tạo cảm giác hiện đại, mềm mại
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Gradient xanh dương từ đậm đến nhạt -->
+    <gradient
+        android:type="linear"
+        android:angle="90"
+        android:startColor="@color/gradient_start"
+        android:endColor="@color/gradient_end" />
+    
+    <!-- Bo góc 12dp để tạo cảm giác mềm mại -->
+    <corners android:radius="12dp" />
+    
+    <!-- Stroke nhẹ để tạo định nghĩa rõ ràng -->
+    <stroke 
+        android:width="1dp"
+        android:color="@color/primary_blue" />
+</shape>

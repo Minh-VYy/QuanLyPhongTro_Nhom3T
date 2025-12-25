@@ -100,74 +100,88 @@
                 android:paddingEnd="10dp"
                 android:gravity="center_vertical">
 
-                <Button
+                <!-- Nút Bộ lọc chính - gradient xanh dương, có chức năng mở dialog filter -->
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnFilter"
                     android:layout_width="wrap_content"
                     android:layout_height="35dp"
                     android:layout_marginEnd="10dp"
-                    android:background="@drawable/button_primary"
-                    android:drawableStart="@drawable/ic_filter"
-                    android:drawablePadding="4dp"
+                    android:background="@drawable/button_primary_gradient"
+                    app:backgroundTint="@null"
+                    app:icon="@drawable/ic_filter"
+                    app:iconTint="@color/white"
+                    app:iconPadding="4dp"
                     android:paddingStart="12dp"
                     android:paddingEnd="12dp"
                     android:text="Bộ lọc"
                     android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:cornerRadius="12dp" />
 
-                <Button
+                <!-- Nút Giá tốt - lọc theo giá từ thấp đến cao -->
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnPriceFilter"
+                    style="@style/Widget.App.Button.Outlined"
                     android:layout_width="wrap_content"
                     android:layout_height="35dp"
                     android:layout_marginEnd="10dp"
-                    android:background="@drawable/button_outline"
-                    android:drawableStart="@drawable/ic_price"
-                    android:drawablePadding="4dp"
+                    app:icon="@drawable/ic_price"
+                    app:iconPadding="4dp"
                     android:paddingStart="12dp"
                     android:paddingEnd="12dp"
                     android:text="Giá tốt"
-                    android:textColor="#7c3aed"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp" />
 
-                <Button
+                <!-- Nút Gần tôi - lọc theo vị trí gần người dùng -->
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnNearbyFilter"
+                    style="@style/Widget.App.Button.Outlined"
                     android:layout_width="wrap_content"
                     android:layout_height="35dp"
                     android:layout_marginEnd="10dp"
-                    android:background="@drawable/button_outline"
-                    android:drawableStart="@drawable/ic_location"
-                    android:drawablePadding="4dp"
+                    app:icon="@drawable/ic_location"
+                    app:iconPadding="4dp"
                     android:paddingStart="12dp"
                     android:paddingEnd="12dp"
                     android:text="Gần tôi"
-                    android:textColor="#7c3aed"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp" />
 
-                <Button
+                <!-- Nút Đánh giá - lọc theo rating cao -->
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRatingFilter"
+                    style="@style/Widget.App.Button.Outlined"
                     android:layout_width="wrap_content"
                     android:layout_height="35dp"
                     android:layout_marginEnd="10dp"
-                    android:background="@drawable/button_outline"
-                    android:drawableStart="@drawable/ic_star"
-                    android:drawablePadding="4dp"
+                    app:icon="@drawable/ic_star"
+                    app:iconPadding="4dp"
                     android:paddingStart="12dp"
                     android:paddingEnd="12dp"
                     android:text="Đánh giá"
-                    android:textColor="#7c3aed"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp" />
 
-                <Button
+                <!-- Nút Mới nhất - lọc theo thời gian đăng mới nhất -->
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnNewestFilter"
+                    style="@style/Widget.App.Button.Outlined"
                     android:layout_width="wrap_content"
                     android:layout_height="35dp"
-                    android:background="@drawable/button_outline"
-                    android:drawableStart="@drawable/ic_bolt"
-                    android:drawablePadding="4dp"
+                    app:icon="@drawable/ic_bolt"
+                    app:iconPadding="4dp"
                     android:paddingStart="12dp"
                     android:paddingEnd="12dp"
                     android:text="Mới nhất"
-                    android:textColor="#7c3aed"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp" />
 
             </LinearLayout>
 
@@ -199,6 +213,16 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
+            <!-- ProgressBar để hiển thị khi đang load dữ liệu -->
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:visibility="gone" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/roomRecyclerView"
                 android:layout_width="match_parent"
@@ -211,6 +235,9 @@
 
     </androidx.core.widget.NestedScrollView>
 
+    <!-- ==================== BOTTOM NAVIGATION BAR ==================== -->
+    <!-- Navigation bar với 4 tab: Trang chủ, Đặt lịch, Thông báo, Tôi -->
+    <!-- Tab được chọn có màu xanh dương, tab chưa chọn có màu xám -->
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
@@ -220,6 +247,7 @@
         android:orientation="horizontal"
         android:elevation="8dp">
 
+        <!-- Tab Trang chủ - đang được chọn (màu xanh) -->
         <LinearLayout
             android:id="@+id/navHome"
             android:layout_width="0dp"
@@ -235,19 +263,20 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_home"
-                app:tint="#4a90e2" />
+                app:tint="@color/primary_blue" />
 
             <TextView
                 android:id="@+id/navHomeText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Trang chủ"
-                android:textColor="#4a90e2"
+                android:textColor="@color/primary_blue"
                 android:textSize="10sp"
                 android:textStyle="bold"
                 android:layout_marginTop="2dp" />
         </LinearLayout>
 
+        <!-- Tab Đặt lịch - chưa chọn (màu xám) -->
         <LinearLayout
             android:id="@+id/navBooking"
             android:layout_width="0dp"
@@ -263,18 +292,19 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_calendar"
-                app:tint="#666" />
+                app:tint="@color/text_secondary" />
 
             <TextView
                 android:id="@+id/navBookingText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Đặt lịch"
-                android:textColor="#666"
+                android:textColor="@color/text_secondary"
                 android:textSize="10sp"
                 android:layout_marginTop="2dp" />
         </LinearLayout>
 
+        <!-- Tab Thông báo - chưa chọn (màu xám) -->
         <LinearLayout
             android:id="@+id/navNotification"
             android:layout_width="0dp"
@@ -290,18 +320,19 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_notification"
-                app:tint="#666" />
+                app:tint="@color/text_secondary" />
 
             <TextView
                 android:id="@+id/navNotificationText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Thông báo"
-                android:textColor="#666"
+                android:textColor="@color/text_secondary"
                 android:textSize="10sp"
                 android:layout_marginTop="2dp" />
         </LinearLayout>
 
+        <!-- Tab Tôi - chưa chọn (màu xám) -->
         <LinearLayout
             android:id="@+id/navProfile"
             android:layout_width="0dp"
@@ -317,14 +348,14 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_user"
-                app:tint="#666" />
+                app:tint="@color/text_secondary" />
 
             <TextView
                 android:id="@+id/navProfileText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Tôi"
-                android:textColor="#666"
+                android:textColor="@color/text_secondary"
                 android:textSize="10sp"
                 android:layout_marginTop="2dp" />
         </LinearLayout>
