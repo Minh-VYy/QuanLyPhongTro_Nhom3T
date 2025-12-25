@@ -79,6 +79,7 @@
         <activity android:name=".ui.landlord.TroGiup" />
         <activity android:name=".ui.landlord.AllListingsActivity" />
         <activity android:name=".ui.landlord.TestManagePhongActivity" />
+        <activity android:name=".ui.landlord.SimpleEditTestActivity" />
         <activity android:name=".ui.landlord.LandlordEditProfileActivity"/>
         <activity
             android:name=".ui.chatbot.ChatbotActivity"

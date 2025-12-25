@@ -13,7 +13,7 @@ public class DatabaseHelper {
     private static final String TAG = "DatabaseHelper";
     
     // Database credentials - THAY ĐỔI THEO MÁY CHỦ CỦA BẠN
-    private static final String IP = "192.168.0.117";
+    private static final String IP = "172.26.98.234";
     private static final String PORT = "1433";
     private static final String DATABASE = "QuanLyPhongTro";
     private static final String USERNAME = "sa";
