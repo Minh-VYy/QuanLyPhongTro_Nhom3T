@@ -362,6 +362,7 @@ public class MainActivity extends AppCompatActivity {
             txtRoleSecondary.setText("Chuyển vai trò");
             iconRole.setImageResource(R.drawable.ic_home);
         } else {
+
             txtRolePrimary.setText("Người thuê");
             txtRoleSecondary.setText("Chuyển vai trò");
             iconRole.setImageResource(R.drawable.ic_user);
@@ -372,7 +373,5 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         applyRoleUI();
-        // Refresh data khi quay lại màn hình
-        loadRoomsFromDatabase();
     }
 }

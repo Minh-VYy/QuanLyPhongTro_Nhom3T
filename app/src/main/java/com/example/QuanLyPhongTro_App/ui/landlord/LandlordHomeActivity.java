@@ -88,15 +88,7 @@ public class LandlordHomeActivity extends AppCompatActivity {
         sessionManager = new SessionManager(this);
 
         // Kiểm tra quyền truy cập
-        if (!sessionManager.isLoggedIn() || !"landlord".equals(sessionManager.getUserRole())) {
-            Toast.makeText(this, "Vui lòng đăng nhập với tài khoản Chủ Trọ", Toast.LENGTH_LONG).show();
-            Intent intent = new Intent(this, LoginActivity.class);
-            intent.putExtra("targetRole", "landlord");
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            finish();
-            return;
-        }
+        if (isFinishing() || isDestroyed()) return;
 
         initViews();
         setupRoleSwitcher();
@@ -292,14 +284,14 @@ public class LandlordHomeActivity extends AppCompatActivity {
                     errorMsg = "Không tìm thấy thông tin chủ trọ";
                     return null;
                 }
-                
+
                 // Mở connection
                 conn = DatabaseHelper.getConnection();
-                
+
                 // Load phòng từ database
                 LandlordPhongDAO dao = new LandlordPhongDAO();
                 return dao.getPhongByChuTroId(conn, chuTroId);
-                
+
             } catch (Exception e) {
                 errorMsg = e.getMessage();
                 android.util.Log.e("LandlordHome", "Error loading phong: " + e.getMessage(), e);
@@ -488,6 +480,7 @@ public class LandlordHomeActivity extends AppCompatActivity {
         // Cập nhật adapter
         adapter.updateList(filteredListings);
 
+
         // Hiển thị số lượng kết quả
         showSearchResultCount();
     }
@@ -556,8 +549,6 @@ public class LandlordHomeActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         LandlordBottomNavigationHelper.setupBottomNavigation(this, "home");
-        // Refresh dữ liệu khi quay lại màn hình
-        loadRoomsFromDatabase();
     }
 
     // ==================== INTERNAL CLASSES ====================
