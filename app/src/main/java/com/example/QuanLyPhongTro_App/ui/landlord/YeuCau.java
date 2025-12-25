@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.ui.tenant.DatabaseConnector;
+import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
 import com.example.QuanLyPhongTro_App.ui.tenant.MessageDetailActivity;
 import com.example.QuanLyPhongTro_App.utils.LandlordBottomNavigationHelper;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
@@ -125,47 +125,18 @@ public class YeuCau extends AppCompatActivity {
         @Override
         protected List<BookingRequest> doInBackground(String... params) {
             String landlordId = params[0];
-            final List<BookingRequest>[] result = new List[]{new ArrayList<>()};
-            final boolean[] completed = {false};
+            Connection conn = null;
             
-            DatabaseConnector.connect(new DatabaseConnector.ConnectionCallback() {
-                @Override
-                public void onConnectionSuccess(Connection connection) {
-                    try {
-                        result[0] = bookingDao.getBookingRequestsByLandlord(connection, landlordId);
-                    } catch (Exception e) {
-                        errorMsg = e.getMessage();
-                        Log.e("YeuCau", "Error loading booking requests", e);
-                    } finally {
-                        if (connection != null) {
-                            try {
-                                connection.close();
-                            } catch (Exception e) {
-                                Log.e("YeuCau", "Error closing connection", e);
-                            }
-                        }
-                        completed[0] = true;
-                    }
-                }
-
-                @Override
-                public void onConnectionFailed(String error) {
-                    errorMsg = error;
-                    completed[0] = true;
-                }
-            });
-            
-            // Wait for connection to complete
-            while (!completed[0]) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
+            try {
+                conn = DatabaseHelper.getConnection();
+                return bookingDao.getBookingRequestsByLandlord(conn, landlordId);
+            } catch (Exception e) {
+                errorMsg = e.getMessage();
+                Log.e("YeuCau", "Error loading booking requests", e);
+                return new ArrayList<>();
+            } finally {
+                DatabaseHelper.releaseConnection(conn);
             }
-            
-            return result[0];
         }
 
         @Override
@@ -200,50 +171,22 @@ public class YeuCau extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            final Boolean[] result = {false};
-            final boolean[] completed = {false};
+            Connection conn = null;
             
-            DatabaseConnector.connect(new DatabaseConnector.ConnectionCallback() {
-                @Override
-                public void onConnectionSuccess(Connection connection) {
-                    try {
-                        int statusId = bookingDao.getStatusIdByName(connection, statusName);
-                        if (statusId != -1) {
-                            result[0] = bookingDao.updateBookingStatus(connection, datPhongId, statusId);
-                        }
-                    } catch (Exception e) {
-                        errorMsg = e.getMessage();
-                        Log.e("YeuCau", "Error updating booking status", e);
-                    } finally {
-                        if (connection != null) {
-                            try {
-                                connection.close();
-                            } catch (Exception e) {
-                                Log.e("YeuCau", "Error closing connection", e);
-                            }
-                        }
-                        completed[0] = true;
-                    }
+            try {
+                conn = DatabaseHelper.getConnection();
+                int statusId = bookingDao.getStatusIdByName(conn, statusName);
+                if (statusId != -1) {
+                    return bookingDao.updateBookingStatus(conn, datPhongId, statusId);
                 }
-
-                @Override
-                public void onConnectionFailed(String error) {
-                    errorMsg = error;
-                    completed[0] = true;
-                }
-            });
-            
-            // Wait for connection to complete
-            while (!completed[0]) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
+                return false;
+            } catch (Exception e) {
+                errorMsg = e.getMessage();
+                Log.e("YeuCau", "Error updating booking status", e);
+                return false;
+            } finally {
+                DatabaseHelper.releaseConnection(conn);
             }
-            
-            return result[0];
         }
 
         @Override
