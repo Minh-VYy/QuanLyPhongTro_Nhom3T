@@ -26,17 +26,25 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
 
     public ChatAdapter(List<ChatMessage> messages, String currentUserId) {
         this.messages = messages;
-        this.currentUserId = currentUserId;
+        // ✅ CRITICAL: Trim currentUserId to avoid whitespace comparison issues
+        this.currentUserId = currentUserId != null ? currentUserId.trim() : "";
     }
 
     @Override
     public int getItemViewType(int position) {
         ChatMessage message = messages.get(position);
-        if (message.getSenderId().equals(currentUserId)) {
-            return VIEW_TYPE_SENT;
-        } else {
-            return VIEW_TYPE_RECEIVED;
+        // ✅ CRITICAL: Trim both IDs to avoid whitespace comparison issues
+        String msgSenderId = message.getSenderId() != null ? message.getSenderId().trim() : "";
+        String currUserId = currentUserId != null ? currentUserId.trim() : "";
+
+        boolean isSent = msgSenderId.equals(currUserId);
+
+        // ✅ DEBUG: Log for troubleshooting message display issues
+        if (position < 5) {  // Only log first 5 messages to avoid spam
+            android.util.Log.d("ChatAdapter", "Message " + position + ": msgSender='" + msgSenderId + "' current='" + currUserId + "' isSent=" + isSent + " content=" + message.getContent().substring(0, Math.min(20, message.getContent().length())));
         }
+
+        return isSent ? VIEW_TYPE_SENT : VIEW_TYPE_RECEIVED;
     }
 
     @NonNull

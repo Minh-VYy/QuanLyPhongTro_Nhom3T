@@ -25,8 +25,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/header_gradient"
-                android:paddingTop="50dp"
-                android:paddingBottom="30dp">
+                android:paddingTop="15dp"
+                android:paddingBottom="20dp">
 
                 <!-- Avatar with Edit Button -->
                 <RelativeLayout
@@ -65,14 +65,14 @@
                         android:elevation="12dp"
                         app:cardCornerRadius="16dp"
                         app:cardElevation="12dp"
-                        app:cardBackgroundColor="#4a90e2">
+                        app:cardBackgroundColor="#FFFFFF">
 
                         <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:src="@drawable/ic_edit"
                             android:padding="6dp"
-                            app:tint="@color/bg"
+                            app:tint="@color/color_accent"
                             android:contentDescription="Chỉnh sửa ảnh đại diện" />
 
                     </androidx.cardview.widget.CardView>

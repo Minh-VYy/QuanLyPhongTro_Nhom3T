@@ -2,14 +2,13 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/mau_trang"
-    android:fitsSystemWindows="true">
+    android:background="@color/mau_trang">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="15dp"
         android:padding="20dp">
 
         <!-- Header -->

@@ -33,7 +33,14 @@ public class ChatRepository {
      */
     public void sendMessage(String fromUserId, String toUserId, String noiDung, ChatCallback callback) {
         try {
-            Log.d(TAG, "Sending message from: " + fromUserId + " to: " + toUserId + ", content: " + noiDung);
+            // ✅ Trim all IDs to remove whitespace
+            if (fromUserId != null) fromUserId = fromUserId.trim();
+            if (toUserId != null) toUserId = toUserId.trim();
+
+            Log.d(TAG, "=== SENDING MESSAGE ===");
+            Log.d(TAG, "From: '" + fromUserId + "' (length: " + (fromUserId != null ? fromUserId.length() : "null") + ")");
+            Log.d(TAG, "To: '" + toUserId + "' (length: " + (toUserId != null ? toUserId.length() : "null") + ")");
+            Log.d(TAG, "Content: '" + noiDung + "'");
 
             // Validate user IDs
             if (fromUserId == null || fromUserId.isEmpty()) {
@@ -48,6 +55,16 @@ public class ChatRepository {
                 return;
             }
 
+            // ✅ FIX: Ensure no special characters or newlines in IDs
+            fromUserId = fromUserId.replaceAll("[^a-zA-Z0-9-]", "");
+            toUserId = toUserId.replaceAll("[^a-zA-Z0-9-]", "");
+
+            if (fromUserId.isEmpty() || toUserId.isEmpty()) {
+                Log.e(TAG, "❌ IDs invalid after cleaning!");
+                callback.onError("Lỗi: ID không hợp lệ");
+                return;
+            }
+
             // Create request body matching C# SendChatMessageRequest
             // C# expects: { FromUserId, ToUserId, Content, MessageType }
             Map<String, Object> messageRequest = new HashMap<>();
@@ -56,7 +73,9 @@ public class ChatRepository {
             messageRequest.put("Content", noiDung);
             messageRequest.put("MessageType", "text");
 
-            Log.d(TAG, "Request body: " + new Gson().toJson(messageRequest));
+            String requestJson = new Gson().toJson(messageRequest);
+            Log.d(TAG, "Request body: " + requestJson);
+            Log.d(TAG, "Request size: " + requestJson.length() + " bytes");
 
             // 🔍 DEBUG: Log request
             com.example.QuanLyPhongTro_App.utils.ApiDebugLogger.logRequest(
@@ -76,35 +95,43 @@ public class ChatRepository {
                             response.code(),
                             response.body()
                         );
+                        Log.d(TAG, "Response body: " + new Gson().toJson(response.body()));
+                    } else {
+                        Log.d(TAG, "⚠️ Response body is null");
                     }
 
-                    if (response.isSuccessful() && response.body() != null) {
-                        if (response.body().success) {
-                            Log.d(TAG, "✅ Message sent successfully");
-                            callback.onSuccess("Message sent");
-                        } else {
-                            String error = response.body().message != null ? response.body().message : "Send failed";
-                            Log.e(TAG, "❌ Send failed: " + error);
-                            callback.onError(error);
-                        }
+                    // ✅ FIX: Check HTTP status code first (isSuccessful = 2xx)
+                    // Backend returns 200 OK even for successful sends
+                    if (response.isSuccessful() && response.code() >= 200 && response.code() < 300) {
+                        Log.d(TAG, "✅✅✅ Message sent successfully (HTTP " + response.code() + ") ✅✅✅");
+                        callback.onSuccess("Message sent");
+                    } else if (response.isSuccessful()) {
+                        // Still 2xx but maybe not exactly what we expected
+                        Log.d(TAG, "✅ Got 2xx response: " + response.code());
+                        callback.onSuccess("Message sent");
                     } else {
                         String error = "HTTP " + response.code();
+                        String errorBody = "";
                         try {
                             if (response.errorBody() != null) {
-                                error += ": " + response.errorBody().string();
+                                errorBody = response.errorBody().string();
+                                error += ": " + errorBody;
                             }
                         } catch (Exception e) {
                             Log.e(TAG, "Error reading error body", e);
                         }
 
-                        // 🔍 DEBUG: Log error
+                        // 🔍 DEBUG: Log error chi tiết
+                        Log.e(TAG, "❌❌❌ Send failed - Code: " + response.code()
+                            + ", Message: " + response.message()
+                            + ", Body: " + errorBody);
+
                         com.example.QuanLyPhongTro_App.utils.ApiDebugLogger.logError(
                             response.code(),
                             response.message(),
                             error
                         );
 
-                        Log.e(TAG, "❌ Send failed: " + error);
                         callback.onError(error);
                     }
                 }
@@ -148,28 +175,40 @@ public class ChatRepository {
             apiService.getMessageHistory(currentUserId, otherUserId, 1, 50).enqueue(new Callback<List<Object>>() {
                 @Override
                 public void onResponse(Call<List<Object>> call, Response<List<Object>> response) {
-                    Log.d(TAG, "Message history response code: " + response.code());
+                    Log.d(TAG, "📥 Message history response code: " + response.code());
 
                     if (response.isSuccessful() && response.body() != null) {
                         try {
                             // API returns raw JSON array directly
                             List<Object> messages = response.body();
+                            Log.d(TAG, "📥 API returned " + messages.size() + " objects");
 
-                            // Convert to ChatMessage list
+                            // Convert to ChatMessage list using proper model
                             Gson gson = new Gson();
-                            java.util.List<ChatMessage> chatMessages = new java.util.ArrayList<>();
+                            java.util.List<com.example.QuanLyPhongTro_App.data.model.ChatMessage> chatMessages = new java.util.ArrayList<>();
+
                             if (messages != null) {
                                 for (Object msg : messages) {
                                     try {
-                                        ChatMessage chatMsg = gson.fromJson(gson.toJson(msg), ChatMessage.class);
-                                        chatMessages.add(chatMsg);
+                                        // Convert to proper model: com.example.QuanLyPhongTro_App.data.model.ChatMessage
+                                        com.example.QuanLyPhongTro_App.data.model.ChatMessage chatMsg = gson.fromJson(
+                                            gson.toJson(msg),
+                                            com.example.QuanLyPhongTro_App.data.model.ChatMessage.class
+                                        );
+
+                                        if (chatMsg != null && chatMsg.noiDung != null) {
+                                            Log.d(TAG, "✏️ Parsed: from=" + chatMsg.fromUser + ", content=" + chatMsg.noiDung);
+                                            chatMessages.add(chatMsg);
+                                        } else {
+                                            Log.w(TAG, "⚠️ Skipping null message or null content");
+                                        }
                                     } catch (Exception e) {
-                                        Log.e(TAG, "Error parsing message: " + e.getMessage());
+                                        Log.e(TAG, "❌ Error parsing message: " + e.getMessage(), e);
                                     }
                                 }
                             }
 
-                            Log.d(TAG, "✅ Got " + chatMessages.size() + " messages");
+                            Log.d(TAG, "✅ Successfully converted " + chatMessages.size() + " messages");
                             callback.onSuccess(chatMessages);
                         } catch (Exception e) {
                             Log.e(TAG, "❌ Error processing history: " + e.getMessage(), e);
@@ -240,7 +279,7 @@ public class ChatRepository {
     }
 
     public interface HistoryCallback {
-        void onSuccess(List<ChatMessage> messages);
+        void onSuccess(List<com.example.QuanLyPhongTro_App.data.model.ChatMessage> messages);
         void onError(String error);
     }
 

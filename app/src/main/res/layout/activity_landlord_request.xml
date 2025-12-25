@@ -16,7 +16,7 @@
         android:background="@drawable/header_gradient"
         android:paddingStart="15dp"
         android:paddingEnd="15dp"
-        android:paddingTop="48dp"
+        android:paddingTop="15dp"
         android:paddingBottom="12dp"
         android:gravity="center_vertical"
         android:elevation="4dp"
@@ -34,7 +34,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Quản lý đặt lịch, tin nhắn và thanh toán"
+            android:text="Quản lý đặt lịch và thanh toán"
             android:textSize="14sp"
             android:textColor="#E0E7FF"
             android:layout_marginTop="4dp" />
@@ -61,16 +61,6 @@
             android:textColor="@color/muted"
             android:textSize="14sp"/>
 
-        <Button
-            android:id="@+id/btn_tab_tinnhan"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:text="Tin nhắn"
-            android:textStyle="bold"
-            android:background="@android:color/transparent"
-            android:textColor="@color/primary"
-            android:textSize="14sp"/>
 
         <Button
             android:id="@+id/btn_tab_thanhtoan"
@@ -108,13 +98,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone"
-            android:clipToPadding="false"/>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_messages"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="visible"
             android:clipToPadding="false"/>
 
         <androidx.recyclerview.widget.RecyclerView

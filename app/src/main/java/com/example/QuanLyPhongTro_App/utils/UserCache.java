@@ -46,13 +46,19 @@ public class UserCache {
             return "Ẩn danh";
         }
 
+        // ✅ CRITICAL: Trim userId to match cached keys
+        String trimmedUserId = userId.trim();
+
         // Check cache first
-        if (userNameCache.containsKey(userId)) {
-            return userNameCache.get(userId);
+        if (userNameCache.containsKey(trimmedUserId)) {
+            String cachedName = userNameCache.get(trimmedUserId);
+            Log.d(TAG, "✅ Found in cache: '" + trimmedUserId + "' -> '" + cachedName + "'");
+            return cachedName;
         }
 
         // If not in cache, return userId (will be fetched async later)
-        return userId;
+        Log.d(TAG, "⚠️ Not found in cache: '" + trimmedUserId + "' - returning userId as fallback");
+        return trimmedUserId;
     }
 
     /**
@@ -84,8 +90,11 @@ public class UserCache {
      */
     public static void addUser(String userId, String hoTen) {
         if (userId != null && !userId.isEmpty() && hoTen != null && !hoTen.isEmpty()) {
-            Log.d(TAG, "💾 Caching user: " + userId + " -> " + hoTen);
-            userNameCache.put(userId, hoTen);
+            // ✅ CRITICAL: Trim userId to avoid whitespace issues
+            String trimmedUserId = userId.trim();
+            String trimmedHoTen = hoTen.trim();
+            Log.d(TAG, "💾 Caching user: '" + trimmedUserId + "' -> '" + trimmedHoTen + "'");
+            userNameCache.put(trimmedUserId, trimmedHoTen);
         }
     }
 

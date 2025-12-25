@@ -3,22 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#f8fafc"
-    android:fitsSystemWindows="true">
+    android:background="#f8fafc">
 
     <!-- Header đẹp hơn - Sử dụng AppBarLayout để đồng bộ với trang home -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/header_gradient"
-        android:fitsSystemWindows="true"
         app:elevation="8dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingTop="35dp"
+            android:paddingTop="15dp"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:paddingBottom="16dp"

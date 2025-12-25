@@ -6,67 +6,114 @@
     android:orientation="vertical"
     android:background="#FFFFFF">
 
-    <!-- Header -->
+    <!-- Header with Back Button -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar_chat"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="@color/color_primary"
-        android:elevation="4dp">
+        android:elevation="8dp">
 
-        <TextView
-            android:id="@+id/tv_chat_header"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tên người dùng"
-            android:textSize="18sp"
-            android:textColor="@android:color/white"
-            android:textStyle="bold"
-            android:layout_gravity="center_vertical|start"
-            android:layout_marginStart="16dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingEnd="16dp">
+
+            <!-- Back Button -->
+            <ImageButton
+                android:id="@+id/btn_back_chat"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_arrow_back"
+                android:contentDescription="Quay lại"
+                android:tint="@android:color/white" />
+
+            <!-- User Name -->
+            <TextView
+                android:id="@+id/tv_chat_header"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Tên người dùng"
+                android:textSize="18sp"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:layout_marginStart="12dp" />
+        </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- Chat Messages RecyclerView -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view_chat"
+    <!-- Chat Messages RecyclerView with Card style -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="12dp"
-        android:clipToPadding="false" />
+        android:background="#F5F5F5"
+        android:padding="8dp">
 
-    <!-- Message Input Section -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_chat"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp" />
+    </FrameLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0" />
+
+    <!-- Message Input Section - Material Style -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="12dp"
-        android:background="#F3F4F6"
-        android:gravity="center_vertical">
+        android:background="@android:color/white"
+        android:gravity="center_vertical"
+        android:elevation="4dp">
 
-        <EditText
-            android:id="@+id/et_message_input"
+        <!-- EditText with rounded background -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="0dp"
-            android:layout_height="48dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@android:color/white"
-            android:hint="Nhập tin nhắn..."
-            android:inputType="textMultiLine"
-            android:maxLines="3"
-            android:padding="12dp"
-            android:textSize="14sp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp" />
+            android:layout_marginEnd="8dp"
+            app:boxBackgroundColor="#F5F5F5"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusTopStart="12dp">
 
+            <EditText
+                android:id="@+id/et_message_input"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="Nhập tin nhắn..."
+                android:inputType="textMultiLine"
+                android:maxLines="3"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:textSize="14sp"
+                android:background="@android:color/transparent" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Send Button - Circular with icon -->
         <ImageButton
             android:id="@+id/btn_send_message"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:background="?attr/selectableItemBackground"
+            android:background="@drawable/rounded_button_primary"
             android:scaleType="centerInside"
             android:src="@drawable/ic_arrow_forward"
-            android:contentDescription="Gửi tin nhắn" />
+            android:contentDescription="Gửi tin nhắn"
+            android:tint="@android:color/white"
+            android:elevation="4dp" />
     </LinearLayout>
 </LinearLayout>
 

@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
 import com.example.QuanLyPhongTro_App.data.response.ChatThreadDto;
+import com.example.QuanLyPhongTro_App.utils.UserCache;
 
 import java.util.List;
 
@@ -20,14 +21,21 @@ public class ChatThreadListAdapter extends RecyclerView.Adapter<ChatThreadListAd
 
     private List<ChatThreadDto> threads;
     private OnThreadClickListener onThreadClickListener;
+    private String currentUserId;  // ✅ Add to know who current user is
 
     public interface OnThreadClickListener {
         void onThreadClick(ChatThreadDto thread);
     }
 
     public ChatThreadListAdapter(List<ChatThreadDto> threads, OnThreadClickListener listener) {
+        this(threads, listener, null);
+    }
+
+    // ✅ NEW: Constructor with currentUserId
+    public ChatThreadListAdapter(List<ChatThreadDto> threads, OnThreadClickListener listener, String currentUserId) {
         this.threads = threads;
         this.onThreadClickListener = listener;
+        this.currentUserId = currentUserId;
     }
 
     @NonNull
@@ -41,7 +49,7 @@ public class ChatThreadListAdapter extends RecyclerView.Adapter<ChatThreadListAd
     @Override
     public void onBindViewHolder(@NonNull ThreadViewHolder holder, int position) {
         ChatThreadDto thread = threads.get(position);
-        holder.bind(thread, onThreadClickListener);
+        holder.bind(thread, onThreadClickListener, currentUserId);
     }
 
     @Override
@@ -61,10 +69,41 @@ public class ChatThreadListAdapter extends RecyclerView.Adapter<ChatThreadListAd
             tvLastTime = itemView.findViewById(R.id.tv_last_time);
         }
 
-        public void bind(ChatThreadDto thread, OnThreadClickListener listener) {
-            // Display tenant name for landlord view (or landlord name for tenant view)
-            String otherName = thread.getTenantName() != null ? thread.getTenantName() : thread.getLandlordName();
-            tvChatName.setText(otherName);
+        public void bind(ChatThreadDto thread, OnThreadClickListener listener, String currentUserId) {
+            // ✅ FIX: Determine who "other user" is based on current user
+            String otherName = null;
+
+            // If currentUserId is not set, use old logic (fallback)
+            if (currentUserId == null || currentUserId.isEmpty()) {
+                otherName = thread.getTenantName() != null ? thread.getTenantName() : thread.getLandlordName();
+            } else {
+                // Trim all IDs for comparison
+                String currId = currentUserId.trim();
+                String tenantId = thread.getTenantId() != null ? thread.getTenantId().trim() : "";
+                String landlordId = thread.getLandlordId() != null ? thread.getLandlordId().trim() : "";
+
+                // If current user is tenant, show landlord name
+                if (currId.equals(tenantId)) {
+                    otherName = thread.getLandlordName();
+                }
+                // If current user is landlord, show tenant name
+                else if (currId.equals(landlordId)) {
+                    otherName = thread.getTenantName();
+                }
+                // Fallback: use otherUserId to lookup in cache
+                else if (thread.getOtherUserId() != null && !thread.getOtherUserId().isEmpty()) {
+                    otherName = UserCache.getUserName(thread.getOtherUserId().trim());
+                    if (otherName == null || otherName.isEmpty()) {
+                        otherName = thread.getOtherUserId();
+                    }
+                }
+                // Last resort
+                if (otherName == null || otherName.isEmpty()) {
+                    otherName = thread.getTenantName() != null ? thread.getTenantName() : thread.getLandlordName();
+                }
+            }
+
+            tvChatName.setText(otherName != null ? otherName : "Unknown");
 
             // Last message
             if (thread.getLastMessage() != null) {

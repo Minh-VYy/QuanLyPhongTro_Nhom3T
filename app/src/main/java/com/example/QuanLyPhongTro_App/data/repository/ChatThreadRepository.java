@@ -136,37 +136,61 @@ public class ChatThreadRepository {
 
                 if (userIdObj != null) {
                     otherUserId = userIdObj.toString().trim();  // ✅ Trim whitespace
-                    Log.d(TAG, "   - UserId: " + otherUserId);
+                    // ✅ CLEAN special characters (only alphanumeric and hyphens for GUID format)
+                    otherUserId = otherUserId.replaceAll("[^a-zA-Z0-9-]", "");
+                    Log.d(TAG, "   - UserId (cleaned): " + otherUserId);
                 } else {
                     Log.w(TAG, "   - UserId: NULL");
                 }
 
                 Log.d(TAG, "   UserId field type: " + (userIdObj != null ? userIdObj.getClass().getSimpleName() : "NULL"));
-                Log.d(TAG, "   UserId value: '" + otherUserId + "'");
+                Log.d(TAG, "   UserId value: '" + otherUserId + "' (length: " + otherUserId.length() + ")");
                 Log.d(TAG, "   UserId isEmpty: " + otherUserId.isEmpty());
 
                 if (otherUserId.isEmpty()) {
-                    Log.w(TAG, "⚠️  WARNING: UserId is EMPTY for contact #" + i);
+                    Log.w(TAG, "⚠️  WARNING: UserId is EMPTY after cleaning for contact #" + i);
                     for (String key : contactMap.keySet()) {
-                        Log.d(TAG, "     - " + key + ": " + contactMap.get(key));
+                        Object val = contactMap.get(key);
+                        String valStr = val != null ? "'" + val.toString() + "'" : "null";
+                        Log.d(TAG, "     - " + key + ": " + valStr + " (type: " + (val != null ? val.getClass().getSimpleName() : "null") + ")");
                     }
                     continue;  // ✅ Skip contacts with empty UserId
                 }
 
                 String otherUserName = (String) contactMap.getOrDefault("UserName", "Unknown");
+                if (otherUserName != null) {
+                    otherUserName = otherUserName.trim();
+                } else {
+                    otherUserName = "Unknown";
+                }
+                Log.d(TAG, "   - UserName (trimmed): '" + otherUserName + "'");
+
                 thread.setThreadId(otherUserId);
-                thread.setOtherUserId(otherUserId);        // ✅ NEW: Set generic otherUserId
-                thread.setLandlordId(otherUserId);  // Always set for proper intent passing
+                thread.setOtherUserId(otherUserId);        // ✅ Set generic otherUserId
+
+                // ✅ Set both IDs to otherUserId
+                thread.setLandlordId(otherUserId);
                 thread.setTenantId(otherUserId);
+
+                // ✅ CRITICAL: Set both names to the API returned UserName
+                // The API gives us "UserName" which is the OTHER party's name
+                // Setting both ensures no matter which field is read, we get the right name
                 thread.setLandlordName(otherUserName);
                 thread.setTenantName(otherUserName);
 
+                // ✅ Also cache the user for quick lookup in ChatActivity
+                com.example.QuanLyPhongTro_App.utils.UserCache.addUser(otherUserId, otherUserName);
+
                 // Message info
-                thread.setLastMessage((String) contactMap.getOrDefault("LastMessage", ""));
+                String lastMsg = (String) contactMap.getOrDefault("LastMessage", "");
+                if (lastMsg != null) {
+                    lastMsg = lastMsg.trim();
+                }
+                thread.setLastMessage(lastMsg);
 
                 Object lastMsgTime = contactMap.get("LastMessageTime");
                 if (lastMsgTime != null) {
-                    thread.setLastMessageTime(lastMsgTime.toString());
+                    thread.setLastMessageTime(lastMsgTime.toString().trim());
                 }
 
                 // Unread count
@@ -176,10 +200,11 @@ public class ChatThreadRepository {
                         thread.setUnreadCount(((Number) unreadCount).intValue());
                     } catch (Exception e) {
                         Log.e(TAG, "Error parsing UnreadCount: " + e.getMessage());
+                        thread.setUnreadCount(0);
                     }
                 }
 
-                Log.d(TAG, "✅ Converted contact #" + i + ": threadId=" + otherUserId + ", name=" + otherUserName);
+                Log.d(TAG, "✅ Converted contact #" + i + ": threadId=" + otherUserId + ", name=" + otherUserName + ", unread=" + thread.getUnreadCount());
                 threads.add(thread);
             } catch (Exception e) {
                 Log.e(TAG, "❌ Error converting contact #" + i + ": " + e.getMessage());
@@ -187,6 +212,7 @@ public class ChatThreadRepository {
             }
         }
 
+        Log.d(TAG, "✅ Total threads converted: " + threads.size());
         return threads;
     }
 

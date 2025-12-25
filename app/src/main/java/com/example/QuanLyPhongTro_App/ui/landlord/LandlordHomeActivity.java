@@ -279,12 +279,8 @@ public class LandlordHomeActivity extends AppCompatActivity {
 
 
     private void showUtilityDialog() {
-        UtilityDialog dialog = new UtilityDialog(this);
-        dialog.show();
-        Window window = dialog.getWindow();
-        if (window != null) {
-            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        }
+        // Utility dialog removed - show toast instead
+        Toast.makeText(this, "Tính năng đang phát triển", Toast.LENGTH_SHORT).show();
     }
 
     @Override

@@ -98,7 +98,7 @@ public class ChatListActivity extends AppCompatActivity {
                     "❌ Lỗi: Không thể xác định user ID từ token.\nVui lòng đăng nhập lại.",
                     Toast.LENGTH_LONG).show();
 
-                // Redirect to login
+                // ...existing code...
                 Intent intent = new Intent(this, com.example.QuanLyPhongTro_App.ui.auth.LoginActivity.class);
                 startActivity(intent);
                 finish();
@@ -133,15 +133,66 @@ public class ChatListActivity extends AppCompatActivity {
                         Toast.makeText(ChatListActivity.this, "Chưa có cuộc trò chuyện nào", Toast.LENGTH_SHORT).show();
                     }
 
+                    // ✅ CRITICAL: Cache all users BEFORE creating adapter
+                    String currentName = sessionManager.getUserName();
+                    if (currentName == null || currentName.isEmpty()) {
+                        currentName = currentUserEmail;
+                    }
+                    if (currentName != null && !currentName.isEmpty()) {
+                        com.example.QuanLyPhongTro_App.utils.UserCache.addUser(finalUserId, currentName);
+                        Log.d(TAG, "✅ Cached current user: " + finalUserId + " -> " + currentName);
+                    }
+
+                    // Cache all thread participants
+                    for (ChatThreadDto thread : threads) {
+                        if (thread.getLandlordId() != null && !thread.getLandlordId().isEmpty() &&
+                            thread.getLandlordName() != null && !thread.getLandlordName().isEmpty()) {
+                            com.example.QuanLyPhongTro_App.utils.UserCache.addUser(thread.getLandlordId().trim(), thread.getLandlordName());
+                            Log.d(TAG, "✅ Cached landlord: " + thread.getLandlordId() + " -> " + thread.getLandlordName());
+                        }
+                        if (thread.getTenantId() != null && !thread.getTenantId().isEmpty() &&
+                            thread.getTenantName() != null && !thread.getTenantName().isEmpty()) {
+                            com.example.QuanLyPhongTro_App.utils.UserCache.addUser(thread.getTenantId().trim(), thread.getTenantName());
+                            Log.d(TAG, "✅ Cached tenant: " + thread.getTenantId() + " -> " + thread.getTenantName());
+                        }
+                    }
+
                     adapter = new ChatThreadListAdapter(threads, thread -> {
+                        // ✅ FIX: Trim all IDs before passing to ChatActivity
+                        String threadId = (thread.getThreadId() != null) ? thread.getThreadId().trim() : "";
+                        String otherUserId = (thread.getOtherUserId() != null) ? thread.getOtherUserId().trim() : "";
+                        String finalUserId_Copy = finalUserId.trim();
+
+                        // ✅ FIX: Get proper name for other user (FOR TENANT: the landlord or the other user)
+                        String otherName = (thread.getLandlordName() != null && !thread.getLandlordName().isEmpty())
+                            ? thread.getLandlordName()
+                            : (thread.getTenantName() != null && !thread.getTenantName().isEmpty())
+                                ? thread.getTenantName()
+                                : otherUserId; // Fallback to ID if no name
+
+                        String displayCurrentName = sessionManager.getUserName();
+                        if (displayCurrentName == null || displayCurrentName.isEmpty()) {
+                            displayCurrentName = currentUserEmail;
+                        }
+
+                        Log.d(TAG, "Opening chat - Thread: " + threadId + ", OtherUser: " + otherUserId + " (" + otherName + ")");
+                        Log.d(TAG, "Debug - LandlordName: " + thread.getLandlordName() + ", TenantName: " + thread.getTenantName());
+
+                        // ✅ CRITICAL FIX: Cache other user's ID and name BEFORE opening ChatActivity
+                        // This ensures that when message history is loaded, names will be available
+                        if (otherUserId != null && !otherUserId.isEmpty() && otherName != null && !otherName.isEmpty()) {
+                            com.example.QuanLyPhongTro_App.utils.UserCache.addUser(otherUserId, otherName);
+                            Log.d(TAG, "✅ Cached other user before opening chat: " + otherUserId + " -> " + otherName);
+                        }
+
                         Intent intent = new Intent(ChatListActivity.this, ChatActivity.class);
-                        intent.putExtra("thread_id", thread.getThreadId());
-                        intent.putExtra("user_id", finalUserId);
-                        intent.putExtra("user_name", sessionManager.getUserName());  // ✅ Pass current user name
-                        intent.putExtra("other_user_id", thread.getOtherUserId());  // ✅ FIXED: Use generic otherUserId
-                        intent.putExtra("other_user_name", thread.getLandlordName());
+                        intent.putExtra("thread_id", threadId);
+                        intent.putExtra("user_id", finalUserId_Copy);
+                        intent.putExtra("user_name", displayCurrentName);
+                        intent.putExtra("other_user_id", otherUserId);
+                        intent.putExtra("other_user_name", otherName);
                         startActivity(intent);
-                    });
+                    }, finalUserId);  // ✅ Pass currentUserId to adapter
 
                     recyclerViewChatList.setAdapter(adapter);
                 });
