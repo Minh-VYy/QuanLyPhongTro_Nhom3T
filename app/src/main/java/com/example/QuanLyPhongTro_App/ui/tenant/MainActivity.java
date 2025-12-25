@@ -25,8 +25,10 @@ import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
 import com.example.QuanLyPhongTro_App.data.dao.PhongDao;
 import com.example.QuanLyPhongTro_App.data.model.Phong;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
+import com.example.QuanLyPhongTro_App.ui.chatbot.ChatbotActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -50,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnNearbyFilter;
     private Button btnRatingFilter;
     private Button btnNewestFilter;
+    private FloatingActionButton fabChatbot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         setupSearchBar();
         setupFilterButton();
         setupQuickFilters();
+        setupChatbot();
     }
 
     private void initViews() {
@@ -81,6 +85,21 @@ public class MainActivity extends AppCompatActivity {
         btnNearbyFilter = findViewById(R.id.btnNearbyFilter);
         btnRatingFilter = findViewById(R.id.btnRatingFilter);
         btnNewestFilter = findViewById(R.id.btnNewestFilter);
+        fabChatbot = findViewById(R.id.fabChatbot);
+    }
+    
+    /**
+     * Thiết lập chatbot button
+     */
+    private void setupChatbot() {
+        if (fabChatbot != null) {
+            fabChatbot.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, ChatbotActivity.class);
+                intent.putExtra("user_type", "tenant");
+                intent.putExtra("context", "home");
+                startActivity(intent);
+            });
+        }
     }
 
     private void setupRoomRecyclerView() {
