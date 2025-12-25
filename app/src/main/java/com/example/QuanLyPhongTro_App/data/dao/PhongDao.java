@@ -205,8 +205,133 @@ public class PhongDao {
     }
 
     /**
-     * Tìm kiếm phòng theo điều kiện
+     * Lấy danh sách phòng của chủ trọ theo ChuTroId (không bao gồm phòng đã xóa)
      */
+    public List<Phong> getPhongByChuTroId(Connection conn, String chuTroId) {
+        List<Phong> list = new ArrayList<>();
+        
+        String query = "SELECT p.PhongId, p.TieuDe, p.DienTich, p.GiaTien, p.TienCoc, " +
+                      "p.SoNguoiToiDa, p.TrangThai, p.DiemTrungBinh, p.SoLuongDanhGia, " +
+                      "p.IsDuyet, p.IsBiKhoa, " +
+                      "nt.DiaChi " +
+                      "FROM Phong p " +
+                      "INNER JOIN NhaTro nt ON p.NhaTroId = nt.NhaTroId " +
+                      "WHERE nt.ChuTroId = ? AND p.IsDeleted = 0 " +
+                      "ORDER BY p.CreatedAt DESC";
+
+        Log.d(TAG, "Executing landlord query for ChuTroId: " + chuTroId);
+        
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, chuTroId);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                int count = 0;
+                Log.d(TAG, "Starting to process landlord ResultSet...");
+                
+                while (rs.next()) {
+                    try {
+                        count++;
+                        Log.d(TAG, "Processing landlord row #" + count);
+                        
+                        Phong phong = new Phong();
+                        
+                        // Get basic fields with null checks
+                        String phongId = rs.getString("PhongId");
+                        String tieuDe = rs.getString("TieuDe");
+                        Log.d(TAG, "Row #" + count + " - PhongId: " + phongId + ", TieuDe: " + tieuDe);
+                        
+                        phong.setPhongId(phongId);
+                        phong.setTieuDe(tieuDe != null ? tieuDe : "Chưa có tiêu đề");
+                        
+                        // Handle numeric fields safely
+                        try {
+                            phong.setDienTich(rs.getDouble("DienTich"));
+                        } catch (Exception e) {
+                            Log.w(TAG, "Error getting DienTich for row " + count + ": " + e.getMessage());
+                            phong.setDienTich(0.0);
+                        }
+                        
+                        try {
+                            phong.setGiaTien(rs.getLong("GiaTien"));
+                        } catch (Exception e) {
+                            Log.w(TAG, "Error getting GiaTien for row " + count + ": " + e.getMessage());
+                            phong.setGiaTien(0L);
+                        }
+                        
+                        try {
+                            phong.setTienCoc(rs.getLong("TienCoc"));
+                        } catch (Exception e) {
+                            Log.w(TAG, "Error getting TienCoc for row " + count + ": " + e.getMessage());
+                            phong.setTienCoc(0L);
+                        }
+                        
+                        phong.setSoNguoiToiDa(rs.getInt("SoNguoiToiDa"));
+                        phong.setTrangThai(rs.getString("TrangThai"));
+                        
+                        // Handle null values for rating
+                        try {
+                            float diemTB = rs.getFloat("DiemTrungBinh");
+                            phong.setDiemTrungBinh(rs.wasNull() ? 0 : diemTB);
+                        } catch (Exception e) {
+                            phong.setDiemTrungBinh(0);
+                        }
+                        
+                        try {
+                            phong.setSoLuongDanhGia(rs.getInt("SoLuongDanhGia"));
+                        } catch (Exception e) {
+                            phong.setSoLuongDanhGia(0);
+                        }
+                        
+                        phong.setDiaChiNhaTro(rs.getString("DiaChi"));
+                        
+                        // Get actual status from database
+                        try {
+                            phong.setDuyet(rs.getBoolean("IsDuyet"));
+                        } catch (Exception e) {
+                            phong.setDuyet(true);  // Mặc định là đã duyệt
+                        }
+                        
+                        try {
+                            phong.setBiKhoa(rs.getBoolean("IsBiKhoa"));
+                        } catch (Exception e) {
+                            phong.setBiKhoa(false); // Mặc định không bị khóa
+                        }
+                        
+                        phong.setDeleted(false); // Đã lọc IsDeleted = 0 trong query
+                        phong.setMoTa(""); // Mặc định mô tả trống
+                        
+                        // Set default values for missing fields
+                        phong.setTenQuanHuyen("Chưa xác định");
+                        phong.setTenPhuong("Chưa xác định");
+                        
+                        // Set empty image list for now
+                        phong.setDanhSachAnhUrl(new ArrayList<>());
+                        
+                        list.add(phong);
+                        Log.d(TAG, "Successfully added landlord phong #" + count + ": " + phong.getTieuDe() + 
+                              " - " + phong.getGiaTien() + " VND - Status: " + phong.getTrangThai() +
+                              " - Duyet: " + phong.isDuyet() + " - BiKhoa: " + phong.isBiKhoa());
+                              
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error parsing landlord phong row #" + count + ": " + e.getMessage(), e);
+                        // Continue processing other rows
+                    }
+                }
+                
+                Log.d(TAG, "✅ Successfully processed " + count + " landlord rows, added " + list.size() + " phòng to list");
+                
+                if (list.isEmpty()) {
+                    Log.w(TAG, "⚠️ No active rooms found for ChuTroId: " + chuTroId);
+                }
+                
+            }
+        } catch (SQLException e) {
+            Log.e(TAG, "❌ SQL Error loading phòng for landlord: " + e.getMessage(), e);
+            Log.e(TAG, "SQL State: " + e.getSQLState());
+            Log.e(TAG, "Error Code: " + e.getErrorCode());
+        }
+        return list;
+    }
     public List<Phong> searchPhong(Connection conn, String keyword, Long minPrice, Long maxPrice, String quanHuyen) {
         List<Phong> list = new ArrayList<>();
         StringBuilder query = new StringBuilder(
