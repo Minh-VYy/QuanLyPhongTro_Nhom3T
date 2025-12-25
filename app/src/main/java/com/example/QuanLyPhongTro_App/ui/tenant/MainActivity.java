@@ -3,8 +3,14 @@ package com.example.QuanLyPhongTro_App.ui.tenant;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -19,8 +25,10 @@ import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
 import com.example.QuanLyPhongTro_App.data.dao.PhongDao;
 import com.example.QuanLyPhongTro_App.data.model.Phong;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
+import com.example.QuanLyPhongTro_App.ui.chatbot.ChatbotActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -38,6 +46,13 @@ public class MainActivity extends AppCompatActivity {
     private ImageView iconRole;
     private RoomAdapter roomAdapter;
     private ProgressBar progressBar;
+    private EditText searchInput;
+    private ImageButton searchButton;
+    private Button btnPriceFilter;
+    private Button btnNearbyFilter;
+    private Button btnRatingFilter;
+    private Button btnNewestFilter;
+    private FloatingActionButton fabChatbot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +65,10 @@ public class MainActivity extends AppCompatActivity {
         setupRoleDropdown();
         setupBottomNavigation();
         setupRoomRecyclerView();
+        setupSearchBar();
         setupFilterButton();
+        setupQuickFilters();
+        setupChatbot();
     }
 
     private void initViews() {
@@ -61,6 +79,27 @@ public class MainActivity extends AppCompatActivity {
         txtRoleSecondary = roleSwitcher.findViewById(R.id.txtRoleSecondary);
         iconRole = roleSwitcher.findViewById(R.id.iconRole);
         progressBar = findViewById(R.id.progressBar);
+        searchInput = findViewById(R.id.searchInput);
+        searchButton = findViewById(R.id.searchButton);
+        btnPriceFilter = findViewById(R.id.btnPriceFilter);
+        btnNearbyFilter = findViewById(R.id.btnNearbyFilter);
+        btnRatingFilter = findViewById(R.id.btnRatingFilter);
+        btnNewestFilter = findViewById(R.id.btnNewestFilter);
+        fabChatbot = findViewById(R.id.fabChatbot);
+    }
+    
+    /**
+     * Thiết lập chatbot button
+     */
+    private void setupChatbot() {
+        if (fabChatbot != null) {
+            fabChatbot.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, ChatbotActivity.class);
+                intent.putExtra("user_type", "tenant");
+                intent.putExtra("context", "home");
+                startActivity(intent);
+            });
+        }
     }
 
     private void setupRoomRecyclerView() {
@@ -181,6 +220,49 @@ public class MainActivity extends AppCompatActivity {
     private void setupBottomNavigation() {
         BottomNavigationHelper.setupBottomNavigation(this, "home");
     }
+    
+    /**
+     * Thiết lập thanh tìm kiếm
+     */
+    private void setupSearchBar() {
+        // Tìm kiếm khi nhấn nút search
+        searchButton.setOnClickListener(v -> performSearch());
+        
+        // Tìm kiếm khi nhấn Enter trên bàn phím
+        searchInput.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || 
+                (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER && 
+                 event.getAction() == KeyEvent.ACTION_DOWN)) {
+                performSearch();
+                return true;
+            }
+            return false;
+        });
+    }
+    
+    /**
+     * Thực hiện tìm kiếm
+     */
+    private void performSearch() {
+        String keyword = searchInput.getText().toString().trim();
+        
+        if (keyword.isEmpty()) {
+            // Nếu không có từ khóa, load lại tất cả phòng
+            loadRoomsFromDatabase();
+            Toast.makeText(this, "Hiển thị tất cả phòng", Toast.LENGTH_SHORT).show();
+        } else {
+            // Tìm kiếm với từ khóa
+            searchRoomsFromDatabase(keyword, null, null, null);
+        }
+        
+        // Ẩn bàn phím
+        searchInput.clearFocus();
+        android.view.inputmethod.InputMethodManager imm = 
+            (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(searchInput.getWindowToken(), 0);
+        }
+    }
 
     private void setupFilterButton() {
         btnFilter.setOnClickListener(v -> {
@@ -209,6 +291,37 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, DatabaseTestActivity.class);
             startActivity(intent);
             return true;
+        });
+    }
+    
+    /**
+     * Thiết lập các nút filter nhanh
+     */
+    private void setupQuickFilters() {
+        // Nút Giá tốt - sắp xếp theo giá từ thấp đến cao
+        btnPriceFilter.setOnClickListener(v -> {
+            Toast.makeText(this, "Lọc theo giá tốt", Toast.LENGTH_SHORT).show();
+            // Tìm kiếm với giá từ 0 đến 5 triệu
+            searchRoomsFromDatabase(null, 0L, 5000000L, null);
+        });
+        
+        // Nút Gần tôi - lọc theo vị trí (tạm thời hiển thị tất cả)
+        btnNearbyFilter.setOnClickListener(v -> {
+            Toast.makeText(this, "Chức năng đang phát triển", Toast.LENGTH_SHORT).show();
+            // TODO: Implement location-based filtering
+        });
+        
+        // Nút Đánh giá - lọc phòng có rating cao
+        btnRatingFilter.setOnClickListener(v -> {
+            Toast.makeText(this, "Lọc theo đánh giá cao", Toast.LENGTH_SHORT).show();
+            // Load tất cả và filter theo rating trong adapter
+            loadRoomsFromDatabase();
+        });
+        
+        // Nút Mới nhất - load phòng mới nhất
+        btnNewestFilter.setOnClickListener(v -> {
+            Toast.makeText(this, "Hiển thị phòng mới nhất", Toast.LENGTH_SHORT).show();
+            loadRoomsFromDatabase();
         });
     }
     

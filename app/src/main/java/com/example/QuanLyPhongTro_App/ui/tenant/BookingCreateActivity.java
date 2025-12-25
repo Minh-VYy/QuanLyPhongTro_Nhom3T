@@ -13,14 +13,22 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
+import com.example.QuanLyPhongTro_App.data.dao.DatPhongDao;
+import com.example.QuanLyPhongTro_App.data.dao.PhongDao;
+import com.example.QuanLyPhongTro_App.data.model.DatPhong;
+import com.example.QuanLyPhongTro_App.data.model.Phong;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class BookingCreateActivity extends AppCompatActivity {
@@ -177,38 +185,145 @@ public class BookingCreateActivity extends AppCompatActivity {
             return;
         }
 
+        // Kiểm tra đăng nhập
+        if (!sessionManager.isLoggedIn()) {
+            Toast.makeText(this, "Vui lòng đăng nhập để đặt lịch", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // Format date
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         String bookingDate = sdf.format(selectedDate.getTime());
 
-        // TODO: Lưu booking vào database
-        // Booking booking = new Booking();
-        // booking.setRoomId(currentRoom.getId());
-        // booking.setUserId(sessionManager.getUserId());
-        // booking.setFullName(fullName);
-        // booking.setPhone(phone);
-        // booking.setBookingDate(bookingDate);
-        // booking.setTimeSlot(selectedTimeSlot);
-        // booking.setNote(note);
-        // booking.setAllowCall(allowCall);
-        // booking.setStatus("Chờ duyệt");
-        // database.saveBooking(booking);
+        // Lưu booking vào database
+        saveBookingToDatabase(fullName, phone, note, allowCall, bookingDate);
+    }
 
-        // Hiển thị thông báo thành công
-        String message = "Đặt lịch xem phòng thành công!\n" +
-                "Ngày: " + bookingDate + "\n" +
-                "Khung giờ: " + selectedTimeSlot + "\n" +
-                "Chủ trọ sẽ liên hệ với bạn sớm";
+    private void saveBookingToDatabase(String fullName, String phone, String note, 
+                                       boolean allowCall, String bookingDate) {
+        // Hiển thị loading
+        btnConfirmBooking.setEnabled(false);
+        btnConfirmBooking.setText("Đang xử lý...");
 
-        new android.app.AlertDialog.Builder(this)
-                .setTitle("Đặt lịch thành công")
-                .setMessage(message)
-                .setPositiveButton("OK", (dialog, which) -> {
-                    setResult(RESULT_OK);
-                    finish();
-                })
-                .setCancelable(false)
-                .show();
+        new Thread(() -> {
+            Connection conn = null;
+            boolean success = false;
+            String errorMessage = "";
+
+            try {
+                // Kết nối database
+                conn = DatabaseHelper.getConnection();
+                
+                // Tạo đối tượng DatPhong
+                DatPhong datPhong = new DatPhong();
+                
+                // Lấy PhongId từ currentRoom
+                // Lưu ý: Cần đảm bảo Room có phongId từ database khi load
+                // Nếu Room.id là local id, cần thêm field phongIdFromDb
+                String phongId = null;
+                
+                if (currentRoom != null) {
+                    // Tạm thời sử dụng một phòng mẫu từ database
+                    // TODO: Cần cập nhật Room model để lưu PhongId từ database
+                    // Hoặc truyền PhongId qua Intent khi mở BookingCreateActivity
+                    
+                    // Lấy phòng đầu tiên từ database để test
+                    PhongDao phongDao = new PhongDao();
+                    List<Phong> phongList = phongDao.getAllPhongAvailable(conn);
+                    if (!phongList.isEmpty()) {
+                        phongId = phongList.get(0).getPhongId();
+                    }
+                }
+                
+                if (phongId == null) {
+                    final String finalError = "Không tìm thấy thông tin phòng trong database. Vui lòng chọn phòng từ danh sách.";
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, finalError, Toast.LENGTH_LONG).show();
+                        btnConfirmBooking.setEnabled(true);
+                        btnConfirmBooking.setText("Xác nhận đặt lịch");
+                    });
+                    return;
+                }
+                
+                datPhong.setPhongId(phongId);
+                datPhong.setNguoiThueId(sessionManager.getUserId());
+                datPhong.setLoai("Xem phòng"); // Loại đặt lịch
+                
+                // Set thời gian bắt đầu (ngày + khung giờ)
+                Calendar startTime = (Calendar) selectedDate.clone();
+                if (selectedTimeSlot.contains("Sáng")) {
+                    startTime.set(Calendar.HOUR_OF_DAY, 8);
+                } else if (selectedTimeSlot.contains("Chiều")) {
+                    startTime.set(Calendar.HOUR_OF_DAY, 13);
+                } else if (selectedTimeSlot.contains("Tối")) {
+                    startTime.set(Calendar.HOUR_OF_DAY, 18);
+                }
+                startTime.set(Calendar.MINUTE, 0);
+                startTime.set(Calendar.SECOND, 0);
+                
+                datPhong.setBatDau(startTime.getTime());
+                
+                // Set thời gian kết thúc (2 giờ sau)
+                Calendar endTime = (Calendar) startTime.clone();
+                endTime.add(Calendar.HOUR_OF_DAY, 2);
+                datPhong.setKetThuc(endTime.getTime());
+                
+                // Trạng thái: 1 = Chờ duyệt
+                datPhong.setTrangThaiId(1);
+                
+                // Ghi chú (bao gồm thông tin liên hệ)
+                String fullNote = "Họ tên: " + fullName + "\n" +
+                                 "SĐT: " + phone + "\n" +
+                                 "Khung giờ: " + selectedTimeSlot + "\n" +
+                                 "Cho phép gọi: " + (allowCall ? "Có" : "Không");
+                if (note != null && !note.isEmpty()) {
+                    fullNote += "\nGhi ch��: " + note;
+                }
+                datPhong.setGhiChu(fullNote);
+                
+                // Lưu vào database
+                DatPhongDao dao = new DatPhongDao();
+                success = dao.createDatPhong(conn, datPhong);
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+                errorMessage = "Lỗi kết nối: " + e.getMessage();
+            } finally {
+                if (conn != null) {
+                    DatabaseHelper.releaseConnection(conn);
+                }
+            }
+
+            // Cập nhật UI
+            final boolean finalSuccess = success;
+            final String finalErrorMessage = errorMessage;
+            
+            runOnUiThread(() -> {
+                btnConfirmBooking.setEnabled(true);
+                btnConfirmBooking.setText("Xác nhận đặt lịch");
+
+                if (finalSuccess) {
+                    String message = "Đặt lịch xem phòng thành công!\n" +
+                            "Ngày: " + bookingDate + "\n" +
+                            "Khung giờ: " + selectedTimeSlot + "\n" +
+                            "Chủ trọ sẽ liên hệ với bạn sớm";
+
+                    new android.app.AlertDialog.Builder(this)
+                            .setTitle("Đặt lịch thành công")
+                            .setMessage(message)
+                            .setPositiveButton("OK", (dialog, which) -> {
+                                setResult(RESULT_OK);
+                                finish();
+                            })
+                            .setCancelable(false)
+                            .show();
+                } else {
+                    Toast.makeText(this, 
+                        "Đặt lịch thất bại: " + (finalErrorMessage.isEmpty() ? "Vui lòng thử lại" : finalErrorMessage), 
+                        Toast.LENGTH_LONG).show();
+                }
+            });
+        }).start();
     }
 
     @Override
