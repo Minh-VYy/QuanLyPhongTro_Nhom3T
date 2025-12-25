@@ -188,6 +188,9 @@ public class MainActivity extends AppCompatActivity {
     private Room convertPhongToRoom(Phong phong) {
         Room room = new Room();
         
+        // ID phòng từ SQL Server database
+        room.setPhongId(phong.getPhongId());
+        
         // ID phòng - Room dùng int, Phong dùng String UUID
         // Tạm thời dùng hashCode để convert
         room.setId(phong.getPhongId() != null ? phong.getPhongId().hashCode() : 0);
