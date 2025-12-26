@@ -70,13 +70,30 @@ public class AccountManager {
                             String extractedUserId = sessionManager.getUserId();
 
                             // Save user info
-                            String email = response.body().email != null ? response.body().email : "user@example.com";
+                            String email = response.body().email != null ? response.body().email : "";
                             String hoTen = response.body().hoTen != null ? response.body().hoTen : email;
 
-                            // ✅ Use extracted userId from JWT, NOT email!
-                            String finalUserId = extractedUserId != null && !extractedUserId.isEmpty() ? extractedUserId : email;
+                            // ✅ Prefer explicit UserId from login response if backend provides it
+                            String userIdFromResponse = response.body().userId;
+                            if (userIdFromResponse != null) userIdFromResponse = userIdFromResponse.trim();
 
-                            android.util.Log.d("AccountManager", "Extracted userId from JWT: " + extractedUserId);
+                            // Parse from JWT (after JwtTokenParser fix)
+                            String userIdFromJwt = JwtTokenParser.getUserIdFromToken(token);
+                            if (userIdFromJwt != null) userIdFromJwt = userIdFromJwt.trim();
+
+                            // Priority: response.userId -> jwt -> (as last resort) email
+                            String finalUserId = null;
+                            if (userIdFromResponse != null && !userIdFromResponse.isEmpty()) {
+                                finalUserId = userIdFromResponse;
+                            } else if (userIdFromJwt != null && !userIdFromJwt.isEmpty()) {
+                                finalUserId = userIdFromJwt;
+                            } else {
+                                // last resort (should not happen in production)
+                                finalUserId = (email != null && !email.isEmpty()) ? email : "user@example.com";
+                            }
+
+                            android.util.Log.d("AccountManager", "UserId from response: " + userIdFromResponse);
+                            android.util.Log.d("AccountManager", "UserId from JWT: " + userIdFromJwt);
                             android.util.Log.d("AccountManager", "Final userId to save: " + finalUserId);
 
                             sessionManager.createLoginSession(
@@ -86,6 +103,9 @@ public class AccountManager {
                                 roleString
                             );
                             sessionManager.setDisplayRole(roleString);
+
+                            // Also ensure token saved (and SessionManager.saveToken will store userId/role too)
+                            sessionManager.saveToken(token);
 
                             ApiClient.setToken(token);
 

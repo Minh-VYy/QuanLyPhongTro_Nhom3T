@@ -275,6 +275,28 @@ public class RoomRepository {
         if (createdAt == null) createdAt = roomMap.get("createdAt");
         if (createdAt != null) room.setCreatedAt(createdAt.toString());
 
+        // ✅ Ảnh đại diện (query SQL có AnhDaiDien = DuongDan TapTin)
+        Object anhDaiDien = roomMap.get("AnhDaiDien");
+        if (anhDaiDien == null) anhDaiDien = roomMap.get("anhDaiDien");
+        if (anhDaiDien == null) anhDaiDien = roomMap.get("AnhDaiDienUrl");
+        if (anhDaiDien == null) anhDaiDien = roomMap.get("anhDaiDienUrl");
+        if (anhDaiDien != null) room.setAnhDaiDien(String.valueOf(anhDaiDien));
+
+        // ✅ Danh sách ảnh (nếu backend có trả)
+        Object ds = roomMap.get("DanhSachAnhUrl");
+        if (ds == null) ds = roomMap.get("danhSachAnhUrl");
+        if (ds instanceof List) {
+            try {
+                List<?> lst = (List<?>) ds;
+                List<String> urls = new ArrayList<>();
+                for (Object o : lst) {
+                    if (o != null) urls.add(String.valueOf(o));
+                }
+                room.setDanhSachAnhUrl(urls);
+            } catch (Exception ignored) {
+            }
+        }
+
         return room;
     }
 
@@ -305,6 +327,8 @@ public class RoomRepository {
         private Double diemTrungBinh;
         private Integer soLuongDanhGia;
         private String createdAt;
+        private String anhDaiDien;
+        private List<String> danhSachAnhUrl;
 
         // Getters & Setters
         public String getPhongId() { return phongId; }
@@ -342,6 +366,12 @@ public class RoomRepository {
 
         public String getCreatedAt() { return createdAt; }
         public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+
+        public String getAnhDaiDien() { return anhDaiDien; }
+        public void setAnhDaiDien(String anhDaiDien) { this.anhDaiDien = anhDaiDien; }
+
+        public List<String> getDanhSachAnhUrl() { return danhSachAnhUrl; }
+        public void setDanhSachAnhUrl(List<String> danhSachAnhUrl) { this.danhSachAnhUrl = danhSachAnhUrl; }
     }
 }
 

@@ -3,7 +3,6 @@ package com.example.QuanLyPhongTro_App.ui.landlord;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,7 +22,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.text.Normalizer;
 import java.util.regex.Pattern;
@@ -42,13 +40,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
-import com.example.QuanLyPhongTro_App.data.dao.PhongDao;
-import com.example.QuanLyPhongTro_App.data.model.Phong;
+import com.example.QuanLyPhongTro_App.data.repository.LandlordRoomRepository;
+import com.example.QuanLyPhongTro_App.data.repository.RoomRepository;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
 import com.example.QuanLyPhongTro_App.ui.tenant.MainActivity;
-import com.example.QuanLyPhongTro_App.utils.SessionManager;
+import com.example.QuanLyPhongTro_App.utils.ApiClient;
 import com.example.QuanLyPhongTro_App.utils.LandlordBottomNavigationHelper;
+import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -90,12 +88,18 @@ public class LandlordHomeActivity extends AppCompatActivity {
         void onToggleActive(LandlordListing listing, boolean isActive);
     }
 
+    private LandlordRoomRepository landlordRoomRepository;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landlord_home);
 
         sessionManager = new SessionManager(this);
+        landlordRoomRepository = new LandlordRoomRepository();
+
+        // Ensure token is applied to Retrofit for authenticated landlord endpoints
+        ApiClient.setToken(sessionManager.getToken());
 
         // Kiểm tra quyền truy cập
         if (!sessionManager.isLoggedIn() || !"landlord".equals(sessionManager.getUserRole())) {
@@ -141,12 +145,8 @@ public class LandlordHomeActivity extends AppCompatActivity {
         searchInput = findViewById(R.id.searchInput);
         searchButton = findViewById(R.id.searchButton);
 
-        // DEBUG: Long click search button to open test activity
-        searchButton.setOnLongClickListener(v -> {
-            Intent intent = new Intent(LandlordHomeActivity.this, TestLandlordDatabaseActivity.class);
-            startActivity(intent);
-            return true;
-        });
+        // DEBUG feature removed - test activity no longer exists
+        // searchButton.setOnLongClickListener removed
     }
 
     private void setupMessagesButton() {
@@ -231,13 +231,7 @@ public class LandlordHomeActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // DEBUG: Thêm debug action vào menu
-        findViewById(R.id.menu_add_listing).setOnLongClickListener(v -> {
-            closeQuickActionMenu();
-            Intent intent = new Intent(this, TestLandlordDatabaseActivity.class);
-            startActivity(intent);
-            return true;
-        });
+        // DEBUG feature removed - test activity no longer exists
     }
 
     private void setupRoleSwitcher() {
@@ -295,128 +289,80 @@ public class LandlordHomeActivity extends AppCompatActivity {
      * Load danh sách phòng của chủ trọ từ database
      */
     private void loadLandlordRoomsFromDatabase() {
-        new LoadLandlordPhongTask().execute();
+        // Legacy name kept to minimize refactor; now loads from API
+        loadLandlordRoomsFromApi();
     }
 
-    /**
-     * AsyncTask để load phòng của chủ trọ từ database
-     */
-    private class LoadLandlordPhongTask extends AsyncTask<Void, Void, List<Phong>> {
-        private String errorMsg = null;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            if (progressBar != null) {
-                progressBar.setVisibility(View.VISIBLE);
-            }
+    private void loadLandlordRoomsFromApi() {
+        if (progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
         }
 
-        @Override
-        protected List<Phong> doInBackground(Void... voids) {
-            Connection conn = null;
-            try {
-                Log.d(TAG, "=== LOADING LANDLORD ROOMS FROM DATABASE ===");
-                conn = DatabaseHelper.getConnection();
-                Log.d(TAG, "Database connection successful");
-
-                // Lấy ChuTroId từ session
-                String chuTroId = sessionManager.getUserId();
-                Log.d(TAG, "Loading rooms for ChuTroId: " + chuTroId);
-
-                PhongDao dao = new PhongDao();
-
-                // Load danh sách phòng
-                List<Phong> result = dao.getPhongByChuTroId(conn, chuTroId);
-                Log.d(TAG, "Query result: " + (result != null ? result.size() : "null") + " rooms");
-
-                return result;
-            } catch (Exception e) {
-                Log.e(TAG, "Error loading landlord rooms: " + e.getMessage(), e);
-                errorMsg = e.getMessage();
-                return null;
-            } finally {
-                DatabaseHelper.closeConnection(conn);
-                Log.d(TAG, "Database connection closed");
-            }
-        }
-
-        @Override
-        protected void onPostExecute(List<Phong> phongList) {
-            super.onPostExecute(phongList);
+        String chuTroId = sessionManager.getUserId();
+        if (chuTroId == null || chuTroId.isEmpty()) {
             if (progressBar != null) {
                 progressBar.setVisibility(View.GONE);
             }
-
-            if (phongList != null) {
-                // Convert Phong to LandlordListing và update adapter
-                allListings.clear();
-                filteredListings.clear();
-
-                for (Phong phong : phongList) {
-                    LandlordListing listing = convertPhongToLandlordListing(phong);
-                    allListings.add(listing);
-                    filteredListings.add(listing);
-                }
-
-                adapter.notifyDataSetChanged();
-
-                // Cập nhật thống kê đơn giản
-                updateListingCounts();
-
-                if (phongList.isEmpty()) {
-                    Toast.makeText(LandlordHomeActivity.this,
-                        "Chưa có phòng nào. Hãy thêm phòng mới!",
-                        Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(LandlordHomeActivity.this,
-                        "Đã tải " + phongList.size() + " phòng",
-                        Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                if (errorMsg != null) {
-                    Toast.makeText(LandlordHomeActivity.this,
-                        "Lỗi kết nối: " + errorMsg,
-                        Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(LandlordHomeActivity.this,
-                        "Không thể tải dữ liệu phòng",
-                        Toast.LENGTH_SHORT).show();
-                }
-            }
+            Toast.makeText(this, "Không xác định được tài khoản chủ trọ", Toast.LENGTH_LONG).show();
+            return;
         }
+
+        landlordRoomRepository.getMyRooms(chuTroId, new LandlordRoomRepository.ListRoomsCallback() {
+            @Override
+            public void onSuccess(List<RoomRepository.RoomDto> rooms) {
+                runOnUiThread(() -> {
+                    if (progressBar != null) {
+                        progressBar.setVisibility(View.GONE);
+                    }
+
+                    allListings.clear();
+                    filteredListings.clear();
+
+                    for (RoomRepository.RoomDto room : rooms) {
+                        allListings.add(convertRoomDtoToListing(room));
+                    }
+                    filteredListings.addAll(allListings);
+                    adapter.notifyDataSetChanged();
+                    updateListingCounts();
+
+                    if (rooms.isEmpty()) {
+                        Toast.makeText(LandlordHomeActivity.this, "Chưa có phòng nào. Hãy thêm phòng mới!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                runOnUiThread(() -> {
+                    if (progressBar != null) {
+                        progressBar.setVisibility(View.GONE);
+                    }
+                    Toast.makeText(LandlordHomeActivity.this, message, Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 
-    /**
-     * Convert model Phong từ database sang LandlordListing (UI model)
-     */
-    private LandlordListing convertPhongToLandlordListing(Phong phong) {
-        // Format giá tiền
+    private LandlordListing convertRoomDtoToListing(RoomRepository.RoomDto room) {
         DecimalFormat formatter = new DecimalFormat("#,###");
-        String priceText = formatter.format(phong.getGiaTien()) + " VNĐ/tháng";
+        long gia = room.getGiaTien();
+        String priceText = formatter.format(gia) + " VNĐ/tháng";
 
-        // Xác định trạng thái hiển thị
-        String displayStatus;
-        if (!phong.isDuyet()) {
-            displayStatus = "Chờ duyệt";
-        } else if (phong.isBiKhoa()) {
-            displayStatus = "Bị khóa";
-        } else {
-            displayStatus = phong.getTrangThai() != null ? phong.getTrangThai() : "Chưa xác định";
-        }
+        String status = (room.getTrangThai() != null && !room.getTrangThai().isEmpty())
+                ? room.getTrangThai()
+                : "Chưa xác định";
 
-        // Xác định trạng thái active - Mặc định bật cho phòng không bị khóa
-        // (Bỏ điều kiện isDuyet vì phòng đã tự động duyệt khi tạo)
-        boolean isActive = !phong.isBiKhoa();
+        // We don't have a standard isActive field in RoomDto; default true.
+        boolean isActive = true;
 
         return new LandlordListing(
-            phong.getPhongId(),
-            phong.getTieuDe(),
-            priceText,
-            phong.getGiaTien(),
-            displayStatus,
-            isActive,
-            "default_room" // Tạm thời dùng ảnh mặc định
+                room.getPhongId(),
+                room.getTieuDe(),
+                priceText,
+                gia,
+                status,
+                isActive,
+                "default_room"
         );
     }
 
@@ -551,31 +497,20 @@ public class LandlordHomeActivity extends AppCompatActivity {
         }
         if (btnQuickStats != null) {
             btnQuickStats.setOnClickListener(v -> startActivity(new Intent(this, LandlordStatsActivity.class)));
-            // DEBUG: Long click stats button to open test activity
-            btnQuickStats.setOnLongClickListener(v -> {
-                Intent intent = new Intent(this, TestLandlordDatabaseActivity.class);
-                startActivity(intent);
-                return true;
-            });
+            // DEBUG features removed - test activities no longer exist
         }
         if (btnMenu != null) {
             btnMenu.setOnClickListener(v -> Toast.makeText(this, "Menu", Toast.LENGTH_SHORT).show());
         }
         if (btnMessages != null) {
             btnMessages.setOnClickListener(v -> {
-                Intent intent = new Intent(this, YeuCau.class);
-                intent.putExtra("defaultTab", "tinnhan");
+                Intent intent = new Intent(this, LandlordChatListActivity.class);
                 startActivity(intent);
             });
         }
         if (btnViewAll != null) {
             btnViewAll.setOnClickListener(v -> startActivity(new Intent(this, AllListingsActivity.class)));
-            // DEBUG: Long click to open test manage phong activity
-            btnViewAll.setOnLongClickListener(v -> {
-                Intent intent = new Intent(this, TestManagePhongActivity.class);
-                startActivity(intent);
-                return true;
-            });
+            // DEBUG features removed - test activities no longer exist
         }
     }
 
@@ -614,131 +549,63 @@ public class LandlordHomeActivity extends AppCompatActivity {
      */
     private void deleteListing(LandlordListing listing) {
         new androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Xác nhận xóa")
-            .setMessage("Bạn có chắc muốn xóa tin đăng \"" + listing.title + "\"?")
-            .setPositiveButton("Xóa", (dialog, which) -> {
-                new DeletePhongTask().execute(listing.phongId, listing.title);
-            })
-            .setNegativeButton("Hủy", null)
-            .show();
+                .setTitle("Xác nhận xóa")
+                .setMessage("Bạn có chắc muốn xóa tin đăng \"" + listing.title + "\"?")
+                .setPositiveButton("Xóa", (dialog, which) -> {
+                    String chuTroId = sessionManager.getUserId();
+                    if (chuTroId == null) {
+                        Toast.makeText(this, "Không xác định được tài khoản chủ trọ", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
+                    landlordRoomRepository.deleteRoom(listing.phongId, chuTroId, new LandlordRoomRepository.SimpleCallback() {
+                        @Override
+                        public void onSuccess() {
+                            runOnUiThread(() -> {
+                                if (progressBar != null) progressBar.setVisibility(View.GONE);
+                                Toast.makeText(LandlordHomeActivity.this, "✅ Đã xóa: " + listing.title, Toast.LENGTH_SHORT).show();
+                                loadLandlordRoomsFromDatabase();
+                            });
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            runOnUiThread(() -> {
+                                if (progressBar != null) progressBar.setVisibility(View.GONE);
+                                Toast.makeText(LandlordHomeActivity.this, message, Toast.LENGTH_LONG).show();
+                            });
+                        }
+                    });
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
     }
 
     /**
      * Toggle trạng thái hoạt động
      */
     private void toggleListingActive(LandlordListing listing, boolean isActive) {
-        new ToggleActiveTask().execute(listing.phongId, String.valueOf(isActive), listing.title);
-    }
-
-    /**
-     * AsyncTask để xóa phòng
-     */
-    private class DeletePhongTask extends AsyncTask<String, Void, Boolean> {
-        private String errorMsg = null;
-        private String deletedTitle = null;
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            String phongId = params[0];
-            deletedTitle = params[1];
-
-            Connection conn = null;
-            try {
-                Log.d(TAG, "=== DELETING PHONG ===");
-                Log.d(TAG, "PhongId: " + phongId);
-
-                conn = DatabaseHelper.getConnection();
-                String chuTroId = sessionManager.getUserId();
-
-                ManagePhongDao dao = new ManagePhongDao();
-                boolean result = dao.deletePhong(conn, phongId, chuTroId);
-
-                Log.d(TAG, "Delete result: " + result);
-                return result;
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error deleting phong: " + e.getMessage(), e);
-                errorMsg = e.getMessage();
-                return false;
-            } finally {
-                DatabaseHelper.closeConnection(conn);
-            }
+        String chuTroId = sessionManager.getUserId();
+        if (chuTroId == null) {
+            Toast.makeText(this, "Không xác định được tài khoản chủ trọ", Toast.LENGTH_LONG).show();
+            return;
         }
 
-        @Override
-        protected void onPostExecute(Boolean success) {
-            if (success) {
-                Toast.makeText(LandlordHomeActivity.this,
-                    "✅ Đã xóa: " + deletedTitle,
-                    Toast.LENGTH_SHORT).show();
-
-                // Refresh danh sách
-                loadLandlordRoomsFromDatabase();
-            } else {
-                String message = "❌ Không thể xóa tin đăng";
-                if (errorMsg != null) {
-                    message += "\nLỗi: " + errorMsg;
-                }
-                Toast.makeText(LandlordHomeActivity.this, message, Toast.LENGTH_LONG).show();
+        landlordRoomRepository.toggleActive(listing.phongId, isActive, chuTroId, new LandlordRoomRepository.SimpleCallback() {
+            @Override
+            public void onSuccess() {
+                runOnUiThread(() -> {
+                    String status = isActive ? "kích hoạt" : "tắt";
+                    Toast.makeText(LandlordHomeActivity.this, "✅ Đã " + status + ": " + listing.title, Toast.LENGTH_SHORT).show();
+                    loadLandlordRoomsFromDatabase();
+                });
             }
-        }
-    }
 
-    /**
-     * AsyncTask để toggle trạng thái hoạt động
-     */
-    private class ToggleActiveTask extends AsyncTask<String, Void, Boolean> {
-        private String errorMsg = null;
-        private String phongTitle = null;
-        private boolean newActiveState = false;
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            String phongId = params[0];
-            newActiveState = Boolean.parseBoolean(params[1]);
-            phongTitle = params[2];
-
-            Connection conn = null;
-            try {
-                Log.d(TAG, "=== TOGGLING PHONG ACTIVE ===");
-                Log.d(TAG, "PhongId: " + phongId + ", Active: " + newActiveState);
-
-                conn = DatabaseHelper.getConnection();
-                String chuTroId = sessionManager.getUserId();
-
-                ManagePhongDao dao = new ManagePhongDao();
-                boolean result = dao.togglePhongActive(conn, phongId, chuTroId, newActiveState);
-
-                Log.d(TAG, "Toggle result: " + result);
-                return result;
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error toggling phong active: " + e.getMessage(), e);
-                errorMsg = e.getMessage();
-                return false;
-            } finally {
-                DatabaseHelper.closeConnection(conn);
+            @Override
+            public void onError(String message) {
+                runOnUiThread(() -> Toast.makeText(LandlordHomeActivity.this, message, Toast.LENGTH_LONG).show());
             }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            if (success) {
-                String status = newActiveState ? "kích hoạt" : "tắt";
-                Toast.makeText(LandlordHomeActivity.this,
-                    "✅ Đã " + status + ": " + phongTitle,
-                    Toast.LENGTH_SHORT).show();
-
-                // Refresh danh sách
-                loadLandlordRoomsFromDatabase();
-            } else {
-                String message = "❌ Không thể thay đổi trạng thái";
-                if (errorMsg != null) {
-                    message += "\nLỗi: " + errorMsg;
-                }
-                Toast.makeText(LandlordHomeActivity.this, message, Toast.LENGTH_LONG).show();
-            }
-        }
+        });
     }
 
     @Override
@@ -868,3 +735,4 @@ public class LandlordHomeActivity extends AppCompatActivity {
         }
     }
 }
+

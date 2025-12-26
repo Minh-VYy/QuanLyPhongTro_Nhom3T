@@ -11,7 +11,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.ui.tenant.MainActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.AccountManager;
 
@@ -26,6 +25,7 @@ public class DangKyChuTroActivity extends AppCompatActivity {
     private Button btnDangKyChuTro;
     private TextView dangNhapChuTro;
     private SessionManager sessionManager;
+    private AccountManager accountManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,16 +127,13 @@ public class DangKyChuTroActivity extends AppCompatActivity {
             public void onSuccess(String message) {
                 android.util.Log.d("DangKyChuTroActivity", "API register success");
                 runOnUiThread(() -> {
-                    Toast.makeText(DangKyChuTroActivity.this, "Đăng ký thành công! Tài khoản của bạn có thể dùng cho cả Người thuê và Chủ trọ.", Toast.LENGTH_LONG).show();
+                    // ✅ IMPORTANT: Do NOT create a fake userId here.
+                    // Backend/API will generate the real GUID userId. After register success, user should login.
 
-                    // Lưu session
-                    sessionManager.createLoginSession(email, hoTen, email, "landlord");
-                    sessionManager.setLandlordStatus(true);
-                    sessionManager.setDisplayRole("landlord");
+                    Toast.makeText(DangKyChuTroActivity.this, "Đăng ký thành công! Vui lòng đăng nhập lại để tiếp tục.", Toast.LENGTH_LONG).show();
 
-                    // Chuyển về LandlordHomeActivity
-                    Intent intent = new Intent(DangKyChuTroActivity.this, com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    Intent intent = new Intent(DangKyChuTroActivity.this, LoginActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();
                 });

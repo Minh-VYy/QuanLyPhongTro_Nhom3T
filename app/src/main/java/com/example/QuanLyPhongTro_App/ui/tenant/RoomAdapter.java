@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.utils.FileUrlResolver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,9 +122,12 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.RoomViewHolder
 
         public void bind(Room room, OnRoomClickListener listener) {
             // ========== HIỂN THỊ HÌNH ẢNH - TỐI ƯU VỚI GLIDE ==========
-            if (room.getImageUrl() != null && !room.getImageUrl().isEmpty()) {
+            String raw = room.getImageUrl();
+            String resolvedUrl = FileUrlResolver.resolve(raw);
+
+            if (resolvedUrl != null && !resolvedUrl.isEmpty()) {
                 Glide.with(itemView.getContext())
-                    .load(room.getImageUrl())
+                    .load(resolvedUrl)
                     .apply(glideOptions)
                     .into(roomImage);
             } else if (room.getImageResId() != 0) {

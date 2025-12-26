@@ -41,27 +41,34 @@ public class ChatListActivity extends AppCompatActivity {
         recyclerViewChatList = findViewById(R.id.recycler_view_chat_list);
         recyclerViewChatList.setLayoutManager(new LinearLayoutManager(this));
 
+        // ✅ Đăng nhập hợp lệ nên dựa vào TOKEN + userId(GUID), không dựa vào email
+        String token = sessionManager.getToken();
+        String userId = sessionManager.getUserId();
+
         currentUserEmail = sessionManager.getUserEmail();
         userRole = sessionManager.getUserRole();
 
-        if (currentUserEmail == null) {
-            currentUserEmail = getIntent().getStringExtra("user_id");
+        // fallback from intent (ChatActivity/RoomDetailActivity thường truyền user_id là GUID)
+        if (userId == null || userId.isEmpty()) {
+            userId = getIntent().getStringExtra("user_id");
         }
-        if (userRole == null) {
-            userRole = getIntent().getStringExtra("user_role");
-            if (userRole == null) {
-                userRole = "tenant";
-            }
-        }
-
-        Log.d(TAG, "Current user: " + currentUserEmail + ", Role: " + userRole);
-
-        // Check if user is logged in
         if (currentUserEmail == null || currentUserEmail.isEmpty()) {
-            Log.e(TAG, "❌ User email is null or empty");
+            // không có email thì dùng tạm userId để tránh bị kết luận chưa đăng nhập
+            currentUserEmail = userId;
+        }
+        if (userRole == null || userRole.isEmpty()) {
+            userRole = getIntent().getStringExtra("user_role");
+            if (userRole == null || userRole.isEmpty()) userRole = "tenant";
+        }
+
+        Log.d(TAG, "Current userEmail=" + currentUserEmail + ", userId=" + userId + ", Role=" + userRole);
+
+        // ✅ Check login: must have token and userId GUID
+        if (token == null || token.isEmpty() || userId == null || userId.isEmpty()) {
+            Log.e(TAG, "❌ Missing token or userId - not logged in");
             Toast.makeText(this, "Vui lòng đăng nhập trước", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, com.example.QuanLyPhongTro_App.ui.auth.LoginActivity.class));
             finish();
-            return;
         }
     }
 
@@ -98,7 +105,7 @@ public class ChatListActivity extends AppCompatActivity {
                     "❌ Lỗi: Không thể xác định user ID từ token.\nVui lòng đăng nhập lại.",
                     Toast.LENGTH_LONG).show();
 
-                // ...existing code...
+                // Redirect to login
                 Intent intent = new Intent(this, com.example.QuanLyPhongTro_App.ui.auth.LoginActivity.class);
                 startActivity(intent);
                 finish();
@@ -222,4 +229,3 @@ public class ChatListActivity extends AppCompatActivity {
         return guid.matches(guidPattern);
     }
 }
-

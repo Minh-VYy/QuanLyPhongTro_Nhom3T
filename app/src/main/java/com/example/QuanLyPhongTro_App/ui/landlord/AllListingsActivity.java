@@ -2,7 +2,6 @@ package com.example.QuanLyPhongTro_App.ui.landlord;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,13 +25,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
-import com.example.QuanLyPhongTro_App.data.dao.PhongDao;
 import com.example.QuanLyPhongTro_App.data.model.Phong;
+import com.example.QuanLyPhongTro_App.data.repository.LandlordRoomRepository;
+import com.example.QuanLyPhongTro_App.data.repository.RoomRepository;
 import com.example.QuanLyPhongTro_App.utils.LandlordBottomNavigationHelper;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 
-import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +47,7 @@ public class AllListingsActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     
     private SessionManager sessionManager;
+    private LandlordRoomRepository landlordRoomRepository;
     private List<Phong> allPhongList = new ArrayList<>();
     private AllListingsAdapter adapter;
 
@@ -58,7 +57,8 @@ public class AllListingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_all_listings);
 
         sessionManager = new SessionManager(this);
-        
+        landlordRoomRepository = new LandlordRoomRepository();
+
         initViews();
         setupFilter();
         setupRecyclerView();
@@ -119,7 +119,59 @@ public class AllListingsActivity extends AppCompatActivity {
     }
 
     private void loadAllListings() {
-        new LoadAllListingsTask().execute();
+        if (progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+
+        String chuTroId = sessionManager.getUserId();
+        if (chuTroId == null || chuTroId.trim().isEmpty()) {
+            if (progressBar != null) progressBar.setVisibility(View.GONE);
+            showEmptyState();
+            Toast.makeText(this, "Không xác định được tài khoản chủ trọ", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        landlordRoomRepository.getMyRooms(chuTroId, new LandlordRoomRepository.ListRoomsCallback() {
+            @Override
+            public void onSuccess(List<RoomRepository.RoomDto> rooms) {
+                runOnUiThread(() -> {
+                    if (progressBar != null) progressBar.setVisibility(View.GONE);
+
+                    allPhongList.clear();
+                    for (RoomRepository.RoomDto dto : rooms) {
+                        Phong p = new Phong();
+                        p.setPhongId(dto.getPhongId());
+                        p.setTieuDe(dto.getTieuDe());
+                        p.setMoTa(dto.getMoTa());
+                        p.setGiaTien(dto.getGiaTien());
+                        p.setTrangThai(dto.getTrangThai());
+                        // Approx: active if status is not "Không hoạt động"
+                        boolean isActive = dto.getTrangThai() == null || !"Không hoạt động".equalsIgnoreCase(dto.getTrangThai());
+                        p.setBiKhoa(!isActive);
+                        p.setDuyet(true);
+                        allPhongList.add(p);
+                    }
+
+                    adapter.notifyDataSetChanged();
+                    updateListingCount(allPhongList.size());
+
+                    if (allPhongList.isEmpty()) {
+                        showEmptyState();
+                    } else {
+                        showListings();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                runOnUiThread(() -> {
+                    if (progressBar != null) progressBar.setVisibility(View.GONE);
+                    showEmptyState();
+                    Toast.makeText(AllListingsActivity.this, message, Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 
     private void updateListingCount(int count) {
@@ -167,20 +219,68 @@ public class AllListingsActivity extends AppCompatActivity {
      */
     private void deleteListing(Phong phong) {
         new AlertDialog.Builder(this)
-            .setTitle("Xác nhận xóa")
-            .setMessage("Bạn có chắc muốn xóa tin đăng \"" + phong.getTieuDe() + "\"?")
-            .setPositiveButton("Xóa", (dialog, which) -> {
-                new DeletePhongTask().execute(phong.getPhongId(), phong.getTieuDe());
-            })
-            .setNegativeButton("Hủy", null)
-            .show();
+                .setTitle("Xác nhận xóa")
+                .setMessage("Bạn có chắc muốn xóa tin đăng \"" + phong.getTieuDe() + "\"?")
+                .setPositiveButton("Xóa", (dialog, which) -> {
+                    String chuTroId = sessionManager.getUserId();
+                    if (chuTroId == null) {
+                        Toast.makeText(this, "Không xác định được chủ trọ", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
+                    landlordRoomRepository.deleteRoom(phong.getPhongId(), chuTroId, new LandlordRoomRepository.SimpleCallback() {
+                        @Override
+                        public void onSuccess() {
+                            runOnUiThread(() -> {
+                                if (progressBar != null) progressBar.setVisibility(View.GONE);
+                                Toast.makeText(AllListingsActivity.this, "✅ Đã xóa: " + phong.getTieuDe(), Toast.LENGTH_SHORT).show();
+                                loadAllListings();
+                            });
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            runOnUiThread(() -> {
+                                if (progressBar != null) progressBar.setVisibility(View.GONE);
+                                Toast.makeText(AllListingsActivity.this, message, Toast.LENGTH_LONG).show();
+                            });
+                        }
+                    });
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
     }
 
     /**
      * Toggle trạng thái hoạt động
      */
     private void toggleListingActive(Phong phong, boolean isActive) {
-        new ToggleActiveTask().execute(phong.getPhongId(), String.valueOf(isActive), phong.getTieuDe());
+        String chuTroId = sessionManager.getUserId();
+        if (chuTroId == null) {
+            Toast.makeText(this, "Không xác định được chủ trọ", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
+        landlordRoomRepository.toggleActive(phong.getPhongId(), isActive, chuTroId, new LandlordRoomRepository.SimpleCallback() {
+            @Override
+            public void onSuccess() {
+                runOnUiThread(() -> {
+                    if (progressBar != null) progressBar.setVisibility(View.GONE);
+                    String status = isActive ? "kích hoạt" : "tắt";
+                    Toast.makeText(AllListingsActivity.this, "✅ Đã " + status + ": " + phong.getTieuDe(), Toast.LENGTH_SHORT).show();
+                    loadAllListings();
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                runOnUiThread(() -> {
+                    if (progressBar != null) progressBar.setVisibility(View.GONE);
+                    Toast.makeText(AllListingsActivity.this, message, Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 
     @Override
@@ -196,197 +296,6 @@ public class AllListingsActivity extends AppCompatActivity {
         if (requestCode == 1001 && resultCode == Activity.RESULT_OK) {
             // Refresh danh sách sau khi edit
             loadAllListings();
-        }
-    }
-
-    // ==================== ASYNC TASKS ====================
-
-    /**
-     * AsyncTask để load tất cả tin đăng
-     */
-    private class LoadAllListingsTask extends AsyncTask<Void, Void, List<Phong>> {
-        private String errorMsg = null;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            if (progressBar != null) {
-                progressBar.setVisibility(View.VISIBLE);
-            }
-        }
-
-        @Override
-        protected List<Phong> doInBackground(Void... voids) {
-            Connection conn = null;
-            try {
-                Log.d(TAG, "=== LOADING ALL LISTINGS ===");
-                conn = DatabaseHelper.getConnection();
-                Log.d(TAG, "Database connection successful");
-                
-                String chuTroId = sessionManager.getUserId();
-                Log.d(TAG, "Loading all listings for ChuTroId: " + chuTroId);
-                
-                PhongDao dao = new PhongDao();
-                List<Phong> result = dao.getPhongByChuTroId(conn, chuTroId);
-                
-                Log.d(TAG, "Query result: " + (result != null ? result.size() : "null") + " listings");
-                return result;
-                
-            } catch (Exception e) {
-                Log.e(TAG, "Error loading all listings: " + e.getMessage(), e);
-                errorMsg = e.getMessage();
-                return null;
-            } finally {
-                DatabaseHelper.closeConnection(conn);
-                Log.d(TAG, "Database connection closed");
-            }
-        }
-
-        @Override
-        protected void onPostExecute(List<Phong> phongList) {
-            super.onPostExecute(phongList);
-            if (progressBar != null) {
-                progressBar.setVisibility(View.GONE);
-            }
-
-            if (phongList != null) {
-                allPhongList.clear();
-                allPhongList.addAll(phongList);
-                adapter.notifyDataSetChanged();
-                
-                updateListingCount(phongList.size());
-                
-                if (phongList.isEmpty()) {
-                    showEmptyState();
-                } else {
-                    showListings();
-                    Toast.makeText(AllListingsActivity.this, 
-                        "Đã tải " + phongList.size() + " tin đăng", 
-                        Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                showEmptyState();
-                if (errorMsg != null) {
-                    Toast.makeText(AllListingsActivity.this, 
-                        "Lỗi kết nối: " + errorMsg, 
-                        Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(AllListingsActivity.this, 
-                        "Không thể tải danh sách tin đăng", 
-                        Toast.LENGTH_SHORT).show();
-                }
-            }
-        }
-    }
-
-    /**
-     * AsyncTask để xóa phòng
-     */
-    private class DeletePhongTask extends AsyncTask<String, Void, Boolean> {
-        private String errorMsg = null;
-        private String deletedTitle = null;
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            String phongId = params[0];
-            deletedTitle = params[1];
-            
-            Connection conn = null;
-            try {
-                Log.d(TAG, "=== DELETING PHONG ===");
-                Log.d(TAG, "PhongId: " + phongId);
-                
-                conn = DatabaseHelper.getConnection();
-                String chuTroId = sessionManager.getUserId();
-                
-                ManagePhongDao dao = new ManagePhongDao();
-                boolean result = dao.deletePhong(conn, phongId, chuTroId);
-                
-                Log.d(TAG, "Delete result: " + result);
-                return result;
-                
-            } catch (Exception e) {
-                Log.e(TAG, "Error deleting phong: " + e.getMessage(), e);
-                errorMsg = e.getMessage();
-                return false;
-            } finally {
-                DatabaseHelper.closeConnection(conn);
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            if (success) {
-                Toast.makeText(AllListingsActivity.this, 
-                    "✅ Đã xóa: " + deletedTitle, 
-                    Toast.LENGTH_SHORT).show();
-                
-                // Refresh danh sách
-                loadAllListings();
-            } else {
-                String message = "❌ Không thể xóa tin đăng";
-                if (errorMsg != null) {
-                    message += "\nLỗi: " + errorMsg;
-                }
-                Toast.makeText(AllListingsActivity.this, message, Toast.LENGTH_LONG).show();
-            }
-        }
-    }
-
-    /**
-     * AsyncTask để toggle trạng thái hoạt động
-     */
-    private class ToggleActiveTask extends AsyncTask<String, Void, Boolean> {
-        private String errorMsg = null;
-        private String phongTitle = null;
-        private boolean newActiveState = false;
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            String phongId = params[0];
-            newActiveState = Boolean.parseBoolean(params[1]);
-            phongTitle = params[2];
-            
-            Connection conn = null;
-            try {
-                Log.d(TAG, "=== TOGGLING PHONG ACTIVE ===");
-                Log.d(TAG, "PhongId: " + phongId + ", Active: " + newActiveState);
-                
-                conn = DatabaseHelper.getConnection();
-                String chuTroId = sessionManager.getUserId();
-                
-                ManagePhongDao dao = new ManagePhongDao();
-                boolean result = dao.togglePhongActive(conn, phongId, chuTroId, newActiveState);
-                
-                Log.d(TAG, "Toggle result: " + result);
-                return result;
-                
-            } catch (Exception e) {
-                Log.e(TAG, "Error toggling phong active: " + e.getMessage(), e);
-                errorMsg = e.getMessage();
-                return false;
-            } finally {
-                DatabaseHelper.closeConnection(conn);
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            if (success) {
-                String status = newActiveState ? "kích hoạt" : "tắt";
-                Toast.makeText(AllListingsActivity.this, 
-                    "✅ Đã " + status + ": " + phongTitle, 
-                    Toast.LENGTH_SHORT).show();
-                
-                // Refresh danh sách
-                loadAllListings();
-            } else {
-                String message = "❌ Không thể thay đổi trạng thái";
-                if (errorMsg != null) {
-                    message += "\nLỗi: " + errorMsg;
-                }
-                Toast.makeText(AllListingsActivity.this, message, Toast.LENGTH_LONG).show();
-            }
         }
     }
 

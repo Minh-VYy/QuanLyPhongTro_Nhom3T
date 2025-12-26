@@ -15,11 +15,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
-import com.example.QuanLyPhongTro_App.data.dao.DatPhongDao;
-import com.example.QuanLyPhongTro_App.data.model.DatPhong;
+import com.example.QuanLyPhongTro_App.data.repository.BookingRepository;
+import com.example.QuanLyPhongTro_App.data.response.MyBookingsResponse;
+import com.example.QuanLyPhongTro_App.utils.ApiClient;
+import com.example.QuanLyPhongTro_App.utils.SessionManager;
 
-import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -35,26 +35,31 @@ public class BookingDetailActivity extends AppCompatActivity {
     private Button btnCancel, btnContact;
 
     private String bookingId;
-    private DatPhong booking;
+    private BookingRepository bookingRepository;
+    private SessionManager sessionManager;
+    private MyBookingsResponse.MyBookingDto bookingDto;
     private String landlordPhone;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         try {
             setContentView(R.layout.activity_booking_detail);
             Log.d(TAG, "=== BOOKING DETAIL ACTIVITY ===");
 
             bookingId = getIntent().getStringExtra(EXTRA_BOOKING_ID);
             Log.d(TAG, "Booking ID: " + bookingId);
-            
+
             if (bookingId == null || bookingId.isEmpty()) {
                 Log.e(TAG, "Booking ID is null or empty");
                 Toast.makeText(this, "Không tìm thấy thông tin đặt lịch", Toast.LENGTH_SHORT).show();
                 finish();
                 return;
             }
+
+            sessionManager = new SessionManager(this);
+            bookingRepository = new BookingRepository();
 
             initViews();
             setupToolbar();
@@ -85,7 +90,7 @@ public class BookingDetailActivity extends AppCompatActivity {
 
             btnCancel.setOnClickListener(v -> showCancelDialog());
             btnContact.setOnClickListener(v -> contactLandlord());
-            
+
             Log.d(TAG, "✅ All views initialized successfully");
         } catch (Exception e) {
             Log.e(TAG, "❌ Error initializing views: " + e.getMessage(), e);
@@ -98,10 +103,10 @@ public class BookingDetailActivity extends AppCompatActivity {
             LinearLayout toolbar = findViewById(R.id.toolbar);
             TextView tvTitle = toolbar.findViewById(R.id.tvTitle);
             ImageView btnBack = toolbar.findViewById(R.id.btnBack);
-            
+
             tvTitle.setText("Chi tiết đặt lịch");
             btnBack.setOnClickListener(v -> finish());
-            
+
             Log.d(TAG, "✅ Toolbar setup successfully");
         } catch (Exception e) {
             Log.e(TAG, "❌ Error setting up toolbar: " + e.getMessage(), e);
@@ -111,143 +116,163 @@ public class BookingDetailActivity extends AppCompatActivity {
 
     private void loadBookingDetail() {
         Log.d(TAG, "Loading booking detail for ID: " + bookingId);
-        
-        new Thread(() -> {
-            Connection conn = null;
-            try {
-                Log.d(TAG, "Connecting to database...");
-                conn = DatabaseHelper.getConnection();
-                Log.d(TAG, "✅ Connected to database");
-                
-                DatPhongDao dao = new DatPhongDao();
-                booking = dao.getDatPhongById(conn, bookingId);
 
-                if (booking != null) {
-                    Log.d(TAG, "✅ Booking loaded: " + booking.getTenPhong());
-                    
-                    // Lấy số điện thoại chủ trọ
-                    landlordPhone = dao.getLandlordPhone(conn, booking.getPhongId());
-                    Log.d(TAG, "Landlord phone: " + (landlordPhone != null ? "Found" : "Not found"));
-                    
-                    runOnUiThread(() -> displayBookingInfo());
-                } else {
-                    Log.e(TAG, "❌ Booking not found in database");
-                    runOnUiThread(() -> {
-                        Toast.makeText(this, "Không tìm thấy thông tin đặt lịch", Toast.LENGTH_SHORT).show();
-                        finish();
-                    });
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "❌ Error loading booking detail", e);
-                runOnUiThread(() -> {
-                    Toast.makeText(this, "Lỗi tải dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-            } finally {
-                if (conn != null) {
-                    DatabaseHelper.releaseConnection(conn);
-                    Log.d(TAG, "Database connection released");
-                }
+        if (!sessionManager.isLoggedIn() || sessionManager.getToken() == null || sessionManager.getToken().isEmpty()) {
+            Toast.makeText(this, "Vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        ApiClient.setToken(sessionManager.getToken());
+
+        bookingRepository.getBookingDetailById(bookingId, new BookingRepository.BookingDetailCallback() {
+            @Override
+            public void onSuccess(MyBookingsResponse.MyBookingDto booking) {
+                bookingDto = booking;
+                runOnUiThread(() -> displayBookingInfo());
             }
-        }).start();
+
+            @Override
+            public void onNotFound() {
+                runOnUiThread(() -> {
+                    Toast.makeText(BookingDetailActivity.this, "Không tìm thấy thông tin đặt lịch", Toast.LENGTH_SHORT).show();
+                    finish();
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                runOnUiThread(() -> Toast.makeText(BookingDetailActivity.this, "Lỗi tải dữ liệu: " + message, Toast.LENGTH_LONG).show());
+            }
+        });
     }
 
     private void displayBookingInfo() {
         try {
-            Log.d(TAG, "Displaying booking info...");
-            
-            // Trạng thái
-            String status = getStatusText(booking.getTrangThaiId());
-            int statusColor = getStatusColor(booking.getTrangThaiId());
-            tvStatus.setText(status);
-            tvStatus.setTextColor(getResources().getColor(statusColor));
-            Log.d(TAG, "Status: " + status);
-
-            // Thông tin phòng
-            tvRoomName.setText(booking.getTenPhong());
-            tvRoomPrice.setText(formatPrice(booking.getGiaPhong()));
-            tvRoomAddress.setText(booking.getDiaChiPhong());
-            Log.d(TAG, "Room info displayed");
-
-            // Thời gian xem phòng
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-            
-            if (booking.getBatDau() != null) {
-                tvBookingDate.setText(dateFormat.format(booking.getBatDau()));
-                String timeSlot = getTimeSlot(booking.getBatDau());
-                String time = timeFormat.format(booking.getBatDau());
-                tvBookingTime.setText(timeSlot + " (" + time + ")");
-                Log.d(TAG, "Booking time displayed");
+            if (bookingDto == null) {
+                Toast.makeText(this, "Không có dữ liệu đặt lịch", Toast.LENGTH_SHORT).show();
+                return;
             }
 
-            // Thông tin liên hệ từ ghi chú
-            if (booking.getGhiChu() != null && !booking.getGhiChu().isEmpty()) {
-                String[] lines = booking.getGhiChu().split("\n");
+            Integer trangThaiIdObj = bookingDto.trangThaiId;
+            int trangThaiId = trangThaiIdObj != null ? trangThaiIdObj : 1;
+
+            String status = getStatusText(trangThaiId);
+            int statusColor = getStatusColor(trangThaiId);
+            tvStatus.setText(status);
+            tvStatus.setTextColor(getResources().getColor(statusColor));
+
+            tvRoomName.setText(bookingDto.tenPhong != null ? bookingDto.tenPhong : "Phòng trọ");
+            long giaPhong = bookingDto.giaPhong != null ? bookingDto.giaPhong : 0L;
+            tvRoomPrice.setText(formatPrice(giaPhong));
+            tvRoomAddress.setText(bookingDto.diaChiPhong != null ? bookingDto.diaChiPhong : "");
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+            java.util.Date batDau = safeParseDate(bookingDto.batDau);
+            if (batDau != null) {
+                tvBookingDate.setText(dateFormat.format(batDau));
+                String timeSlot = getTimeSlot(batDau);
+                String time = timeFormat.format(batDau);
+                tvBookingTime.setText(timeSlot + " (" + time + ")");
+            }
+
+            // Notes
+            if (bookingDto.ghiChu != null && !bookingDto.ghiChu.isEmpty()) {
+                String[] lines = bookingDto.ghiChu.split("\n");
                 StringBuilder contactInfo = new StringBuilder();
                 StringBuilder noteInfo = new StringBuilder();
-                
+
                 for (String line : lines) {
-                    if (line.startsWith("Họ tên:") || line.startsWith("SĐT:") || 
-                        line.startsWith("Khung giờ:") || line.startsWith("Cho phép gọi:")) {
+                    if (line.startsWith("Họ tên:") || line.startsWith("SĐT:") ||
+                            line.startsWith("Khung giờ:") || line.startsWith("Cho phép gọi:")) {
                         contactInfo.append(line).append("\n");
                     } else if (line.startsWith("Ghi chú:")) {
                         noteInfo.append(line.substring(8).trim());
                     }
                 }
-                
+
                 if (contactInfo.length() > 0) {
                     tvContactInfo.setText(contactInfo.toString().trim());
                     layoutContactInfo.setVisibility(View.VISIBLE);
                 }
-                
+
                 if (noteInfo.length() > 0) {
                     tvNote.setText(noteInfo.toString());
                     layoutNote.setVisibility(View.VISIBLE);
                 }
             }
 
-            // Thời gian đặt
-            if (booking.getThoiGianTao() != null) {
+            java.util.Date created = safeParseDate(bookingDto.thoiGianTao);
+            if (created != null) {
                 SimpleDateFormat createdFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-                tvCreatedTime.setText(createdFormat.format(booking.getThoiGianTao()));
+                tvCreatedTime.setText(createdFormat.format(created));
             }
 
-            // Hiển thị/ẩn buttons theo trạng thái
-            int trangThaiId = booking.getTrangThaiId();
-            if (trangThaiId == 1 || trangThaiId == 2) { // Chờ duyệt hoặc Đã xác nhận
+            if (trangThaiId == 1 || trangThaiId == 2) {
                 layoutButtons.setVisibility(View.VISIBLE);
                 btnCancel.setVisibility(View.VISIBLE);
             } else {
                 btnCancel.setVisibility(View.GONE);
-                if (trangThaiId == 3 || trangThaiId == 4) { // Đã xem hoặc Đã hủy
+                if (trangThaiId == 3 || trangThaiId == 4) {
                     layoutButtons.setVisibility(View.GONE);
                 }
             }
-            
-            Log.d(TAG, "✅ Booking info displayed successfully");
+
+            // Backend currently doesn't provide landlord phone in booking DTO
+            landlordPhone = null;
+            btnContact.setEnabled(false);
+            btnContact.setAlpha(0.5f);
+
         } catch (Exception e) {
-            Log.e(TAG, "❌ Error displaying booking info: " + e.getMessage(), e);
+            Log.e(TAG, "Error displaying booking info: " + e.getMessage(), e);
             Toast.makeText(this, "Lỗi hiển thị thông tin: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private java.util.Date safeParseDate(String iso) {
+        if (iso == null || iso.trim().isEmpty()) return null;
+        try {
+            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.US);
+            return sdf1.parse(iso.replace("Z", ""));
+        } catch (Exception ignore) {
+        }
+        try {
+            SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+            return sdf2.parse(iso.replace("Z", ""));
+        } catch (Exception e) {
+            return null;
         }
     }
 
     private String getStatusText(int trangThaiId) {
         switch (trangThaiId) {
-            case 1: return "Chờ duyệt";
-            case 2: return "Đã xác nhận";
-            case 3: return "Đã xem";
-            case 4: return "Đã hủy";
-            default: return "Không xác định";
+            case 1:
+                return "Chờ duyệt";
+            case 2:
+                return "Đã xác nhận";
+            case 3:
+                return "Đã xem";
+            case 4:
+                return "Đã hủy";
+            default:
+                return "Không xác định";
         }
     }
 
     private int getStatusColor(int trangThaiId) {
         switch (trangThaiId) {
-            case 1: return R.color.warning;
-            case 2: return R.color.success;
-            case 3: return R.color.text_secondary;
-            case 4: return R.color.error;
-            default: return R.color.text_secondary;
+            case 1:
+                return R.color.warning;
+            case 2:
+                return R.color.success;
+            case 3:
+                return R.color.text_secondary;
+            case 4:
+                return R.color.error;
+            default:
+                return R.color.text_secondary;
         }
     }
 
@@ -255,7 +280,7 @@ public class BookingDetailActivity extends AppCompatActivity {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         int hour = cal.get(Calendar.HOUR_OF_DAY);
-        
+
         if (hour >= 8 && hour < 12) {
             return "Sáng (8-12h)";
         } else if (hour >= 13 && hour < 17) {
@@ -287,33 +312,27 @@ public class BookingDetailActivity extends AppCompatActivity {
     }
 
     private void cancelBooking() {
-        new Thread(() -> {
-            Connection conn = null;
-            boolean success = false;
+        if (!sessionManager.isLoggedIn() || sessionManager.getToken() == null || sessionManager.getToken().isEmpty()) {
+            Toast.makeText(this, "Vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        ApiClient.setToken(sessionManager.getToken());
 
-            try {
-                conn = DatabaseHelper.getConnection();
-                DatPhongDao dao = new DatPhongDao();
-                success = dao.updateTrangThai(conn, bookingId, 4); // 4 = Đã hủy
-            } catch (Exception e) {
-                Log.e(TAG, "Error cancelling booking", e);
-            } finally {
-                if (conn != null) {
-                    DatabaseHelper.releaseConnection(conn);
-                }
-            }
-
-            final boolean finalSuccess = success;
-            runOnUiThread(() -> {
-                if (finalSuccess) {
-                    Toast.makeText(this, "Đã hủy lịch hẹn", Toast.LENGTH_SHORT).show();
+        bookingRepository.cancelBooking(bookingId, new BookingRepository.SimpleCallback() {
+            @Override
+            public void onSuccess() {
+                runOnUiThread(() -> {
+                    Toast.makeText(BookingDetailActivity.this, "Đã hủy lịch hẹn", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
                     finish();
-                } else {
-                    Toast.makeText(this, "Không thể hủy lịch hẹn", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }).start();
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                runOnUiThread(() -> Toast.makeText(BookingDetailActivity.this, "Không thể hủy lịch hẹn: " + message, Toast.LENGTH_LONG).show());
+            }
+        });
     }
 
     private void contactLandlord() {

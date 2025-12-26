@@ -14,10 +14,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
-import com.example.QuanLyPhongTro_App.data.dao.DatPhongDao;
+import com.example.QuanLyPhongTro_App.data.repository.BookingRepository;
+import com.example.QuanLyPhongTro_App.utils.ApiClient;
+import com.example.QuanLyPhongTro_App.utils.SessionManager;
 
-import java.sql.Connection;
 import java.util.List;
 
 public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingViewHolder> {
@@ -25,6 +25,8 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
     private Context context;
     private List<Booking> bookingList;
     private OnBookingActionListener listener;
+    private final BookingRepository bookingRepository;
+    private final SessionManager sessionManager;
 
     public interface OnBookingActionListener {
         void onBookingCancelled();
@@ -33,6 +35,8 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
     public BookingAdapter(Context context, List<Booking> bookingList) {
         this.context = context;
         this.bookingList = bookingList;
+        this.bookingRepository = new BookingRepository();
+        this.sessionManager = new SessionManager(context);
     }
 
     public void setOnBookingActionListener(OnBookingActionListener listener) {
@@ -115,46 +119,42 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
     }
 
     private void cancelBooking(Booking booking, int position) {
-        new Thread(() -> {
-            Connection conn = null;
-            boolean success = false;
-
-            try {
-                conn = DatabaseHelper.getConnection();
-                DatPhongDao dao = new DatPhongDao();
-                
-                // Cập nhật trạng thái thành 4 (Đã hủy)
-                success = dao.updateTrangThai(conn, booking.getId(), 4);
-                
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                if (conn != null) {
-                    DatabaseHelper.releaseConnection(conn);
-                }
-            }
-
-            final boolean finalSuccess = success;
-            
+        if (!sessionManager.isLoggedIn() || sessionManager.getToken() == null || sessionManager.getToken().isEmpty()) {
             if (context instanceof android.app.Activity) {
-                ((android.app.Activity) context).runOnUiThread(() -> {
-                    if (finalSuccess) {
+                ((android.app.Activity) context).runOnUiThread(() ->
+                        Toast.makeText(context, "Vui lòng đăng nhập lại để hủy lịch hẹn", Toast.LENGTH_SHORT).show());
+            }
+            return;
+        }
+
+        // Ensure token is injected into OkHttp
+        ApiClient.setToken(sessionManager.getToken());
+
+        bookingRepository.cancelBooking(booking.getId(), new BookingRepository.SimpleCallback() {
+            @Override
+            public void onSuccess() {
+                if (context instanceof android.app.Activity) {
+                    ((android.app.Activity) context).runOnUiThread(() -> {
                         Toast.makeText(context, "Đã hủy lịch hẹn", Toast.LENGTH_SHORT).show();
-                        
-                        // Cập nhật UI
+
                         booking.setStatus("cancelled");
                         notifyItemChanged(position);
-                        
-                        // Thông báo cho fragment reload
+
                         if (listener != null) {
                             listener.onBookingCancelled();
                         }
-                    } else {
-                        Toast.makeText(context, "Không thể hủy lịch hẹn. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                    });
+                }
             }
-        }).start();
+
+            @Override
+            public void onError(String message) {
+                if (context instanceof android.app.Activity) {
+                    ((android.app.Activity) context).runOnUiThread(() ->
+                            Toast.makeText(context, "Không thể hủy lịch hẹn: " + message, Toast.LENGTH_LONG).show());
+                }
+            }
+        });
     }
 
     @Override
@@ -178,4 +178,3 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
         }
     }
 }
-

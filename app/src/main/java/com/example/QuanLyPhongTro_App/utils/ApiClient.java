@@ -1,11 +1,16 @@
 package com.example.QuanLyPhongTro_App.utils;
 
+import com.example.QuanLyPhongTro_App.data.response.ApiOrArrayResponse;
+import com.example.QuanLyPhongTro_App.data.response.ApiOrArrayResponseStringDeserializer;
+
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -33,17 +38,24 @@ public class ApiClient {
                     httpClient.addInterceptor(chain -> {
                         okhttp3.Request original = chain.request();
 
-                        // Get token from cached token or use empty
                         String token = cachedToken;
 
                         okhttp3.Request.Builder requestBuilder = original.newBuilder();
-                        if (token != null && !token.isEmpty()) {
+                        boolean hasToken = token != null && !token.isEmpty();
+                        if (hasToken) {
                             requestBuilder.header("Authorization", "Bearer " + token);
                         }
                         requestBuilder.header("Content-Type", "application/json");
 
                         okhttp3.Request request = requestBuilder.build();
-                        return chain.proceed(request);
+                        android.util.Log.d("ApiClient", "Request URL: " + request.url());
+                        android.util.Log.d("ApiClient", "Authorization header: " + (hasToken ? "Bearer (set)" : "MISSING"));
+
+                        okhttp3.Response resp = chain.proceed(request);
+                        if (resp.code() >= 400) {
+                            android.util.Log.w("ApiClient", "HTTP " + resp.code() + " for " + request.method() + " " + request.url());
+                        }
+                        return resp;
                     });
 
                     // Add logging interceptor for debug
@@ -51,14 +63,43 @@ public class ApiClient {
                     logging.setLevel(HttpLoggingInterceptor.Level.BODY);
                     httpClient.addInterceptor(logging);
 
+                    // ✅ Degrade gracefully for broken /api/TapTin/{id} (server 500):
+                    // If image endpoint fails, return a synthetic 204 so Glide won't crash the app.
+                    httpClient.addInterceptor(chain -> {
+                        okhttp3.Request req = chain.request();
+                        okhttp3.Response res = chain.proceed(req);
+
+                        try {
+                            String path = req.url().encodedPath();
+                            if ("GET".equalsIgnoreCase(req.method())
+                                    && path != null
+                                    && path.startsWith("/api/TapTin/")
+                                    && res.code() >= 500) {
+                                android.util.Log.w("ApiClient", "TapTin endpoint failed http=" + res.code() + " url=" + req.url());
+                                // Return empty response to avoid repeated retries / crashes in image loader
+                                return res.newBuilder()
+                                        .code(204)
+                                        .message("No Content (TapTin fallback)")
+                                        .body(okhttp3.ResponseBody.create(null, new byte[0]))
+                                        .build();
+                            }
+                        } catch (Exception ignored) {
+                        }
+
+                        return res;
+                    });
+
                     // Set timeouts
                     httpClient.connectTimeout(30, TimeUnit.SECONDS);
                     httpClient.readTimeout(30, TimeUnit.SECONDS);
                     httpClient.writeTimeout(30, TimeUnit.SECONDS);
 
-                    // Setup Gson with ISO date format
+                    // Setup Gson with ISO date format + tolerant response adapters
                     Gson gson = new GsonBuilder()
-                            .setDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+                            // Backend returns DateTimeOffset like: 2025-12-24T12:50:28.4247144+00:00
+                            // Use a timezone-aware pattern to avoid parsing issues.
+                            .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+                            .registerTypeAdapter(ApiOrArrayResponse.class, new ApiOrArrayResponseStringDeserializer())
                             .create();
 
                     // Create Retrofit instance
@@ -92,4 +133,3 @@ public class ApiClient {
         return BASE_URL;
     }
 }
-

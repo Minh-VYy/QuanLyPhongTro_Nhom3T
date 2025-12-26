@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -27,14 +26,15 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
-import com.example.QuanLyPhongTro_App.data.model.Phong;
+import com.example.QuanLyPhongTro_App.data.repository.LandlordRoomRepository;
+import com.example.QuanLyPhongTro_App.data.request.LandlordUpsertRoomRequest;
+import com.example.QuanLyPhongTro_App.utils.ApiClient;
+import com.example.QuanLyPhongTro_App.utils.ApiService;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
 
 import java.io.IOException;
-import java.sql.Connection;
 
 public class EditTin extends AppCompatActivity {
     private static final String TAG = "EditTin";
@@ -50,7 +50,8 @@ public class EditTin extends AppCompatActivity {
     private Chip cbAc, cbWc;
     private ProgressBar progressBar;
     private SessionManager sessionManager;
-    
+    private LandlordRoomRepository landlordRoomRepository;
+
     // Edit mode variables
     private boolean isEditMode = false;
     private String editPhongId = null;
@@ -58,11 +59,13 @@ public class EditTin extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         try {
             setContentView(R.layout.activity_landlord_edit_tin);
-            
+
             sessionManager = new SessionManager(this);
+            landlordRoomRepository = new LandlordRoomRepository();
+            ApiClient.setToken(sessionManager.getToken());
 
             // Kiểm tra chế độ edit
             Intent intent = getIntent();
@@ -71,9 +74,9 @@ public class EditTin extends AppCompatActivity {
                 if ("edit".equals(mode)) {
                     isEditMode = true;
                     editPhongId = intent.getStringExtra("phongId");
-                    
+
                     Log.d(TAG, "Edit mode activated for PhongId: " + editPhongId);
-                    
+
                     // Cập nhật title
                     TextView tvTitle = findViewById(R.id.tv_title_edit);
                     if (tvTitle != null) {
@@ -84,12 +87,12 @@ public class EditTin extends AppCompatActivity {
 
             // Khởi tạo views
             initViews();
-            
+
             // Load dữ liệu để edit nếu cần
             if (isEditMode && editPhongId != null) {
                 loadDataForEdit();
             }
-            
+
         } catch (Exception e) {
             Log.e(TAG, "Error in onCreate: " + e.getMessage(), e);
             Toast.makeText(this, "Lỗi khởi tạo: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -114,8 +117,8 @@ public class EditTin extends AppCompatActivity {
 
             // Null checks để tránh crash
             if (btnBack == null || edtTieuDe == null || edtGia == null || edtMoTa == null ||
-                areaPickImage == null || tvPickHint == null || imgPreview == null ||
-                btnSave == null || cbAc == null || cbWc == null) {
+                    areaPickImage == null || tvPickHint == null || imgPreview == null ||
+                    btnSave == null || cbAc == null || cbWc == null) {
                 Toast.makeText(this, "Lỗi: Không thể tải giao diện", Toast.LENGTH_LONG).show();
                 finish();
                 return;
@@ -133,7 +136,7 @@ public class EditTin extends AppCompatActivity {
             });
 
             btnSave.setOnClickListener(v -> savePhongToDatabase());
-            
+
         } catch (Exception e) {
             Log.e(TAG, "Error in initViews: " + e.getMessage(), e);
             Toast.makeText(this, "Lỗi khởi tạo giao diện: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -152,37 +155,37 @@ public class EditTin extends AppCompatActivity {
                 finish();
                 return;
             }
-            
+
             Log.d(TAG, "Loading data for edit - PhongId: " + editPhongId);
-            
+
             // Load từ Intent trước (nhanh hơn) - chỉ để hiển thị tạm
             Intent intent = getIntent();
             if (intent != null) {
                 String title = intent.getStringExtra("title");
                 double price = intent.getDoubleExtra("price", 0);
                 String description = intent.getStringExtra("description");
-                
+
                 Log.d(TAG, "Intent data - Title: " + title + ", Price: " + price);
-                
+
                 if (title != null && !title.isEmpty() && edtTieuDe != null) {
                     edtTieuDe.setText(title);
                 }
                 if (price > 0 && edtGia != null) {
-                    edtGia.setText(String.valueOf((long)price));
+                    edtGia.setText(String.valueOf((long) price));
                 }
                 if (description != null && !description.isEmpty() && edtMoTa != null) {
                     edtMoTa.setText(description);
                 }
             }
-            
+
             // Cập nhật button text ngay lập tức
             if (btnSave != null) {
                 btnSave.setText("Cập nhật tin đăng");
             }
-            
+
             // Không load từ database nữa để tránh crash - chỉ dùng dữ liệu từ Intent
             Toast.makeText(this, "✅ Đã tải dữ liệu để chỉnh sửa", Toast.LENGTH_SHORT).show();
-            
+
         } catch (Exception e) {
             Log.e(TAG, "Error in loadDataForEdit: " + e.getMessage(), e);
             Toast.makeText(this, "Lỗi load dữ liệu: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -195,12 +198,12 @@ public class EditTin extends AppCompatActivity {
     private boolean checkStoragePermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             // Android 13+ sử dụng READ_MEDIA_IMAGES
-            return ContextCompat.checkSelfPermission(this, 
-                android.Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED;
+            return ContextCompat.checkSelfPermission(this,
+                    android.Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED;
         } else {
             // Android 12 trở xuống sử dụng READ_EXTERNAL_STORAGE
-            return ContextCompat.checkSelfPermission(this, 
-                android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+            return ContextCompat.checkSelfPermission(this,
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
         }
     }
 
@@ -214,7 +217,7 @@ public class EditTin extends AppCompatActivity {
         } else {
             permissions = new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE};
         }
-        
+
         ActivityCompat.requestPermissions(this, permissions, REQ_PERMISSION_STORAGE);
     }
 
@@ -225,7 +228,7 @@ public class EditTin extends AppCompatActivity {
         try {
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
-            
+
             // Kiểm tra có app nào handle được intent này không
             if (intent.resolveActivity(getPackageManager()) != null) {
                 startActivityForResult(intent, REQ_PICK_IMAGE);
@@ -234,7 +237,7 @@ public class EditTin extends AppCompatActivity {
                 Intent fallbackIntent = new Intent(Intent.ACTION_GET_CONTENT);
                 fallbackIntent.setType("image/*");
                 fallbackIntent.addCategory(Intent.CATEGORY_OPENABLE);
-                
+
                 if (fallbackIntent.resolveActivity(getPackageManager()) != null) {
                     startActivityForResult(Intent.createChooser(fallbackIntent, "Chọn ảnh"), REQ_PICK_IMAGE);
                 } else {
@@ -250,7 +253,7 @@ public class EditTin extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        
+
         if (requestCode == REQ_PERMISSION_STORAGE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Quyền được cấp, mở image picker
@@ -303,105 +306,107 @@ public class EditTin extends AppCompatActivity {
             return;
         }
 
-        String chuTroId = sessionManager.getUserId();
-        if (chuTroId == null) {
-            Toast.makeText(this, "Không thể xác định tài khoản", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Lưu vào database
-        if (isEditMode && editPhongId != null) {
-            new UpdatePhongTask().execute(editPhongId, chuTroId, tieude, String.valueOf(giaTien), mota);
-        } else {
-            new SavePhongTask().execute(chuTroId, tieude, String.valueOf(giaTien), mota);
-        }
+        // Resolve NhaTroId (required by backend CreatePhongRequest)
+        resolveMyHouseIdAndSave(tieude, giaTien, mota);
     }
 
-    /**
-     * AsyncTask để lưu phòng vào database
-     */
-    private class SavePhongTask extends AsyncTask<String, Void, Boolean> {
-        private String errorMsg = null;
-        private String savedTitle = null;
+    private void resolveMyHouseIdAndSave(String tieude, long giaTien, String mota) {
+        btnSave.setEnabled(false);
+        btnSave.setText(isEditMode ? "Đang cập nhật..." : "Đang lưu...");
+        if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            // Disable button và hiển thị loading
-            btnSave.setEnabled(false);
-            btnSave.setText(isEditMode ? "Đang cập nhật..." : "Đang lưu...");
-            if (progressBar != null) {
-                progressBar.setVisibility(View.VISIBLE);
-            }
-        }
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            String chuTroId = params[0];
-            String tieuDe = params[1];
-            String giaStr = params[2];
-            String moTa = params[3];
-            
-            savedTitle = tieuDe;
-            
-            Connection conn = null;
-            try {
-                Log.d(TAG, "=== SAVING PHONG TO DATABASE ===");
-                Log.d(TAG, "ChuTroId: " + chuTroId);
-                Log.d(TAG, "TieuDe: " + tieuDe);
-                Log.d(TAG, "Gia: " + giaStr);
-                
-                conn = DatabaseHelper.getConnection();
-                Log.d(TAG, "Database connection successful");
-                
-                AddPhongDao dao = new AddPhongDao();
-                long giaTien = Long.parseLong(giaStr);
-                
-                boolean result = dao.addPhong(conn, chuTroId, tieuDe, giaTien, moTa);
-                Log.d(TAG, "Save result: " + result);
-                
-                return result;
-                
-            } catch (Exception e) {
-                Log.e(TAG, "Error saving phong: " + e.getMessage(), e);
-                errorMsg = e.getMessage();
-                return false;
-            } finally {
-                DatabaseHelper.closeConnection(conn);
-                Log.d(TAG, "Database connection closed");
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            super.onPostExecute(success);
-            
-            // Restore button state
-            btnSave.setEnabled(true);
-            btnSave.setText("Lưu và đăng tin");
-            if (progressBar != null) {
-                progressBar.setVisibility(View.GONE);
-            }
-
-            if (success) {
-                String action = isEditMode ? "cập nhật" : "lưu";
-                Toast.makeText(EditTin.this, 
-                    "✅ Đã " + action + " tin: " + savedTitle, 
-                    Toast.LENGTH_LONG).show();
-                
-                // Trở về trang chủ với kết quả thành công
-                setResult(Activity.RESULT_OK);
-                finish();
-                
-            } else {
-                String action = isEditMode ? "cập nhật" : "lưu";
-                String message = "❌ Không thể " + action + " tin đăng";
-                if (errorMsg != null) {
-                    message += "\nLỗi: " + errorMsg;
+        ApiService api = ApiClient.getRetrofit().create(ApiService.class);
+        api.getMyHouses().enqueue(new retrofit2.Callback<java.util.List<Object>>() {
+            @Override
+            public void onResponse(retrofit2.Call<java.util.List<Object>> call, retrofit2.Response<java.util.List<Object>> response) {
+                if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
+                    runOnUiThread(() -> {
+                        restoreUi();
+                        Toast.makeText(EditTin.this, "❌ Không tìm thấy nhà trọ của bạn (my-houses). Code: " + response.code(), Toast.LENGTH_LONG).show();
+                    });
+                    return;
                 }
-                Toast.makeText(EditTin.this, message, Toast.LENGTH_LONG).show();
+
+                // pick first house (simple assumption)
+                String nhaTroId = null;
+                try {
+                    com.google.gson.Gson gson = new com.google.gson.Gson();
+                    java.util.Map<String, Object> map = gson.fromJson(gson.toJson(response.body().get(0)), java.util.Map.class);
+                    Object id = map.get("NhaTroId");
+                    if (id == null) id = map.get("nhaTroId");
+                    if (id == null) id = map.get("Id");
+                    if (id == null) id = map.get("id");
+                    if (id != null) nhaTroId = id.toString();
+                } catch (Exception ignore) {}
+
+                if (nhaTroId == null || nhaTroId.trim().isEmpty()) {
+                    String finalNhaTroId = nhaTroId;
+                    runOnUiThread(() -> {
+                        restoreUi();
+                        Toast.makeText(EditTin.this, "❌ Không đọc được NhaTroId từ my-houses", Toast.LENGTH_LONG).show();
+                    });
+                    return;
+                }
+
+                LandlordUpsertRoomRequest request = new LandlordUpsertRoomRequest(nhaTroId, tieude, giaTien, mota);
+
+                if (isEditMode && editPhongId != null) {
+                    landlordRoomRepository.updateRoom(editPhongId, request, new LandlordRoomRepository.SimpleCallback() {
+                        @Override
+                        public void onSuccess() {
+                            runOnUiThread(() -> {
+                                restoreUi();
+                                Toast.makeText(EditTin.this, "✅ Đã cập nhật tin: " + tieude, Toast.LENGTH_LONG).show();
+                                setResult(Activity.RESULT_OK);
+                                finish();
+                            });
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            runOnUiThread(() -> {
+                                restoreUi();
+                                Toast.makeText(EditTin.this, "❌ Không thể cập nhật tin\nLỗi: " + message, Toast.LENGTH_LONG).show();
+                            });
+                        }
+                    });
+                } else {
+                    landlordRoomRepository.createRoom(request, new LandlordRoomRepository.SimpleCallback() {
+                        @Override
+                        public void onSuccess() {
+                            runOnUiThread(() -> {
+                                restoreUi();
+                                Toast.makeText(EditTin.this, "✅ Đã lưu tin: " + tieude, Toast.LENGTH_LONG).show();
+                                setResult(Activity.RESULT_OK);
+                                finish();
+                            });
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            runOnUiThread(() -> {
+                                restoreUi();
+                                Toast.makeText(EditTin.this, "❌ Không thể lưu tin\nLỗi: " + message, Toast.LENGTH_LONG).show();
+                            });
+                        }
+                    });
+                }
             }
-        }
+
+            @Override
+            public void onFailure(retrofit2.Call<java.util.List<Object>> call, Throwable t) {
+                runOnUiThread(() -> {
+                    restoreUi();
+                    Toast.makeText(EditTin.this, "❌ Lỗi mạng khi lấy my-houses: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                });
+            }
+        });
+    }
+
+    private void restoreUi() {
+        if (progressBar != null) progressBar.setVisibility(View.GONE);
+        btnSave.setEnabled(true);
+        btnSave.setText("Lưu và đăng tin");
     }
 
     //Hàm chọn ảnh
@@ -414,7 +419,7 @@ public class EditTin extends AppCompatActivity {
             if (uri != null) {
                 try {
                     Log.d(TAG, "Selected image URI: " + uri.toString());
-                    
+
                     // Sử dụng phương thức an toàn hơn để load ảnh
                     Bitmap bmp;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -424,22 +429,22 @@ public class EditTin extends AppCompatActivity {
                         // Android 8 trở xuống sử dụng MediaStore
                         bmp = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                     }
-                    
+
                     // Resize ảnh nếu quá lớn để tránh OutOfMemoryError
                     Bitmap resizedBmp = resizeImageIfNeeded(bmp);
-                    
+
                     // Hiển thị ảnh
                     imgPreview.setImageBitmap(resizedBmp);
                     imgPreview.setVisibility(View.VISIBLE);
                     tvPickHint.setVisibility(View.GONE);
-                    
+
                     // Cleanup bitmap gốc nếu đã resize
                     if (resizedBmp != bmp) {
                         bmp.recycle();
                     }
-                    
+
                     Toast.makeText(this, "✅ Đã chọn ảnh thành công", Toast.LENGTH_SHORT).show();
-                    
+
                 } catch (IOException e) {
                     Log.e(TAG, "Error loading image: " + e.getMessage(), e);
                     Toast.makeText(this, "❌ Không thể đọc ảnh: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -462,220 +467,23 @@ public class EditTin extends AppCompatActivity {
     private Bitmap resizeImageIfNeeded(Bitmap original) {
         final int MAX_WIDTH = 1024;
         final int MAX_HEIGHT = 1024;
-        
+
         int width = original.getWidth();
         int height = original.getHeight();
-        
+
         // Kiểm tra xem có cần resize không
         if (width <= MAX_WIDTH && height <= MAX_HEIGHT) {
             return original;
         }
-        
+
         // Tính tỷ lệ resize
         float ratio = Math.min((float) MAX_WIDTH / width, (float) MAX_HEIGHT / height);
         int newWidth = Math.round(width * ratio);
         int newHeight = Math.round(height * ratio);
-        
+
         Log.d(TAG, "Resizing image from " + width + "x" + height + " to " + newWidth + "x" + newHeight);
-        
+
         return Bitmap.createScaledBitmap(original, newWidth, newHeight, true);
     }
-
-    /**
-     * AsyncTask để cập nhật phòng
-     */
-    private class UpdatePhongTask extends AsyncTask<String, Void, Boolean> {
-        private String errorMsg = null;
-        private String savedTitle = null;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            btnSave.setEnabled(false);
-            btnSave.setText("Đang cập nhật...");
-            if (progressBar != null) {
-                progressBar.setVisibility(View.VISIBLE);
-            }
-        }
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            String phongId = params[0];
-            String chuTroId = params[1];
-            String tieuDe = params[2];
-            String giaStr = params[3];
-            String moTa = params[4];
-            
-            savedTitle = tieuDe;
-            
-            Connection conn = null;
-            try {
-                Log.d(TAG, "=== UPDATING PHONG ===");
-                Log.d(TAG, "PhongId: " + phongId);
-                Log.d(TAG, "TieuDe: " + tieuDe);
-                Log.d(TAG, "Gia: " + giaStr);
-                
-                conn = DatabaseHelper.getConnection();
-                Log.d(TAG, "Database connection successful");
-                
-                ManagePhongDao dao = new ManagePhongDao();
-                long giaTien = Long.parseLong(giaStr);
-                
-                boolean result = dao.updatePhong(conn, phongId, chuTroId, tieuDe, giaTien, moTa);
-                Log.d(TAG, "Update result: " + result);
-                
-                return result;
-                
-            } catch (Exception e) {
-                Log.e(TAG, "Error updating phong: " + e.getMessage(), e);
-                errorMsg = e.getMessage();
-                return false;
-            } finally {
-                DatabaseHelper.closeConnection(conn);
-                Log.d(TAG, "Database connection closed");
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            super.onPostExecute(success);
-            
-            btnSave.setEnabled(true);
-            btnSave.setText("Lưu và đăng tin");
-            if (progressBar != null) {
-                progressBar.setVisibility(View.GONE);
-            }
-
-            if (success) {
-                Toast.makeText(EditTin.this, 
-                    "✅ Đã cập nhật tin: " + savedTitle, 
-                    Toast.LENGTH_LONG).show();
-                
-                setResult(Activity.RESULT_OK);
-                finish();
-                
-            } else {
-                String message = "❌ Không thể cập nhật tin đăng";
-                if (errorMsg != null) {
-                    message += "\nLỗi: " + errorMsg;
-                }
-                Toast.makeText(EditTin.this, message, Toast.LENGTH_LONG).show();
-            }
-        }
-    }
-
-    /**
-     * AsyncTask để load dữ liệu phòng để edit
-     */
-    private class LoadPhongForEditTask extends AsyncTask<String, Void, Phong> {
-        private String errorMsg = null;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            try {
-                if (progressBar != null) {
-                    progressBar.setVisibility(View.VISIBLE);
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "Error in onPreExecute: " + e.getMessage(), e);
-            }
-        }
-
-        @Override
-        protected Phong doInBackground(String... params) {
-            if (params == null || params.length == 0 || params[0] == null) {
-                errorMsg = "Không có PhongId để load";
-                return null;
-            }
-            
-            String phongId = params[0];
-            
-            Connection conn = null;
-            try {
-                Log.d(TAG, "=== LOADING PHONG FOR EDIT ===");
-                Log.d(TAG, "PhongId: " + phongId);
-                
-                conn = DatabaseHelper.getConnection();
-                if (conn == null) {
-                    errorMsg = "Không thể kết nối database";
-                    return null;
-                }
-                
-                String chuTroId = sessionManager.getUserId();
-                if (chuTroId == null) {
-                    errorMsg = "Không thể xác định tài khoản chủ trọ";
-                    return null;
-                }
-                
-                Log.d(TAG, "ChuTroId: " + chuTroId);
-                
-                ManagePhongDao dao = new ManagePhongDao();
-                Phong result = dao.getPhongForEdit(conn, phongId, chuTroId);
-                
-                Log.d(TAG, "Load result: " + (result != null ? result.getTieuDe() : "null"));
-                return result;
-                
-            } catch (Exception e) {
-                Log.e(TAG, "Error loading phong for edit: " + e.getMessage(), e);
-                errorMsg = e.getMessage();
-                return null;
-            } finally {
-                if (conn != null) {
-                    DatabaseHelper.closeConnection(conn);
-                }
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Phong phong) {
-            super.onPostExecute(phong);
-            
-            try {
-                if (progressBar != null) {
-                    progressBar.setVisibility(View.GONE);
-                }
-
-                if (phong != null) {
-                    // Điền dữ liệu vào các trường
-                    if (edtTieuDe != null && phong.getTieuDe() != null) {
-                        edtTieuDe.setText(phong.getTieuDe());
-                    }
-                    
-                    if (edtGia != null) {
-                        edtGia.setText(String.valueOf(phong.getGiaTien()));
-                    }
-                    
-                    // Nếu có mô tả, điền vào trường mô tả
-                    if (edtMoTa != null && phong.getMoTa() != null && !phong.getMoTa().isEmpty()) {
-                        edtMoTa.setText(phong.getMoTa());
-                    }
-                    
-                    // Cập nhật button text
-                    if (btnSave != null) {
-                        btnSave.setText("Cập nhật tin đăng");
-                    }
-                    
-                    Toast.makeText(EditTin.this, 
-                        "✅ Đã tải dữ liệu: " + phong.getTieuDe(), 
-                        Toast.LENGTH_SHORT).show();
-                    
-                    Log.d(TAG, "Successfully loaded phong data for editing");
-                    
-                } else {
-                    String message = "❌ Không thể tải dữ liệu tin đăng";
-                    if (errorMsg != null) {
-                        message += "\nLỗi: " + errorMsg;
-                    }
-                    Toast.makeText(EditTin.this, message, Toast.LENGTH_LONG).show();
-                    
-                    Log.e(TAG, "Failed to load phong data: " + errorMsg);
-                }
-                
-            } catch (Exception e) {
-                Log.e(TAG, "Error in onPostExecute: " + e.getMessage(), e);
-                Toast.makeText(EditTin.this, "Lỗi hiển thị dữ liệu: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        }
-    }
 }
+

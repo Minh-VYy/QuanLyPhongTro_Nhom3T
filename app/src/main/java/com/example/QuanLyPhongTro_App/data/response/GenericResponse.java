@@ -8,14 +8,14 @@ import com.google.gson.annotations.SerializedName;
  * Example: { "success": true, "Data": {...}, "Message": "...", "TotalCount": 10, ... }
  */
 public class GenericResponse<T> {
-    @SerializedName("success")
-    public boolean success;
+    @SerializedName(value = "success", alternate = {"Success", "Succeeded"})
+    public Boolean success;
 
     // C# returns "Data" (PascalCase)
-    @SerializedName("Data")
+    @SerializedName(value = "Data", alternate = {"data"})
     public T data;
 
-    @SerializedName(value = "Message", alternate = {"message"})
+    @SerializedName(value = "Message", alternate = {"message", "MESSAGE"})
     public String message;
 
     // Pagination fields from C# backend
@@ -39,4 +39,3 @@ public class GenericResponse<T> {
         this.message = message;
     }
 }
-

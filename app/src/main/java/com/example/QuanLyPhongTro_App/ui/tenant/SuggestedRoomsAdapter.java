@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.QuanLyPhongTro_App.R;
+import com.example.QuanLyPhongTro_App.utils.FileUrlResolver;
 
 import java.util.List;
 
@@ -67,11 +68,21 @@ public class SuggestedRoomsAdapter extends RecyclerView.Adapter<SuggestedRoomsAd
             locationText.setText(room.getLocation());
             priceText.setText(room.getPrice());
 
-            Glide.with(itemView.getContext())
-                    .load(room.getImageResId())
-                    .centerCrop()
-                    .placeholder(R.drawable.tro)
-                    .into(roomImage);
+            String resolvedUrl = FileUrlResolver.resolve(room.getImageUrl());
+            if (resolvedUrl != null && !resolvedUrl.isEmpty()) {
+                Glide.with(itemView.getContext())
+                        .load(resolvedUrl)
+                        .centerCrop()
+                        .placeholder(R.drawable.tro)
+                        .error(R.drawable.tro)
+                        .into(roomImage);
+            } else {
+                Glide.with(itemView.getContext())
+                        .load(room.getImageResId())
+                        .centerCrop()
+                        .placeholder(R.drawable.tro)
+                        .into(roomImage);
+            }
 
             detailButton.setOnClickListener(v -> onItemClick.onItemClick(room));
             itemView.setOnClickListener(v -> onItemClick.onItemClick(room));

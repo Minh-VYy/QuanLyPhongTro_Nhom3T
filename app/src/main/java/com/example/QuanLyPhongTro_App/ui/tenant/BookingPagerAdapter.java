@@ -14,6 +14,7 @@ public class BookingPagerAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
+        // position=0: upcoming, position=1: past(history)
         return BookingListFragment.newInstance(position == 0 ? "upcoming" : "past");
     }
 
@@ -22,4 +23,3 @@ public class BookingPagerAdapter extends FragmentStateAdapter {
         return 2;
     }
 }
-

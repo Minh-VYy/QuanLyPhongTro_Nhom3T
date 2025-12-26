@@ -52,7 +52,7 @@
             android:name=".ui.tenant.MainActivity"
             android:exported="false" />
         <activity android:name=".ui.tenant.RoomDetailActivity" />
-        <activity android:name=".ui.tenant.TestDatabaseActivity" />
+        <!-- TestDatabaseActivity đã di chuyển vào backup -->
         <activity android:name=".ui.tenant.BookingCreateActivity" />
         <activity android:name=".ui.tenant.BookingListActivity" />
         <activity android:name=".ui.tenant.BookingDetailActivity" />
@@ -77,9 +77,7 @@
         <activity android:name=".ui.landlord.AllListingsActivity" />
         <activity android:name=".ui.landlord.LandlordChatListActivity" />
         <activity android:name=".ui.landlord.LandlordChatActivity" />
-        <activity
-            android:name=".ui.tenant.MessageDetailActivity"
-            android:exported="false" />
+        <!-- MessageDetailActivity đã được thay thế bằng ChatActivity -->
         <activity android:name=".ui.landlord.LandlordEditProfileActivity"/>
         <activity
             android:name=".ui.chatbot.ChatbotActivity"

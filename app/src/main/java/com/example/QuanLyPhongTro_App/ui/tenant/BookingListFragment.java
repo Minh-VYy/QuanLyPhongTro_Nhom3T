@@ -16,17 +16,21 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
-import com.example.QuanLyPhongTro_App.data.dao.DatPhongDao;
-import com.example.QuanLyPhongTro_App.data.model.DatPhong;
+import com.example.QuanLyPhongTro_App.utils.ApiClient;
+import com.example.QuanLyPhongTro_App.utils.ApiService;
+import com.example.QuanLyPhongTro_App.data.response.MyBookingsResponse;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
+import com.example.QuanLyPhongTro_App.data.repository.BookingCache;
 
-import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class BookingListFragment extends Fragment {
 
@@ -72,123 +76,250 @@ public class BookingListFragment extends Fragment {
         adapter = new BookingAdapter(getContext(), new ArrayList<>());
         recyclerView.setAdapter(adapter);
 
-        // Load dữ liệu từ database
-        loadBookingsFromDatabase();
+        // Load dữ liệu từ API
+        loadBookingsFromApi();
 
         return view;
     }
 
-    private void loadBookingsFromDatabase() {
-        if (!sessionManager.isLoggedIn()) {
+    private boolean hasToken() {
+        String token = sessionManager.getToken();
+        return token != null && !token.trim().isEmpty();
+    }
+
+    private void loadBookingsFromApi() {
+        if (!hasToken()) {
             showEmptyView("Vui lòng đăng nhập để xem lịch hẹn");
             return;
         }
 
-        String userId = sessionManager.getUserId();
-        Log.d(TAG, "=== LOAD BOOKINGS ===");
-        Log.d(TAG, "User ID: " + userId);
-        Log.d(TAG, "Booking Type: " + bookingType);
-        
-        if (userId == null || userId.isEmpty()) {
-            showEmptyView("Không tìm thấy thông tin người dùng");
-            return;
-        }
-
-        // Hiển thị loading
+        ApiClient.setToken(sessionManager.getToken());
         showLoading(true);
 
-        new Thread(() -> {
-            Connection conn = null;
-            List<Booking> bookingList = new ArrayList<>();
-            String errorMessage = "";
+        ApiService api = ApiClient.getRetrofit().create(ApiService.class);
+        loadBookingsTolerant(api);
+    }
 
-            try {
-                // Kết nối database
-                conn = DatabaseHelper.getConnection();
-                Log.d(TAG, "✅ Connected to database");
-                
-                // Lấy danh sách đặt phòng
-                DatPhongDao dao = new DatPhongDao();
-                List<DatPhong> datPhongList = dao.getDatPhongByNguoiThue(conn, userId);
-                Log.d(TAG, "Loaded " + datPhongList.size() + " bookings from database");
-                
-                // Chuyển đổi DatPhong sang Booking
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-                
-                for (DatPhong dp : datPhongList) {
-                    // Lọc theo loại (Sắp tới / Đã xem / Đã hủy)
-                    String status = getStatusFromTrangThaiId(dp.getTrangThaiId());
-                    Log.d(TAG, "Booking: " + dp.getDatPhongId() + " - Status: " + status + " - TrangThaiId: " + dp.getTrangThaiId());
-                    
-                    if (shouldShowBooking(status)) {
-                        String date = dp.getBatDau() != null ? dateFormat.format(dp.getBatDau()) : "";
-                        String time = dp.getBatDau() != null ? timeFormat.format(dp.getBatDau()) : "";
-                        String timeSlot = getTimeSlotFromHour(dp.getBatDau());
-                        
-                        Booking booking = new Booking(
-                            dp.getDatPhongId(),
-                            dp.getTenPhong() != null ? dp.getTenPhong() : "Phòng trọ",
-                            formatPrice(dp.getGiaPhong()),
-                            date,
-                            timeSlot + " (" + time + ")",
-                            status,
-                            dp.getTenNguoiThue() != null ? dp.getTenNguoiThue() : "",
-                            dp.getDiaChiPhong() != null ? dp.getDiaChiPhong() : ""
-                        );
-                        
-                        bookingList.add(booking);
-                        Log.d(TAG, "✅ Added booking to list: " + booking.getTitle());
-                    } else {
-                        Log.d(TAG, "❌ Booking filtered out (not matching type)");
+    private void loadBookingsTolerant(ApiService api) {
+        api.getMyBookingsTolerant().enqueue(new Callback<com.example.QuanLyPhongTro_App.data.response.ApiOrArrayResponse<com.example.QuanLyPhongTro_App.data.response.MyBookingsResponse.MyBookingDto>>() {
+            @Override
+            public void onResponse(@NonNull Call<com.example.QuanLyPhongTro_App.data.response.ApiOrArrayResponse<com.example.QuanLyPhongTro_App.data.response.MyBookingsResponse.MyBookingDto>> call,
+                                   @NonNull Response<com.example.QuanLyPhongTro_App.data.response.ApiOrArrayResponse<com.example.QuanLyPhongTro_App.data.response.MyBookingsResponse.MyBookingDto>> response) {
+                if (!isAdded()) return;
+
+                if (!response.isSuccessful() || response.body() == null) {
+                    String err = "";
+                    try {
+                        okhttp3.ResponseBody eb = response.errorBody();
+                        if (eb != null) {
+                            try {
+                                err = eb.string();
+                            } finally {
+                                eb.close();
+                            }
+                        }
+                    } catch (Exception ignored) {
                     }
-                }
-                
-                Log.d(TAG, "Final booking list size: " + bookingList.size() + " for type: " + bookingType);
-                
-            } catch (Exception e) {
-                e.printStackTrace();
-                errorMessage = "Lỗi kết nối: " + e.getMessage();
-                Log.e(TAG, "Error loading bookings: " + errorMessage, e);
-            } finally {
-                if (conn != null) {
-                    DatabaseHelper.releaseConnection(conn);
-                }
-            }
 
-            // Cập nhật UI
-            final List<Booking> finalList = bookingList;
-            final String finalError = errorMessage;
-            
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(() -> {
+                    Log.w(TAG, "API my-bookings(tolerant) failed http=" + response.code() + " err=" + err);
+
+                    // 500 là backend bug -> đừng spam gọi thêm endpoint khác, chỉ show lỗi rõ
+                    if (response.code() >= 500) {
+                        showServerError(err);
+                        return;
+                    }
+
+                    // nếu không phải 500 thì fallback typed
+                    loadBookingsTyped(api);
+                    return;
+                }
+
+                com.example.QuanLyPhongTro_App.data.response.ApiOrArrayResponse<com.example.QuanLyPhongTro_App.data.response.MyBookingsResponse.MyBookingDto> body = response.body();
+                if (!body.success) {
+                    Log.w(TAG, "API my-bookings(tolerant) !success: " + body.message);
                     showLoading(false);
-                    
-                    if (!finalError.isEmpty()) {
-                        Toast.makeText(getContext(), finalError, Toast.LENGTH_SHORT).show();
-                        showEmptyView("Không thể tải dữ liệu");
-                    } else if (finalList.isEmpty()) {
-                        showEmptyView(getEmptyMessage());
-                    } else {
-                        showRecyclerView();
-                        adapter = new BookingAdapter(getContext(), finalList);
-                        adapter.setOnBookingActionListener(() -> {
-                            // Reload lại danh sách khi có booking bị hủy
-                            loadBookingsFromDatabase();
-                        });
-                        recyclerView.setAdapter(adapter);
+                    showEmptyView(getEmptyMessage() + "\n\nNhấn để thử lại");
+                    if (emptyView != null) {
+                        emptyView.setOnClickListener(v -> loadBookingsFromApi());
                     }
-                });
+                    return;
+                }
+
+                List<com.example.QuanLyPhongTro_App.data.response.MyBookingsResponse.MyBookingDto> items = body.data != null ? body.data : new ArrayList<>();
+                List<Booking> bookingList = mapBookings(items);
+
+                showLoading(false);
+                if (bookingList.isEmpty()) {
+                    showEmptyView(getEmptyMessage());
+                } else {
+                    showRecyclerView();
+                    adapter = new BookingAdapter(getContext(), bookingList);
+                    adapter.setOnBookingActionListener(() -> loadBookingsFromApi());
+                    recyclerView.setAdapter(adapter);
+                }
             }
-        }).start();
+
+            @Override
+            public void onFailure(@NonNull Call<com.example.QuanLyPhongTro_App.data.response.ApiOrArrayResponse<com.example.QuanLyPhongTro_App.data.response.MyBookingsResponse.MyBookingDto>> call,
+                                  @NonNull Throwable t) {
+                Log.e(TAG, "Error loading bookings from API (tolerant)", t);
+                if (!isAdded()) return;
+                showLoading(false);
+                showEmptyView("Không thể tải dữ liệu\n\nNhấn để thử lại");
+                if (emptyView != null) {
+                    emptyView.setOnClickListener(v -> loadBookingsFromApi());
+                }
+                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadBookingsTyped(ApiService api) {
+        api.getMyBookingsTyped().enqueue(new Callback<MyBookingsResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<MyBookingsResponse> call, @NonNull Response<MyBookingsResponse> response) {
+                if (!isAdded()) return;
+
+                if (!response.isSuccessful() || response.body() == null) {
+                    String err = "";
+                    try {
+                        okhttp3.ResponseBody eb = response.errorBody();
+                        if (eb != null) {
+                            try {
+                                err = eb.string();
+                            } finally {
+                                eb.close();
+                            }
+                        }
+                    } catch (Exception ignored) {
+                    }
+
+                    Log.w(TAG, "API my-bookings(typed) failed http=" + response.code() + " err=" + err);
+                    if (response.code() >= 500) {
+                        showServerError(err);
+                        return;
+                    }
+                    showLoading(false);
+                    showEmptyView("Không thể tải dữ liệu\n\nNhấn để thử lại");
+                    if (emptyView != null) {
+                        emptyView.setOnClickListener(v -> loadBookingsFromApi());
+                    }
+                    return;
+                }
+
+                MyBookingsResponse body = response.body();
+                if (!body.success) {
+                    showLoading(false);
+                    showEmptyView(getEmptyMessage() + "\n\nNhấn để thử lại");
+                    if (emptyView != null) {
+                        emptyView.setOnClickListener(v -> loadBookingsFromApi());
+                    }
+                    return;
+                }
+
+                List<MyBookingsResponse.MyBookingDto> items = body.data != null ? body.data : new ArrayList<>();
+                List<Booking> bookingList = mapBookings(items);
+
+                showLoading(false);
+                if (bookingList.isEmpty()) {
+                    showEmptyView(getEmptyMessage());
+                } else {
+                    showRecyclerView();
+                    adapter = new BookingAdapter(getContext(), bookingList);
+                    adapter.setOnBookingActionListener(() -> loadBookingsFromApi());
+                    recyclerView.setAdapter(adapter);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<MyBookingsResponse> call, @NonNull Throwable t) {
+                Log.e(TAG, "API my-bookings(typed) onFailure", t);
+                if (!isAdded()) return;
+                showLoading(false);
+                showEmptyView("Không thể tải dữ liệu\n\nNhấn để thử lại");
+                if (emptyView != null) {
+                    emptyView.setOnClickListener(v -> loadBookingsFromApi());
+                }
+            }
+        });
+    }
+
+    private List<Booking> mapBookings(List<MyBookingsResponse.MyBookingDto> items) {
+        List<Booking> bookingList = new ArrayList<>();
+
+        int total = 0, pending = 0, confirmed = 0, completed = 0, cancelled = 0;
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+        for (MyBookingsResponse.MyBookingDto dto : items) {
+            total++;
+            int trangThaiId = dto.trangThaiId != null ? dto.trangThaiId : 1;
+            String status = getStatusFromTrangThaiId(trangThaiId);
+
+            switch (status) {
+                case "pending": pending++; break;
+                case "confirmed": confirmed++; break;
+                case "completed": completed++; break;
+                case "cancelled": cancelled++; break;
+            }
+
+            if (!shouldShowBooking(status)) continue;
+
+            java.util.Date startDate = safeParseDate(dto.batDau);
+            String date = startDate != null ? dateFormat.format(startDate) : "";
+            String time = startDate != null ? timeFormat.format(startDate) : "";
+            String timeSlot = getTimeSlotFromHour(startDate);
+
+            long price = dto.giaPhong != null ? dto.giaPhong : 0L;
+
+            Booking booking = new Booking(
+                    dto.datPhongId,
+                    dto.tenPhong != null ? dto.tenPhong : "Phòng trọ",
+                    formatPrice(price),
+                    date,
+                    (timeSlot.isEmpty() ? "" : (timeSlot + " (" + time + ")")),
+                    status,
+                    dto.tenNguoiThue != null ? dto.tenNguoiThue : "",
+                    dto.diaChiPhong != null ? dto.diaChiPhong : ""
+            );
+
+            bookingList.add(booking);
+        }
+
+        Log.d(TAG, "mapBookings type=" + bookingType + " total=" + total +
+                " pending=" + pending + " confirmed=" + confirmed +
+                " completed=" + completed + " cancelled=" + cancelled +
+                " -> shown=" + bookingList.size());
+
+        return bookingList;
+    }
+
+    private java.util.Date safeParseDate(String iso) {
+        if (iso == null || iso.trim().isEmpty()) return null;
+        try {
+            // try with timezone
+            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.US);
+            return sdf1.parse(iso.replace("Z", ""));
+        } catch (Exception ignore) {
+        }
+        try {
+            SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+            return sdf2.parse(iso.replace("Z", ""));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private boolean shouldShowBooking(String status) {
         if (bookingType == null) return true;
-        
+
         switch (bookingType) {
             case "upcoming":
                 return status.equals("pending") || status.equals("confirmed");
+            case "past":
+                // history = completed + cancelled
+                return status.equals("completed") || status.equals("cancelled");
             case "completed":
                 return status.equals("completed");
             case "cancelled":
@@ -228,32 +359,23 @@ public class BookingListFragment extends Fragment {
     private String formatPrice(long price) {
         if (price >= 1000000) {
             double millions = price / 1000000.0;
-            return String.format("%.1f triệu/tháng", millions);
+            return String.format(Locale.getDefault(), "%.1f triệu/tháng", millions);
         } else if (price >= 1000) {
             double thousands = price / 1000.0;
-            return String.format("%.0f nghìn/tháng", thousands);
+            return String.format(Locale.getDefault(), "%.0f nghìn/tháng", thousands);
         }
         return price + " đ/tháng";
-    }
-
-    private String getEmptyMessage() {
-        if (bookingType == null) return "Chưa có lịch hẹn nào";
-        
-        switch (bookingType) {
-            case "upcoming":
-                return "Chưa có lịch hẹn sắp tới";
-            case "completed":
-                return "Chưa có lịch hẹn đã xem";
-            case "cancelled":
-                return "Chưa có lịch hẹn đã hủy";
-            default:
-                return "Chưa có lịch hẹn nào";
-        }
     }
 
     private void showLoading(boolean show) {
         if (progressBar != null) {
             progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
+        if (recyclerView != null) {
+            recyclerView.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
+        if (emptyView != null) {
+            emptyView.setVisibility(View.GONE);
         }
     }
 
@@ -265,21 +387,74 @@ public class BookingListFragment extends Fragment {
         if (recyclerView != null) {
             recyclerView.setVisibility(View.GONE);
         }
+        if (progressBar != null) {
+            progressBar.setVisibility(View.GONE);
+        }
     }
 
     private void showRecyclerView() {
-        if (emptyView != null) {
-            emptyView.setVisibility(View.GONE);
-        }
         if (recyclerView != null) {
             recyclerView.setVisibility(View.VISIBLE);
         }
+        if (emptyView != null) {
+            emptyView.setVisibility(View.GONE);
+        }
+        if (progressBar != null) {
+            progressBar.setVisibility(View.GONE);
+        }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Reload dữ liệu khi quay lại fragment
-        loadBookingsFromDatabase();
+    private void showServerError(String err) {
+        // ✅ fallback: show cached bookings if any
+        List<Booking> cached = new BookingCache(requireContext()).getFiltered(bookingType);
+        Log.w(TAG, "showServerError http500. cachedCount=" + (cached != null ? cached.size() : -1) + " type=" + bookingType);
+
+        if (cached != null && !cached.isEmpty()) {
+            showLoading(false);
+
+            // show list
+            if (recyclerView != null) recyclerView.setVisibility(View.VISIBLE);
+            adapter = new BookingAdapter(getContext(), cached);
+            adapter.setOnBookingActionListener(this::loadBookingsFromApi);
+            recyclerView.setAdapter(adapter);
+
+            // ⚠️ show banner ABOVE list (do not call showRecyclerView() because it hides emptyView)
+            if (emptyView != null) {
+                emptyView.setVisibility(View.VISIBLE);
+                emptyView.setText("(Offline) Server lỗi 500 khi tải lịch hẹn. Đang hiển thị lịch đã lưu trên máy.\n\nNhấn để thử tải lại");
+                emptyView.setOnClickListener(v -> loadBookingsFromApi());
+            }
+            if (progressBar != null) progressBar.setVisibility(View.GONE);
+            return;
+        }
+
+        // no cache -> normal error
+        showLoading(false);
+        String msg = "Không tải được lịch hẹn (server lỗi 500).";
+        if (err != null && !err.trim().isEmpty()) {
+            msg += "\n" + err;
+        }
+        showEmptyView(msg + "\n\nNhấn để thử lại");
+        if (emptyView != null) {
+            emptyView.setOnClickListener(v -> loadBookingsFromApi());
+        }
+    }
+
+    private String getEmptyMessage() {
+        if (bookingType == null) {
+            return "Chưa có lịch hẹn";
+        }
+        switch (bookingType) {
+            case "upcoming":
+                return "Chưa có lịch hẹn sắp tới";
+            case "past":
+                return "Chưa có lịch hẹn lịch sử";
+            case "completed":
+                return "Chưa có lịch hẹn đã xem";
+            case "cancelled":
+                return "Chưa có lịch hẹn đã hủy";
+            default:
+                return "Chưa có lịch hẹn";
+        }
     }
 }

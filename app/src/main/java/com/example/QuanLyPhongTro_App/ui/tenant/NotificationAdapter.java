@@ -69,7 +69,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
             // Kiểm tra loại thông báo
             if ("message".equals(notification.getIconType())) {
-                Intent intent = new Intent(context, MessageDetailActivity.class);
+                // Mở ChatActivity thay vì MessageDetailActivity (đã bị xóa)
+                Intent intent = new Intent(context, ChatActivity.class);
                 // Giả sử tiêu đề thông báo là tên người gửi
                 intent.putExtra("USER_NAME", notification.getTitle());
                 context.startActivity(intent);

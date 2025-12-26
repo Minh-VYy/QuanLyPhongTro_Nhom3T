@@ -18,6 +18,9 @@ import com.example.QuanLyPhongTro_App.data.ChatMessage;
 import com.example.QuanLyPhongTro_App.data.repository.ChatRepository;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.UserCache;
+import com.example.QuanLyPhongTro_App.utils.ApiClient;
+import com.example.QuanLyPhongTro_App.utils.ApiService;
+import com.example.QuanLyPhongTro_App.data.response.GenericResponse;
 
 import java.util.List;
 
@@ -83,7 +86,7 @@ public class ChatActivity extends AppCompatActivity {
         currentUserId = getIntent().getStringExtra("user_id");
         otherUserId = getIntent().getStringExtra("other_user_id");
 
-        // ✅ CRITICAL: Trim ALL IDs immediately on load
+        // ✅ Trim ALL IDs immediately on load
         if (currentUserId != null) currentUserId = currentUserId.trim();
         if (otherUserId != null) otherUserId = otherUserId.trim();
 
@@ -92,72 +95,49 @@ public class ChatActivity extends AppCompatActivity {
         Log.d(TAG, "   otherUserId: '" + otherUserId + "' (length: " + (otherUserId != null ? otherUserId.length() : "null") + ")");
 
         // Fallback: try to get otherUserId from threadId (passed from ChatListActivity)
-        // NOTE: threadId should NOT be used as otherUserId! This is wrong!
-        // Only use it if otherUserId is genuinely null
         if (otherUserId == null || otherUserId.isEmpty()) {
             String threadId = getIntent().getStringExtra("thread_id");
             if (threadId != null && !threadId.isEmpty()) {
                 Log.d(TAG, "⚠️ otherUserId was null! Got thread_id as fallback: " + threadId);
-                // NOTE: In a proper implementation, threadId should be used to extract actual otherUserId from backend
-                // For now, assuming thread_id might be otherUserId in some cases
                 otherUserId = threadId.trim();
                 Log.d(TAG, "⚠️ Using thread_id as otherUserId (NOT IDEAL - should be passed explicitly)");
             }
+        }
+
+        // ✅ Always require GUID userId for currentUserId
+        if (currentUserId == null || currentUserId.isEmpty() || !isUuid(currentUserId)) {
+            String sessionUserId = sessionManager.getUserId();
+            if (sessionUserId != null) sessionUserId = sessionUserId.trim();
+            currentUserId = sessionUserId;
+            Log.d(TAG, "Using currentUserId from session (must be GUID): '" + currentUserId + "'");
+        }
+
+        if (currentUserId == null || currentUserId.isEmpty() || !isUuid(currentUserId)) {
+            Log.e(TAG, "❌ currentUserId is missing or not GUID. Cannot send chat.");
+            Toast.makeText(this, "Lỗi: Không xác định được userId (GUID). Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
+            finish();
+            return;
         }
 
         // Get user names from Intent
         currentUserName = getIntent().getStringExtra("user_name");
         String otherUserName = getIntent().getStringExtra("other_user_name");
 
-        // ✅ Trim names too
         if (currentUserName != null) currentUserName = currentUserName.trim();
         if (otherUserName != null) otherUserName = otherUserName.trim();
 
-        // ...existing code...
-        if (currentUserId == null || currentUserId.isEmpty()) {
-            currentUserId = sessionManager.getUserId();
-            if (currentUserId != null) currentUserId = currentUserId.trim();
-            Log.d(TAG, "Using currentUserId from session: '" + currentUserId + "' (length: " + (currentUserId != null ? currentUserId.length() : "null") + ")");
-        }
-
-        if (currentUserId == null || currentUserId.isEmpty()) {
-            currentUserId = sessionManager.getUserEmail();
-            if (currentUserId != null) currentUserId = currentUserId.trim();
-            Log.d(TAG, "Using email as currentUserId: '" + currentUserId + "' (length: " + (currentUserId != null ? currentUserId.length() : "null") + ")");
-        }
-
-        // Get current user name from session if not from intent
         if (currentUserName == null || currentUserName.isEmpty()) {
             currentUserName = sessionManager.getUserName();
-            Log.d(TAG, "Using currentUserName from session: " + currentUserName);
         }
 
+        // ✅ Fetch HoSoNguoiDung/me to update current user's HoTen
+        fetchAndCacheMyProfileName();
 
-        // ✅ CRITICAL: Cache BOTH current and other user so names appear correctly
-        // without relying on Intent (Intent might not have names for older messages)
         if (currentUserName != null && !currentUserName.isEmpty()) {
             UserCache.addUser(currentUserId, currentUserName);
-            Log.d(TAG, "✅ Cached current user: " + currentUserId + " -> " + currentUserName);
-        } else {
-            // If no name, try from session
-            String sessionName = sessionManager.getUserName();
-            if (sessionName != null && !sessionName.isEmpty()) {
-                UserCache.addUser(currentUserId, sessionName);
-                Log.d(TAG, "✅ Cached current user from session: " + currentUserId + " -> " + sessionName);
-            }
         }
-
         if (otherUserName != null && !otherUserName.isEmpty()) {
             UserCache.addUser(otherUserId, otherUserName);
-            Log.d(TAG, "✅ Cached other user: " + otherUserId + " -> " + otherUserName);
-        }
-
-        // Validate user IDs
-        if (currentUserId == null || currentUserId.isEmpty()) {
-            Log.e(TAG, "❌ currentUserId is null or empty!");
-            Toast.makeText(this, "Lỗi: Không xác định được người dùng. Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
-            finish();
-            return;
         }
 
         if (otherUserId == null || otherUserId.isEmpty()) {
@@ -167,11 +147,59 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
 
-        // Set header text - Use name if available, fallback to userId
         String headerText = (otherUserName != null && !otherUserName.isEmpty()) ? otherUserName : otherUserId;
         tvChatHeader.setText(headerText);
 
         Log.d(TAG, "✅ Chat initialized - Current User: " + currentUserId + " (" + currentUserName + "), Other User: " + otherUserId + " (" + otherUserName + ")");
+    }
+
+    private boolean isUuid(String s) {
+        if (s == null) return false;
+        return s.matches("(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
+    }
+
+    private void fetchAndCacheMyProfileName() {
+        try {
+            String token = sessionManager.getToken();
+            if (token == null || token.trim().isEmpty()) return;
+
+            ApiClient.setToken(token);
+            ApiService api = ApiClient.getRetrofit().create(ApiService.class);
+            api.getMyUserProfile().enqueue(new retrofit2.Callback<GenericResponse<Object>>() {
+                @Override
+                public void onResponse(retrofit2.Call<GenericResponse<Object>> call, retrofit2.Response<GenericResponse<Object>> response) {
+                    if (!response.isSuccessful() || response.body() == null || response.body().data == null) {
+                        Log.w(TAG, "getMyUserProfile failed http=" + response.code());
+                        return;
+                    }
+
+                    try {
+                        com.google.gson.Gson gson = new com.google.gson.Gson();
+                        java.util.Map<String, Object> map = gson.fromJson(gson.toJson(response.body().data), java.util.Map.class);
+                        Object hoTen = map.get("HoTen");
+                        if (hoTen == null) hoTen = map.get("hoTen");
+
+                        if (hoTen != null) {
+                            String name = String.valueOf(hoTen).trim();
+                            if (!name.isEmpty()) {
+                                currentUserName = name;
+                                UserCache.addUser(currentUserId, name);
+                                Log.d(TAG, "✅ Updated current user name from HoSoNguoiDung: " + name);
+                            }
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error parsing HoSoNguoiDung/me", e);
+                    }
+                }
+
+                @Override
+                public void onFailure(retrofit2.Call<GenericResponse<Object>> call, Throwable t) {
+                    Log.w(TAG, "getMyUserProfile network error: " + t.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "fetchAndCacheMyProfileName error", e);
+        }
     }
 
     private void setupRecyclerView() {
@@ -248,30 +276,16 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
 
-        // ✅ Validate user IDs EVERY TIME before sending (in case they change)
-        String finalCurrentUserId = currentUserId;
-        String finalOtherUserId = otherUserId;
-
-        // ✅ Trim all IDs to ensure no whitespace issues
+        // ✅ Always refresh currentUserId from session and require GUID
+        String finalCurrentUserId = sessionManager.getUserId();
         if (finalCurrentUserId != null) finalCurrentUserId = finalCurrentUserId.trim();
+
+        String finalOtherUserId = otherUserId;
         if (finalOtherUserId != null) finalOtherUserId = finalOtherUserId.trim();
 
-        // Refresh IDs from session to ensure they're not stale
-        if (finalCurrentUserId == null || finalCurrentUserId.isEmpty()) {
-            finalCurrentUserId = sessionManager.getUserId();
-            if (finalCurrentUserId != null) finalCurrentUserId = finalCurrentUserId.trim();
-            Log.d(TAG, "⚠️ currentUserId was null, refreshed from session: " + finalCurrentUserId);
-        }
-        if (finalCurrentUserId == null || finalCurrentUserId.isEmpty()) {
-            finalCurrentUserId = sessionManager.getUserEmail();
-            if (finalCurrentUserId != null) finalCurrentUserId = finalCurrentUserId.trim();
-            Log.d(TAG, "⚠️ currentUserId still null, using email: " + finalCurrentUserId);
-        }
-
-        // Validate final user IDs
-        if (finalCurrentUserId == null || finalCurrentUserId.isEmpty()) {
-            Log.e(TAG, "❌ currentUserId is still null or empty after refresh!");
-            Toast.makeText(this, "Lỗi: Không xác định được người gửi", Toast.LENGTH_SHORT).show();
+        if (finalCurrentUserId == null || finalCurrentUserId.isEmpty() || !isUuid(finalCurrentUserId)) {
+            Log.e(TAG, "❌ Cannot send: current userId is missing or not GUID: " + finalCurrentUserId);
+            Toast.makeText(this, "Lỗi: Không xác định được userId (GUID). Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -281,6 +295,9 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
 
+        // keep field in sync
+        currentUserId = finalCurrentUserId;
+
         Log.d(TAG, "=== SENDING MESSAGE ===");
         Log.d(TAG, "From: " + finalCurrentUserId);
         Log.d(TAG, "To: " + finalOtherUserId);
@@ -288,23 +305,18 @@ public class ChatActivity extends AppCompatActivity {
 
         btnSendMessage.setEnabled(false);
 
-        // ✅ OPTIMISTIC UPDATE: Thêm tin nhắn vào adapter ngay lập tức
         String displayName = (currentUserName != null && !currentUserName.isEmpty()) ? currentUserName : finalCurrentUserId;
         ChatMessage optimisticMessage = new ChatMessage(
             finalCurrentUserId,
             displayName,
-            false, // false = sent message
+            false,
             messageContent
         );
         chatAdapter.addMessage(optimisticMessage);
         recyclerViewChat.scrollToPosition(chatAdapter.getItemCount() - 1);
-        Log.d(TAG, "✅ Added optimistic message to UI");
 
-        // Clear input immediately
         etMessageInput.setText("");
 
-        // Gửi qua API
-        Log.d(TAG, "📤 Calling API to send message...");
         chatRepository.sendMessage(finalCurrentUserId, finalOtherUserId, messageContent, new ChatRepository.ChatCallback() {
             @Override
             public void onSuccess(String message) {
@@ -312,7 +324,6 @@ public class ChatActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     btnSendMessage.setEnabled(true);
                     Toast.makeText(ChatActivity.this, "✅ Tin nhắn đã gửi", Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, "Reloading message history after successful send...");
                     loadMessageHistory();
                 });
             }
@@ -324,7 +335,6 @@ public class ChatActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     btnSendMessage.setEnabled(true);
                     Toast.makeText(ChatActivity.this, "❌ Lỗi: " + error, Toast.LENGTH_LONG).show();
-                    Log.d(TAG, "Not reloading - keeping optimistic message");
                 });
             }
         });

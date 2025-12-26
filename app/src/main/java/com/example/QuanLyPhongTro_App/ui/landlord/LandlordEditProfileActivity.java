@@ -1,39 +1,39 @@
 package com.example.QuanLyPhongTro_App.ui.landlord;
 
 import android.app.DatePickerDialog;
-import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.TextView;
-import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.ui.tenant.DatabaseConnector;
+import com.example.QuanLyPhongTro_App.data.response.GenericResponse;
+import com.example.QuanLyPhongTro_App.utils.ApiClient;
+import com.example.QuanLyPhongTro_App.utils.ApiService;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.google.android.material.textfield.TextInputEditText;
 
-import java.sql.Connection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LandlordEditProfileActivity extends AppCompatActivity {
 
     private static final String TAG = "LandlordEditProfile";
     private SessionManager sessionManager;
-    private UserProfileDao userProfileDao;
     private UserProfileDao.UserProfile currentProfile;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
@@ -50,11 +50,10 @@ public class LandlordEditProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_landlord_edit_profile);
 
         sessionManager = new SessionManager(this);
-        userProfileDao = new UserProfileDao();
 
         initViews();
         setupListeners();
-        loadProfileDataFromDatabase();
+        loadProfileDataFromApi();
     }
 
     private void initViews() {
@@ -125,109 +124,86 @@ public class LandlordEditProfileActivity extends AppCompatActivity {
         Log.d(TAG, "Loaded fallback profile data from session");
     }
 
+    private void loadProfileDataFromApi() {
+        if (!sessionManager.isLoggedIn() || sessionManager.getToken() == null || sessionManager.getToken().isEmpty()) {
+            loadProfileData();
+            return;
+        }
+
+        ApiClient.setToken(sessionManager.getToken());
+        ApiService api = ApiClient.getRetrofit().create(ApiService.class);
+
+        api.getUserProfile().enqueue(new Callback<GenericResponse<Object>>() {
+            @Override
+            public void onResponse(Call<GenericResponse<Object>> call, Response<GenericResponse<Object>> response) {
+                if (!response.isSuccessful() || response.body() == null) {
+                    Log.w(TAG, "getUserProfile failed: " + response.code());
+                    loadProfileData();
+                    return;
+                }
+
+                GenericResponse<Object> body = response.body();
+                if (!body.success || body.data == null) {
+                    Log.w(TAG, "getUserProfile empty: " + body.message);
+                    loadProfileData();
+                    return;
+                }
+
+                try {
+                    //noinspection unchecked
+                    Map<String, Object> map = (Map<String, Object>) body.data;
+
+                    UserProfileDao.UserProfile profile = new UserProfileDao.UserProfile();
+
+                    Object nguoiDungId = map.get("nguoiDungId");
+                    if (nguoiDungId == null) nguoiDungId = map.get("NguoiDungId");
+                    if (nguoiDungId != null) profile.setNguoiDungId(nguoiDungId.toString());
+
+                    Object email = map.get("email");
+                    if (email == null) email = map.get("Email");
+                    if (email != null) profile.setEmail(email.toString());
+
+                    Object hoTen = map.get("hoTen");
+                    if (hoTen == null) hoTen = map.get("HoTen");
+                    if (hoTen != null) profile.setHoTen(hoTen.toString());
+
+                    // optional phone
+                    Object dienThoai = map.get("dienThoai");
+                    if (dienThoai == null) dienThoai = map.get("DienThoai");
+                    if (dienThoai != null) profile.setDienThoai(dienThoai.toString());
+
+                    currentProfile = profile;
+                    updateUIWithProfile(profile);
+
+                } catch (Exception e) {
+                    Log.e(TAG, "Error parsing profile API response", e);
+                    loadProfileData();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<GenericResponse<Object>> call, Throwable t) {
+                Log.e(TAG, "getUserProfile error", t);
+                loadProfileData();
+            }
+        });
+    }
+
+    // Keep old name for call sites but route to API
     private void loadProfileDataFromDatabase() {
-        String userId = sessionManager.getUserId();
-        if (userId == null) {
-            Log.w(TAG, "No user ID found in session, using fallback data");
-            loadProfileData();
-            return;
-        }
-
-        // Check if userId was passed from intent
-        String intentUserId = getIntent().getStringExtra("userId");
-        if (intentUserId != null) {
-            userId = intentUserId;
-        }
-
-        Log.d(TAG, "Loading profile data for user: " + userId);
-        
-        // TEMPORARY FIX: Create profile from session data instead of database
-        // This ensures the profile editing works while we debug the database connection
-        createProfileFromSession(userId);
-        
-        // Uncomment this line when database connection is fixed
-        // new LoadProfileTask().execute(userId);
-    }
-    
-    private void createProfileFromSession(String userId) {
-        Log.d(TAG, "Creating profile from session data");
-        
-        UserProfileDao.UserProfile profile = new UserProfileDao.UserProfile();
-        
-        // Set data from session
-        profile.setNguoiDungId(userId);
-        profile.setEmail(sessionManager.getUserEmail());
-        profile.setHoTen(sessionManager.getUserName());
-        profile.setDienThoai(""); // Will be filled by user
-        profile.setVaiTroId(2); // Landlord
-        profile.setTenVaiTro("ChuTro");
-        
-        // Set some default values
-        profile.setGhiChu(""); // Address field
-        profile.setLoaiGiayTo(""); // ID document field
-        
-        Log.d(TAG, "✅ Profile created from session data");
-        Log.d(TAG, "👤 Name: " + profile.getHoTen());
-        Log.d(TAG, "📧 Email: " + profile.getEmail());
-        
-        updateUIWithProfile(profile);
-    }
-
-    private void updateUIWithProfile(UserProfileDao.UserProfile profile) {
-        if (profile == null) {
-            Log.w(TAG, "Profile is null, using fallback data");
-            loadProfileData();
-            return;
-        }
-
-        currentProfile = profile;
-
-        // Basic info from NguoiDung
-        if (profile.getHoTen() != null) {
-            etFullName.setText(profile.getHoTen());
-        }
-        
-        if (profile.getDienThoai() != null) {
-            etPhone.setText(profile.getDienThoai());
-        }
-        
-        if (profile.getEmail() != null) {
-            etEmail.setText(profile.getEmail());
-        }
-        
-        // Use GhiChu as address field
-        if (profile.getGhiChu() != null) {
-            etAddress.setText(profile.getGhiChu());
-        }
-
-        // Date of birth
-        if (profile.getNgaySinh() != null) {
-            String formattedDate = dateFormat.format(profile.getNgaySinh());
-            etDob.setText(formattedDate);
-        }
-
-        // Gender - set default since not in database
-        rbMale.setChecked(true); // Default to Male
-
-        // Bank info - not available in current database structure
-        // Leave empty for now
-
-        Log.d(TAG, "✅ UI updated with profile data");
-        Log.d(TAG, "👤 Name: " + profile.getHoTen());
-        Log.d(TAG, "📧 Email: " + profile.getEmail());
-        Log.d(TAG, "📱 Phone: " + profile.getDienThoai());
+        Log.w(TAG, "loadProfileDataFromDatabase() disabled. Using API.");
+        loadProfileDataFromApi();
     }
 
     private void saveProfile() {
         if (currentProfile == null) {
-            // Silently return if profile not loaded
             return;
         }
 
         // Validate required fields
-        String fullName = etFullName.getText().toString().trim();
-        String phone = etPhone.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
+        String fullName = etFullName.getText() != null ? etFullName.getText().toString().trim() : "";
+        String phone = etPhone.getText() != null ? etPhone.getText().toString().trim() : "";
+        String email = etEmail.getText() != null ? etEmail.getText().toString().trim() : "";
 
         if (fullName.isEmpty()) {
             etFullName.setError("Vui lòng nhập họ tên");
@@ -241,14 +217,14 @@ public class LandlordEditProfileActivity extends AppCompatActivity {
             return;
         }
 
-        // Update profile object with form data
+        // Update local profile object
         currentProfile.setHoTen(fullName);
         currentProfile.setDienThoai(phone);
         currentProfile.setEmail(email);
-        currentProfile.setGhiChu(etAddress.getText().toString().trim()); // Store address in GhiChu
+        currentProfile.setGhiChu(etAddress.getText() != null ? etAddress.getText().toString().trim() : "");
 
         // Handle date of birth
-        String dobText = etDob.getText().toString().trim();
+        String dobText = etDob.getText() != null ? etDob.getText().toString().trim() : "";
         if (!dobText.isEmpty()) {
             try {
                 Date dob = dateFormat.parse(dobText);
@@ -261,92 +237,62 @@ public class LandlordEditProfileActivity extends AppCompatActivity {
             }
         }
 
-        // Handle gender - not stored in database for now
-        int selectedGenderId = rgGender.getCheckedRadioButtonId();
-        if (selectedGenderId != -1) {
-            RadioButton selectedRadioButton = findViewById(selectedGenderId);
-            String gender = selectedRadioButton.getText().toString();
-            // Gender is not stored in current database structure
-            Log.d(TAG, "Selected gender: " + gender + " (not stored in database)");
-        }
+        // API update endpoint is not available yet in ApiService.
+        // To keep UX consistent and avoid DB, we just update the Session and return success.
+        btnSave.setEnabled(false);
+        btnSave.setText("Đang lưu...");
 
-        // Bank info - not available in current database structure
-        String bankName = etBankName.getText().toString().trim();
-        String accountNumber = etAccountNumber.getText().toString().trim();
-        String accountHolderName = etAccountHolderName.getText().toString().trim();
-        Log.d(TAG, "Bank info entered but not stored: " + bankName + ", " + accountNumber + ", " + accountHolderName);
-
-        // Save to database
-        Log.d(TAG, "Saving profile to database...");
-        new SaveProfileTask().execute(currentProfile);
-    }
-
-    /**
-     * AsyncTask to save user profile to database
-     */
-    private class SaveProfileTask extends AsyncTask<UserProfileDao.UserProfile, Void, Boolean> {
-        private String errorMessage;
-
-        @Override
-        protected void onPreExecute() {
-            // Disable save button to prevent multiple saves
-            btnSave.setEnabled(false);
-            btnSave.setText("Đang lưu...");
-        }
-
-        @Override
-        protected Boolean doInBackground(UserProfileDao.UserProfile... params) {
-            UserProfileDao.UserProfile profile = params[0];
-            
-            // TEMPORARY FIX: Always return success and update session
-            // This ensures profile editing works while we debug database connection
-            Log.d(TAG, "Saving profile (session mode)");
-            
-            try {
-                // Update session manager with new data
-                if (profile.getEmail() != null && profile.getHoTen() != null) {
-                    // Simulate successful save
-                    Thread.sleep(1000); // Simulate network delay
-                    return true;
-                }
-                return false;
-            } catch (Exception e) {
-                Log.e(TAG, "Error in SaveProfileTask: " + e.getMessage(), e);
-                errorMessage = e.getMessage();
-                return false;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            // Re-enable save button
+        btnSave.postDelayed(() -> {
             btnSave.setEnabled(true);
             btnSave.setText("Lưu thay đổi");
 
-            if (success) {
-                Toast.makeText(LandlordEditProfileActivity.this, 
-                    "Cập nhật hồ sơ thành công!", 
-                    Toast.LENGTH_SHORT).show();
-                
-                // Update session manager with new data
-                if (currentProfile != null) {
-                    sessionManager.createLoginSession(
-                        currentProfile.getNguoiDungId(),
-                        currentProfile.getHoTen(),
-                        currentProfile.getEmail(),
-                        sessionManager.getUserType()
-                    );
-                    
-                    Log.d(TAG, "✅ Session updated with new profile data");
-                }
-                
-                // Return success result to calling activity
-                setResult(RESULT_OK);
-                finish();
-            } else {
-                // Silently fail - user can try again
-                Log.w(TAG, "Failed to save profile: " + errorMessage);
-            }
+            sessionManager.createLoginSession(
+                    currentProfile.getNguoiDungId() != null ? currentProfile.getNguoiDungId() : sessionManager.getUserId(),
+                    currentProfile.getHoTen(),
+                    currentProfile.getEmail(),
+                    sessionManager.getUserType()
+            );
+
+            Toast.makeText(LandlordEditProfileActivity.this,
+                    "Đã lưu (tạm thời lưu local). Khi backend có API cập nhật hồ sơ, mình sẽ nối vào.",
+                    Toast.LENGTH_LONG).show();
+
+            setResult(RESULT_OK);
+            finish();
+        }, 600);
+    }
+
+    private void updateUIWithProfile(UserProfileDao.UserProfile profile) {
+        if (profile == null) {
+            Log.w(TAG, "Profile is null, using fallback data");
+            loadProfileData();
+            return;
         }
+
+        currentProfile = profile;
+
+        if (profile.getHoTen() != null) {
+            etFullName.setText(profile.getHoTen());
+        }
+
+        if (profile.getDienThoai() != null) {
+            etPhone.setText(profile.getDienThoai());
+        }
+
+        if (profile.getEmail() != null) {
+            etEmail.setText(profile.getEmail());
+        }
+
+        if (profile.getGhiChu() != null) {
+            etAddress.setText(profile.getGhiChu());
+        }
+
+        if (profile.getNgaySinh() != null) {
+            String formattedDate = dateFormat.format(profile.getNgaySinh());
+            etDob.setText(formattedDate);
+        }
+
+        rbMale.setChecked(true);
+        Log.d(TAG, "✅ UI updated with profile data");
     }
 }

@@ -42,19 +42,23 @@ public class LandlordChatListActivity extends AppCompatActivity {
         recyclerViewChatList = findViewById(R.id.recycler_view_chat_list);
         recyclerViewChatList.setLayoutManager(new LinearLayoutManager(this));
 
-        currentUserEmail = sessionManager.getUserEmail();
-        if (currentUserEmail == null) {
-            currentUserEmail = getIntent().getStringExtra("user_id");
-        }
+        // ✅ Do NOT rely on email to determine login.
+        // Chat APIs use GUID userId from token.
+        String userId = sessionManager.getUserId();
+        String token = sessionManager.getToken();
 
-        Log.d(TAG, "Current landlord: " + currentUserEmail);
+        Log.d(TAG, "Current landlord userId: " + userId);
 
-        // Check if user email is valid
-        if (currentUserEmail == null || currentUserEmail.isEmpty()) {
-            Log.e(TAG, "❌ User email is null or empty");
+        if (!sessionManager.isLoggedIn() || token == null || token.trim().isEmpty() || userId == null || userId.trim().isEmpty()) {
+            Log.e(TAG, "❌ Not logged in or missing token/userId");
             Toast.makeText(this, "Vui lòng đăng nhập trước", Toast.LENGTH_SHORT).show();
             finish();
+            return;
         }
+
+        // Keep currentUserEmail for display fallback only
+        currentUserEmail = sessionManager.getUserEmail();
+        if (currentUserEmail == null) currentUserEmail = "";
     }
 
     private void loadChatList() {

@@ -90,13 +90,29 @@ public class JwtTokenParser {
                 return null;
             }
 
-            // Try different claim names for user ID
+            // ✅ C# JwtBearer thường emit các claim sau
+            // - "nameid" (short)
+            // - "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier" (full URI)
+            // - "sub" / "id" (tuỳ cấu hình)
+
+            if (claims.has("nameid")) {
+                return claims.optString("nameid", null);
+            }
+
+            String uriNameId = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier";
+            if (claims.has(uriNameId)) {
+                return claims.optString(uriNameId, null);
+            }
+
+            // Older/other variants
             if (claims.has("NameIdentifier")) {
-                return claims.getString("NameIdentifier");
-            } else if (claims.has("sub")) {
-                return claims.getString("sub");
-            } else if (claims.has("id")) {
-                return claims.getString("id");
+                return claims.optString("NameIdentifier", null);
+            }
+            if (claims.has("sub")) {
+                return claims.optString("sub", null);
+            }
+            if (claims.has("id")) {
+                return claims.optString("id", null);
             }
 
             return null;
@@ -106,4 +122,3 @@ public class JwtTokenParser {
         }
     }
 }
-

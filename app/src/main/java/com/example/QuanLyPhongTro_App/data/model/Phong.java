@@ -1,34 +1,82 @@
 package com.example.QuanLyPhongTro_App.data.model;
 
+import com.google.gson.annotations.SerializedName;
 import java.util.Date;
 import java.util.List;
 
 public class Phong {
+    @SerializedName(value = "PhongId", alternate = {"phongId"})
     private String phongId;
+
+    @SerializedName(value = "NhaTroId", alternate = {"nhaTroId"})
     private String nhaTroId;
+
+    @SerializedName(value = "TieuDe", alternate = {"tieuDe"})
     private String tieuDe;
+
+    @SerializedName(value = "DienTich", alternate = {"dienTich"})
     private double dienTich;
+
+    @SerializedName(value = "GiaTien", alternate = {"giaTien"})
     private long giaTien;
-    private long tienCoc;
+
+    @SerializedName(value = "TienCoc", alternate = {"tienCoc"})
+    private Long tienCoc;
+
+    @SerializedName(value = "SoNguoiToiDa", alternate = {"soNguoiToiDa"})
     private int soNguoiToiDa;
+
+    @SerializedName(value = "TrangThai", alternate = {"trangThai"})
     private String trangThai;
+
+    @SerializedName(value = "CreatedAt", alternate = {"createdAt"})
     private Date createdAt;
+
+    @SerializedName(value = "UpdatedAt", alternate = {"updatedAt"})
     private Date updatedAt;
+
+    @SerializedName(value = "DiemTrungBinh", alternate = {"diemTrungBinh"})
     private float diemTrungBinh;
+
+    @SerializedName(value = "SoLuongDanhGia", alternate = {"soLuongDanhGia"})
     private int soLuongDanhGia;
+
+    @SerializedName(value = "IsDuyet", alternate = {"isDuyet"})
     private boolean isDuyet;
+
+    @SerializedName(value = "NguoiDuyet", alternate = {"nguoiDuyet"})
     private String nguoiDuyet;
+
+    @SerializedName(value = "ThoiGianDuyet", alternate = {"thoiGianDuyet"})
     private Date thoiGianDuyet;
+
+    @SerializedName(value = "IsBiKhoa", alternate = {"isBiKhoa"})
     private boolean isBiKhoa;
+
+    @SerializedName(value = "MoTa", alternate = {"moTa"})
     private String moTa;
+
+    @SerializedName(value = "IsDeleted", alternate = {"isDeleted"})
     private boolean isDeleted;
-    
+
     // Thông tin bổ sung (JOIN)
+    @SerializedName(value = "DiaChiNhaTro", alternate = {"diaChiNhaTro"})
     private String diaChiNhaTro;
+
+    @SerializedName(value = "TenQuanHuyen", alternate = {"tenQuanHuyen"})
     private String tenQuanHuyen;
+
+    @SerializedName(value = "TenPhuong", alternate = {"tenPhuong"})
     private String tenPhuong;
+
+    @SerializedName(value = "DanhSachAnhUrl", alternate = {"danhSachAnhUrl"})
     private List<String> danhSachAnhUrl;
+
+    @SerializedName(value = "TienIch", alternate = {"tienIch"})
     private List<String> tienIch;
+
+    @com.google.gson.annotations.SerializedName(value = "AnhDaiDien", alternate = {"anhDaiDien", "DuongDan", "duongDan"})
+    private String anhDaiDien;
 
     public Phong() {}
 
@@ -101,4 +149,7 @@ public class Phong {
 
     public List<String> getTienIch() { return tienIch; }
     public void setTienIch(List<String> tienIch) { this.tienIch = tienIch; }
+
+    public String getAnhDaiDien() { return anhDaiDien; }
+    public void setAnhDaiDien(String anhDaiDien) { this.anhDaiDien = anhDaiDien; }
 }
