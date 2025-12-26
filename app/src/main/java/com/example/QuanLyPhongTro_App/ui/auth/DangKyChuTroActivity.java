@@ -1,15 +1,10 @@
 package com.example.QuanLyPhongTro_App.ui.auth;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,21 +20,12 @@ public class DangKyChuTroActivity extends AppCompatActivity {
     private EditText hoTenChuTro;
     private EditText emailChuTro;
     private EditText sdtChuTro;
-    private EditText diaChiChuTro;
     private EditText matKhauDangKyChuTro;
     private EditText xacNhanMatKhauChuTro;
-    private Spinner loaiGiayTo;
-    private EditText soGiayTo;
-    private Button btnTaiLenGiayTo;
-    private ImageView hinhGiayTo;
     private CheckBox dongYDieuKhoanChuTro;
     private Button btnDangKyChuTro;
-    private TextView chuyenNguoiThueDangKyChuTro;
     private TextView dangNhapChuTro;
     private SessionManager sessionManager;
-    private AccountManager accountManager;
-    private static final int REQUEST_IMAGE_PICK = 2;
-    private Uri hinhGiayToUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,37 +43,15 @@ public class DangKyChuTroActivity extends AppCompatActivity {
         // Ánh xạ các view
         hoTenChuTro = findViewById(R.id.ho_ten_chu_tro);
         emailChuTro = findViewById(R.id.email_chu_tro);
-        sdtChuTro = findViewById(R.id.sdt_chu_tro);
-        diaChiChuTro = findViewById(R.id.dia_chi_chu_tro);
-        matKhauDangKyChuTro = findViewById(R.id.mat_khau_dang_ky_chu_tro);
+        sdtChuTro = findViewById(R.id.so_dien_thoai_chu_tro);
+        matKhauDangKyChuTro = findViewById(R.id.mat_khau_chu_tro);
         xacNhanMatKhauChuTro = findViewById(R.id.xac_nhan_mat_khau_chu_tro);
-        loaiGiayTo = findViewById(R.id.loai_giay_to);
-        soGiayTo = findViewById(R.id.so_giay_to);
-        btnTaiLenGiayTo = findViewById(R.id.btn_tai_len_giay_to);
-        hinhGiayTo = findViewById(R.id.hinh_giay_to);
         dongYDieuKhoanChuTro = findViewById(R.id.dong_y_dieu_khoan_chu_tro);
         btnDangKyChuTro = findViewById(R.id.btn_dang_ky_chu_tro);
-        chuyenNguoiThueDangKyChuTro = findViewById(R.id.chuyen_nguoi_thue_dang_ky_chu_tro);
-        dangNhapChuTro = findViewById(R.id.dang_nhap_chu_tro);
-
-        // Thiết lập Spinner loại giấy tờ
-        String[] loaiGiayToArray = {"Chọn loại giấy tờ", "CMND", "CCCD", "Hộ chiếu", "Giấy phép lái xe"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, loaiGiayToArray);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        loaiGiayTo.setAdapter(adapter);
-
-        // Xử lý nút Tải lên ảnh
-        btnTaiLenGiayTo.setOnClickListener(v -> xuLyTaiLenAnh());
+        dangNhapChuTro = findViewById(R.id.txt_goto_login_chu_tro);
 
         // Xử lý nút Đăng Ký
         btnDangKyChuTro.setOnClickListener(v -> xuLyDangKy());
-
-        // Xử lý Chuyển sang Người Thuê
-        chuyenNguoiThueDangKyChuTro.setOnClickListener(v -> {
-            Intent intent = new Intent(DangKyChuTroActivity.this, DangKyNguoiThueActivity.class);
-            startActivity(intent);
-            finish();
-        });
 
         // Xử lý Đăng Nhập
         dangNhapChuTro.setOnClickListener(v -> {
@@ -98,37 +62,13 @@ public class DangKyChuTroActivity extends AppCompatActivity {
         });
     }
 
-    // Hàm xử lý tải lên ảnh
-    private void xuLyTaiLenAnh() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(intent, REQUEST_IMAGE_PICK);
-    }
-
-    //Hàm nhận lại ảnh giấy tờ mà người dùng vừa chọn từ thư viện ảnh, rồi hiển thị lên màn hình để xác nhận
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == RESULT_OK && data != null) {
-            if (requestCode == REQUEST_IMAGE_PICK) {
-                hinhGiayToUri = data.getData();
-                hinhGiayTo.setImageURI(hinhGiayToUri);
-                hinhGiayTo.setVisibility(ImageView.VISIBLE);
-                Toast.makeText(this, "Ảnh đã được chọn", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
     // Hàm xử lý đăng ký
     private void xuLyDangKy() {
         String hoTen = hoTenChuTro.getText().toString().trim();
         String email = emailChuTro.getText().toString().trim();
         String sdt = sdtChuTro.getText().toString().trim();
-        String diaChi = diaChiChuTro.getText().toString().trim();
         String matKhau = matKhauDangKyChuTro.getText().toString().trim();
         String xacNhanMatKhau = xacNhanMatKhauChuTro.getText().toString().trim();
-        String loaiGiayToChon = loaiGiayTo.getSelectedItem().toString();
-        String soGiayToNhap = soGiayTo.getText().toString().trim();
         boolean dongY = dongYDieuKhoanChuTro.isChecked();
 
         // Kiểm tra dữ liệu
@@ -158,11 +98,6 @@ public class DangKyChuTroActivity extends AppCompatActivity {
             return;
         }
 
-        if (diaChi.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập địa chỉ", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         if (matKhau.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập mật khẩu", Toast.LENGTH_SHORT).show();
             return;
@@ -178,29 +113,13 @@ public class DangKyChuTroActivity extends AppCompatActivity {
             return;
         }
 
-        if (loaiGiayToChon.equals("Chọn loại giấy tờ")) {
-            Toast.makeText(this, "Vui lòng chọn loại giấy tờ", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (soGiayToNhap.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập số giấy tờ", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (hinhGiayToUri == null) {
-            Toast.makeText(this, "Vui lòng tải lên ảnh giấy tờ", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         if (!dongY) {
-            Toast.makeText(this, "Vui lòng đồng ý với Điều khoản dịch vụ", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng đồng ý với các điều khoản của ứng dụng", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Show loading
-        btnDangKyChuTro.setEnabled(false);
-        btnDangKyChuTro.setText("Đang đăng ký...");
+        // TODO: Gửi dữ liệu lên server
+        // Khi đăng ký Chủ trọ -> tự động có cả quyền Người thuê
 
         // VaiTroId: 2 = ChuTro (landlord)
         accountManager.registerAPI(email, matKhau, hoTen, sdt, 2, new AccountManager.AuthCallback() {

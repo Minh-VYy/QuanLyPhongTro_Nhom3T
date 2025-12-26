@@ -37,7 +37,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:text="Xoá bộ lọc"
-            android:textColor="#7c3aed"
+            android:textColor="@color/primary_blue"
             android:textSize="14sp"
             android:padding="8dp"
             android:background="?attr/selectableItemBackground" />
@@ -74,8 +74,8 @@
                 android:valueTo="10.0"
                 app:values="@array/initial_range_slider_values"
                 android:stepSize="0.5"
-                app:thumbColor="#7c3aed"
-                app:trackColorActive="#7c3aed"
+                app:thumbColor="@color/primary_blue"
+                app:trackColorActive="@color/primary_blue"
                 app:trackColorInactive="#E5E7EB"
                 android:layout_marginBottom="4dp" />
 
@@ -130,7 +130,7 @@
                     android:layout_weight="1"
                     android:text="Bất kỳ"
                     android:textSize="13sp"
-                    android:buttonTint="#7c3aed"
+                    android:buttonTint="@color/primary_blue"
                     android:checked="true" />
 
                 <RadioButton
@@ -140,7 +140,7 @@
                     android:layout_weight="1"
                     android:text="3km"
                     android:textSize="13sp"
-                    android:buttonTint="#7c3aed" />
+                    android:buttonTint="@color/primary_blue" />
 
                 <RadioButton
                     android:id="@+id/distance5km"
@@ -149,7 +149,7 @@
                     android:layout_weight="1"
                     android:text="5km"
                     android:textSize="13sp"
-                    android:buttonTint="#7c3aed" />
+                    android:buttonTint="@color/primary_blue" />
 
             </RadioGroup>
 

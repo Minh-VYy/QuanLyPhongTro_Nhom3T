@@ -46,11 +46,9 @@ dependencies {
     annotationProcessor("com.github.bumptech.glide:compiler:5.0.5")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
 
-    // Chatbot dependencies
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    val room_version = "2.6.1"
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor("androidx.room:room-compiler:$room_version")
 
     // Retrofit + OkHttp + Gson for API calls
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
@@ -59,4 +57,6 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.google.code.gson:gson:2.10.1")
 
+    // SQL Server JDBC driver
+    implementation("net.sourceforge.jtds:jtds:1.3.1")
 }

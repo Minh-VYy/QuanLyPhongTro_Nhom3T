@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Filter Button Selector
+    Sử dụng cho các nút filter trong trang chủ: "Bộ lọc", "Giá tốt", "Gần tôi", "Đánh giá", "Mới nhất"
+    - Selected/Active state: nền gradient xanh, text trắng
+    - Unselected/Inactive state: nền trắng, viền xanh, text xanh
+    - Pressed state: hiệu ứng nhấn
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- Selected/Active state: gradient xanh dương -->
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="90"
+                android:startColor="@color/gradient_start"
+                android:endColor="@color/gradient_end" />
+            <corners android:radius="20dp" />
+            <stroke 
+                android:width="1dp"
+                android:color="@color/primary_blue" />
+        </shape>
+    </item>
+    
+    <!-- Pressed state: xanh đậm hơn -->
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/primary_blue_dark" />
+            <corners android:radius="20dp" />
+            <stroke 
+                android:width="1dp"
+                android:color="@color/primary_blue_dark" />
+        </shape>
+    </item>
+    
+    <!-- Default/Unselected state: nền trắng, viền xanh -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/white" />
+            <corners android:radius="20dp" />
+            <stroke 
+                android:width="1dp"
+                android:color="@color/primary_blue" />
+        </shape>
+    </item>
+    
+</selector>

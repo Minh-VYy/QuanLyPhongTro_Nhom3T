@@ -1,97 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/card_listing"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="@android:color/white"
-    android:padding="16dp"
+    card_view:cardCornerRadius="8dp"
     android:layout_margin="8dp"
-    android:clickable="true"
-    android:focusable="true"
-    android:elevation="2dp"
-    android:foreground="?android:attr/selectableItemBackground">
+    card_view:cardUseCompatPadding="true"
+    card_view:cardElevation="4dp">
 
-    <!-- Header Row -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tv_listing_title"
-            android:layout_width="0dp"
+        <!-- Header với tiêu đề và switch -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Tiêu đề tin đăng"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <ImageView
-            android:id="@+id/btn_edit_listing"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_edit"
-            android:padding="4dp"
-            android:clickable="true"
-            android:focusable="true" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-    </LinearLayout>
+                <TextView
+                    android:id="@+id/tv_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Tiêu đề phòng trọ"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:textColor="@color/black"
+                    android:maxLines="2"
+                    android:ellipsize="end"/>
 
-    <!-- Price and Status Row -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginTop="8dp">
+                <TextView
+                    android:id="@+id/tv_price"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="2.500.000 VNĐ/tháng"
+                    android:textSize="14sp"
+                    android:textColor="@color/primary"
+                    android:textStyle="bold"
+                    android:layout_marginTop="4dp"/>
 
+            </LinearLayout>
+
+            <Switch
+                android:id="@+id/switch_active"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:layout_marginStart="8dp"/>
+
+        </LinearLayout>
+
+        <!-- Trạng thái -->
         <TextView
-            android:id="@+id/tv_listing_price"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="2.500.000 đ"
-            android:textSize="14sp"
-            android:textColor="#2196F3"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tv_listing_status"
+            android:id="@+id/tv_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Còn trống"
             android:textSize="12sp"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="4dp"
-            android:background="#E8F5E8"
-            android:textColor="#4CAF50" />
+            android:padding="6dp"
+            android:background="@drawable/rounded_background"
+            android:textColor="@color/success"
+            android:layout_marginTop="8dp"/>
 
-    </LinearLayout>
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/light_gray"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp"/>
 
-    <!-- Active Switch Row -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginTop="12dp">
-
-        <TextView
-            android:layout_width="0dp"
+        <!-- Action buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Hiển thị tin đăng"
-            android:textSize="14sp"
-            android:textColor="#666" />
+            android:orientation="horizontal"
+            android:gravity="end">
 
-        <Switch
-            android:id="@+id/sw_listing_active"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            <ImageButton
+                android:id="@+id/btn_edit"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/circle_primary"
+                android:src="@drawable/ic_edit"
+                android:contentDescription="Chỉnh sửa"
+                android:layout_marginEnd="12dp"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                app:tint="@color/white" />
+
+            <ImageButton
+                android:id="@+id/btn_delete"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/circle_error"
+                android:src="@drawable/ic_delete"
+                android:contentDescription="Xóa"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                app:tint="@color/white" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
-</LinearLayout>
+</androidx.cardview.widget.CardView>

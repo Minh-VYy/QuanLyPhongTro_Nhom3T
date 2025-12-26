@@ -311,17 +311,22 @@
                         </LinearLayout>
                     </LinearLayout>
 
-                    <Button
+                    <!-- Nút Liên hệ - gradient xanh dương -->
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/contactButton"
                         android:layout_width="wrap_content"
                         android:layout_height="48dp"
-                        android:background="@drawable/button_primary"
+                        android:background="@drawable/button_primary_gradient"
+                        app:backgroundTint="@null"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
                         android:text="Liên hệ"
                         android:textAllCaps="false"
                         android:textColor="@color/white"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        app:cornerRadius="12dp" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -435,29 +440,33 @@
                     android:gravity="center"
                     android:orientation="horizontal">
 
-                    <Button
+                    <!-- Nút Xem bản đồ - viền xanh dương -->
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/viewMapButton"
+                        style="@style/Widget.App.Button.Outlined"
                         android:layout_width="0dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="6dp"
                         android:layout_weight="1"
-                        android:background="@drawable/button_outline"
                         android:text="Xem bản đồ"
                         android:textAllCaps="false"
-                        android:textColor="#4a90e2"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp" />
 
-                    <Button
+                    <!-- Nút Chỉ đường - viền xanh dương -->
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/getDirectionsButton"
+                        style="@style/Widget.App.Button.Outlined"
                         android:layout_width="0dp"
                         android:layout_height="40dp"
                         android:layout_marginStart="6dp"
                         android:layout_weight="1"
-                        android:background="@drawable/button_outline"
                         android:text="Chỉ đường"
                         android:textAllCaps="false"
-                        android:textColor="#4a90e2"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -573,29 +582,36 @@
         android:gravity="center"
         android:orientation="horizontal">
 
-        <Button
+        <!-- Nút Lưu tin - viền xanh dương -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/saveButton"
+            style="@style/Widget.App.Button.Outlined"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
-            android:background="@drawable/button_outline"
             android:text="Lưu tin"
             android:textAllCaps="false"
-            android:textColor="#4a90e2"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp" />
 
-        <Button
+        <!-- Nút Đặt lịch xem - gradient xanh dương -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/bookButton"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:background="@drawable/button_primary"
+            android:background="@drawable/button_primary_gradient"
+            app:backgroundTint="@null"
             android:text="Đặt lịch xem"
             android:textAllCaps="false"
             android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:cornerRadius="12dp" />
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

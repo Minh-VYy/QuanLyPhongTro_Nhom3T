@@ -23,7 +23,7 @@
         <ImageView
             android:id="@+id/navHomeIcon"
             android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_height="wrap_content"
             android:src="@drawable/ic_home"
             app:tint="#666" />
 

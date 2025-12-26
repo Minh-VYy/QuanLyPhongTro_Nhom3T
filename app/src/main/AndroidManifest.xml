@@ -6,6 +6,10 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
@@ -48,8 +52,10 @@
             android:name=".ui.tenant.MainActivity"
             android:exported="false" />
         <activity android:name=".ui.tenant.RoomDetailActivity" />
+        <activity android:name=".ui.tenant.TestDatabaseActivity" />
         <activity android:name=".ui.tenant.BookingCreateActivity" />
         <activity android:name=".ui.tenant.BookingListActivity" />
+        <activity android:name=".ui.tenant.BookingDetailActivity" />
         <activity android:name=".ui.tenant.SavedRoomsActivity" />
         <activity android:name=".ui.tenant.NotificationsActivity" />
         <activity android:name=".ui.tenant.ProfileActivity" />

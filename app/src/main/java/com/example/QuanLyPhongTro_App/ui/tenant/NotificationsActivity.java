@@ -11,9 +11,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.QuanLyPhongTro_App.R;
-import com.example.QuanLyPhongTro_App.data.MockData;
 import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class NotificationsActivity extends AppCompatActivity {
@@ -54,8 +54,8 @@ public class NotificationsActivity extends AppCompatActivity {
     }
 
     private void loadNotifications() {
-        // Load from MockData
-        List<Notification> notifications = MockData.getNotifications();
+        // Sử dụng một danh sách trống vì MockData đã bị xóa
+        List<Notification> notifications = new ArrayList<>();
 
         if (notifications.isEmpty()) {
             notificationsRecyclerView.setVisibility(View.GONE);

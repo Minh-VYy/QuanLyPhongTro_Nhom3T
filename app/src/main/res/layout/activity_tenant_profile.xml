@@ -148,7 +148,7 @@
                         <LinearLayout
                             android:layout_width="36dp"
                             android:layout_height="36dp"
-                            android:background="@drawable/circle_background_purple_light"
+                            android:background="@drawable/circle_background_blue_light"
                             android:gravity="center">
 
                             <ImageView
@@ -194,7 +194,7 @@
                         <LinearLayout
                             android:layout_width="36dp"
                             android:layout_height="36dp"
-                            android:background="@drawable/circle_background_purple_light"
+                            android:background="@drawable/circle_background_blue_light"
                             android:gravity="center">
 
                             <ImageView
@@ -266,7 +266,7 @@
                         <LinearLayout
                             android:layout_width="36dp"
                             android:layout_height="36dp"
-                            android:background="@drawable/circle_background_purple_light"
+                            android:background="@drawable/circle_background_blue_light"
                             android:gravity="center">
                             <ImageView
                                 android:layout_width="20dp"
@@ -311,7 +311,7 @@
                         <LinearLayout
                             android:layout_width="36dp"
                             android:layout_height="36dp"
-                            android:background="@drawable/circle_background_purple_light"
+                            android:background="@drawable/circle_background_blue_light"
                             android:gravity="center">
                             <ImageView
                                 android:layout_width="20dp"
@@ -382,7 +382,7 @@
                         <LinearLayout
                             android:layout_width="36dp"
                             android:layout_height="36dp"
-                            android:background="@drawable/circle_background_purple_light"
+                            android:background="@drawable/circle_background_blue_light"
                             android:gravity="center">
                             <ImageView
                                 android:layout_width="20dp"
@@ -427,7 +427,7 @@
                         <LinearLayout
                             android:layout_width="36dp"
                             android:layout_height="36dp"
-                            android:background="@drawable/circle_background_purple_light"
+                            android:background="@drawable/circle_background_blue_light"
                             android:gravity="center">
                             <ImageView
                                 android:layout_width="20dp"

@@ -1,15 +1,19 @@
 package com.example.QuanLyPhongTro_App.ui.tenant;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,62 +24,44 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.QuanLyPhongTro_App.R;
 
 import com.example.QuanLyPhongTro_App.ui.auth.DangKyNguoiThueActivity;
+import com.example.QuanLyPhongTro_App.data.DatabaseHelper;
+import com.example.QuanLyPhongTro_App.data.dao.PhongDao;
+import com.example.QuanLyPhongTro_App.data.model.Phong;
 import com.example.QuanLyPhongTro_App.ui.auth.LoginActivity;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 import com.example.QuanLyPhongTro_App.utils.BottomNavigationHelper;
 
+import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.List;
 
-/**
- * ============================================================================
- * MainActivity - Trang chủ ứng dụng (Người thuê)
- * ============================================================================
- * CHỨC NĂNG:
- * - Hiển thị danh sách phòng trọ từ MockData (dữ liệu Đà Nẵng)
- * - Cho phép tìm kiếm/lọc phòng
- * - Cho phép chuyển đổi giữa vai trò Người thuê và Chủ trọ
- * - Cung cấp điều hướng đến các màn hình khác
- *
- * DỮ LIỆU: Sử dụng MockData.getRooms() để lấy danh sách phòng
- * ============================================================================
- */
 public class MainActivity extends AppCompatActivity {
 
-    // ========== BIẾN GIAO DIỆN ==========
-    // Nút bộ lọc phòng
     private Button btnFilter;
-    // RecyclerView để hiển thị danh sách phòng
     private RecyclerView roomRecyclerView;
-    // Danh sách phòng trọ
-    private ArrayList<Room> roomList;
-    // Danh sách phòng gốc (không bị thay đổi)
-    private ArrayList<Room> originalRoomList;
-    // Quản lý phiên làm việc
+    private ArrayList<Room> roomList = new ArrayList<>();
     private SessionManager sessionManager;
-    private View roleSwitcher;
+    private android.view.View roleSwitcher;
     private TextView txtRolePrimary;
-    // Hiển thị tùy chọn chuyển vai trò
     private TextView txtRoleSecondary;
-    // Icon hiển thị vai trò
     private ImageView iconRole;
-    // Ô tìm kiếm
+    private RoomAdapter roomAdapter;
+    private ProgressBar progressBar;
     private EditText searchInput;
-    // Nút tìm kiếm
     private ImageButton searchButton;
+    private Button btnPriceFilter;
+    private Button btnNearbyFilter;
+    private Button btnRatingFilter;
+    private Button btnNewestFilter;
+    private FloatingActionButton fabChatbot;
     // Icon tin nhắn
     private ImageView btnMessages;
 
-    /**
-     * PHƯƠNG THỨC: onCreate()
-     * CHỨC NĂNG: Được gọi khi Activity được tạo, khởi tạo giao diện và dữ liệu
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Gắn layout với Activity
         setContentView(R.layout.activity_tenant_home);
 
-        // Khởi tạo SessionManager để quản lý đăng nhập
         sessionManager = new SessionManager(this);
 
         // Initialize roomList BEFORE setting up views
@@ -84,14 +70,13 @@ public class MainActivity extends AppCompatActivity {
 
         // Khởi tạo các view từ layout
         initViews();
-        // Thiết lập dropdown chọn vai trò
         setupRoleDropdown();
-        // Thiết lập thanh điều hướng dưới cùng
         setupBottomNavigation();
-        // Thiết lập RecyclerView hiển thị danh sách phòng
         setupRoomRecyclerView();
-        // Thiết lập nút bộ lọc
+        setupSearchBar();
         setupFilterButton();
+        setupQuickFilters();
+        setupChatbot();
         // Thiết lập tìm kiếm
         setupSearch();
 
@@ -231,22 +216,182 @@ public class MainActivity extends AppCompatActivity {
      * CHỨC NĂNG: Khởi tạo các view (layout elements) từ file layout XML
      */
     private void initViews() {
-        // Nút bộ lọc
         btnFilter = findViewById(R.id.btnFilter);
-        // RecyclerView chứa danh sách phòng
         roomRecyclerView = findViewById(R.id.roomRecyclerView);
-        // View để chọn vai trò
         roleSwitcher = findViewById(R.id.roleSwitcher);
-        // Text hiển thị vai trò hiện tại (ví dụ: "Người thuê")
         txtRolePrimary = roleSwitcher.findViewById(R.id.txtRolePrimary);
-        // Text hiển thị tùy chọn chuyển vai trò
         txtRoleSecondary = roleSwitcher.findViewById(R.id.txtRoleSecondary);
-        // Icon vai trò
         iconRole = roleSwitcher.findViewById(R.id.iconRole);
-        // Ô tìm kiếm
+        progressBar = findViewById(R.id.progressBar);
         searchInput = findViewById(R.id.searchInput);
-        // Nút tìm kiếm
         searchButton = findViewById(R.id.searchButton);
+        btnPriceFilter = findViewById(R.id.btnPriceFilter);
+        btnNearbyFilter = findViewById(R.id.btnNearbyFilter);
+        btnRatingFilter = findViewById(R.id.btnRatingFilter);
+        btnNewestFilter = findViewById(R.id.btnNewestFilter);
+        fabChatbot = findViewById(R.id.fabChatbot);
+    }
+
+    /**
+     * Thiết lập chatbot button
+     */
+    private void setupChatbot() {
+        if (fabChatbot != null) {
+            fabChatbot.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, ChatbotActivity.class);
+                intent.putExtra("user_type", "tenant");
+                intent.putExtra("context", "home");
+                startActivity(intent);
+            });
+        }
+    }
+
+    private void setupRoomRecyclerView() {
+        roomAdapter = new RoomAdapter(roomList, room -> {
+            Intent intent = new Intent(MainActivity.this, RoomDetailActivity.class);
+            intent.putExtra("room", room);
+            startActivity(intent);
+        });
+        roomRecyclerView.setAdapter(roomAdapter);
+
+        // Load dữ liệu từ database
+        loadRoomsFromDatabase();
+    }
+
+    /**
+     * Load danh sách phòng từ database
+     */
+    private void loadRoomsFromDatabase() {
+        new LoadPhongTask().execute();
+    }
+
+    /**
+     * AsyncTask để load phòng từ database
+     */
+    private class LoadPhongTask extends AsyncTask<Void, Void, List<Phong>> {
+        private String errorMsg = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if (progressBar != null) {
+                progressBar.setVisibility(View.VISIBLE);
+            }
+        }
+
+        @Override
+        protected List<Phong> doInBackground(Void... voids) {
+            Connection conn = null;
+            try {
+                Log.d("MainActivity", "=== LOADING ROOMS FROM DATABASE ===");
+                conn = DatabaseHelper.getConnection();
+                Log.d("MainActivity", "Database connection successful");
+
+                PhongDao dao = new PhongDao();
+                List<Phong> result = dao.getAllPhongAvailable(conn);
+                Log.d("MainActivity", "Query result: " + (result != null ? result.size() : "null") + " rooms");
+                return result;
+            } catch (Exception e) {
+                Log.e("MainActivity", "Error loading rooms: " + e.getMessage(), e);
+                errorMsg = e.getMessage();
+                return null;
+            } finally {
+                DatabaseHelper.closeConnection(conn);
+                Log.d("MainActivity", "Database connection closed");
+            }
+        }
+
+        @Override
+        protected void onPostExecute(List<Phong> phongList) {
+            super.onPostExecute(phongList);
+            if (progressBar != null) {
+                progressBar.setVisibility(View.GONE);
+            }
+
+            if (phongList != null && !phongList.isEmpty()) {
+                // Convert Phong to Room và update adapter
+                roomList.clear();
+                for (Phong phong : phongList) {
+                    Room room = convertPhongToRoom(phong);
+                    roomList.add(room);
+                }
+                roomAdapter.notifyDataSetChanged();
+                Toast.makeText(MainActivity.this,
+                    "Đã tải " + phongList.size() + " phòng",
+                    Toast.LENGTH_SHORT).show();
+            } else {
+                if (errorMsg != null) {
+                    Toast.makeText(MainActivity.this,
+                        "Lỗi kết nối: " + errorMsg,
+                        Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(MainActivity.this,
+                        "Không có phòng nào",
+                        Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
+
+    /**
+     * Convert model Phong từ database sang Room (UI model)
+     */
+    private Room convertPhongToRoom(Phong phong) {
+        Room room = new Room();
+
+        // ID phòng từ SQL Server database
+        room.setPhongId(phong.getPhongId());
+
+        // ID phòng - Room dùng int, Phong dùng String UUID
+        // Tạm thời dùng hashCode để convert
+        room.setId(phong.getPhongId() != null ? phong.getPhongId().hashCode() : 0);
+
+        // Thông tin cơ bản
+        room.setTitle(phong.getTieuDe());
+        room.setPriceValue(phong.getGiaTien()); // Room dùng priceValue (double)
+        room.setArea(phong.getDienTich());
+        room.setAddress(phong.getDiaChiNhaTro());
+        room.setLocation(phong.getTenQuanHuyen()); // Room dùng location cho quận
+        room.setDescription(phong.getMoTa());
+
+        // Đánh giá phòng
+        room.setRoomRating(phong.getDiemTrungBinh());
+        room.setRoomReviewCount(phong.getSoLuongDanhGia());
+
+        // Lấy ảnh đầu tiên làm ảnh đại diện
+        if (phong.getDanhSachAnhUrl() != null && !phong.getDanhSachAnhUrl().isEmpty()) {
+            room.setImageUrl(phong.getDanhSachAnhUrl().get(0));
+        }
+
+        // Set tiện ích - convert List<String> sang ArrayList<String>
+        if (phong.getTienIch() != null) {
+            room.setAmenities(new ArrayList<>(phong.getTienIch()));
+        }
+
+        return room;
+    }
+
+    private void setupBottomNavigation() {
+        BottomNavigationHelper.setupBottomNavigation(this, "home");
+    }
+
+    /**
+     * Thiết lập thanh tìm kiếm
+     */
+    private void setupSearchBar() {
+        // Tìm kiếm khi nhấn nút search
+        searchButton.setOnClickListener(v -> performSearch());
+
+        // Tìm kiếm khi nhấn Enter trên bàn phím
+        searchInput.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
+                (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER &&
+                 event.getAction() == KeyEvent.ACTION_DOWN)) {
+                performSearch();
+                return true;
+            }
+            return false;
+        });
         // Icon tin nhắn
         btnMessages = findViewById(R.id.btnMessages);
 
@@ -273,14 +418,183 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * PHƯƠNG THỨC: setupRoleDropdown()
-     * CHỨC NĂNG: Thiết lập dropdown để chọn vai trò (Người thuê hoặc Chủ trọ)
-     * - Nếu người dùng là chủ trọ: Cho phép chuyển sang Chủ trọ
-     * - Nếu người dùng chỉ là Người thuê: Cho phép đăng nhập làm Chủ trọ
+     * Thực hiện tìm kiếm
      */
+    private void performSearch() {
+        String keyword = searchInput.getText().toString().trim();
+
+        if (keyword.isEmpty()) {
+            // Nếu không có từ khóa, load lại tất cả phòng
+            loadRoomsFromDatabase();
+            Toast.makeText(this, "Hiển thị tất cả phòng", Toast.LENGTH_SHORT).show();
+        } else {
+            // Tìm kiếm với từ khóa
+            searchRoomsFromDatabase(keyword, null, null, null);
+        }
+
+        // Ẩn bàn phím
+        searchInput.clearFocus();
+        android.view.inputmethod.InputMethodManager imm =
+            (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(searchInput.getWindowToken(), 0);
+        }
+    }
+
+    private void setupFilterButton() {
+        btnFilter.setOnClickListener(v -> {
+            AdvancedFilterBottomSheet filterSheet = AdvancedFilterBottomSheet.newInstance();
+
+            // Set listener để nhận kết quả filter
+            filterSheet.setFilterListener(filters -> {
+                // Lấy các giá trị filter
+                float minPrice = filters.getFloat("minPrice", 0);
+                float maxPrice = filters.getFloat("maxPrice", 100);
+                String area = filters.getString("area", null);
+
+                // Convert triệu -> VNĐ
+                long minPriceVnd = (long) (minPrice * 1000000);
+                long maxPriceVnd = (long) (maxPrice * 1000000);
+
+                // Gọi search với filter
+                searchRoomsFromDatabase(null, minPriceVnd, maxPriceVnd, area);
+            });
+
+            filterSheet.show(getSupportFragmentManager(), "AdvancedFilter");
+        });
+
+        // DEBUG: Long click to open test activity
+        btnFilter.setOnLongClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, TestDatabaseActivity.class);
+            startActivity(intent);
+            return true;
+        });
+
+        // Long click để test database (hidden feature)
+        btnFilter.setOnLongClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, TestDatabaseActivity.class);
+            startActivity(intent);
+            return true;
+        });
+    }
+
+    /**
+     * Thiết lập các nút filter nhanh
+     */
+    private void setupQuickFilters() {
+        // Nút Giá tốt - sắp xếp theo giá từ thấp đến cao
+        btnPriceFilter.setOnClickListener(v -> {
+            Toast.makeText(this, "Lọc theo giá tốt", Toast.LENGTH_SHORT).show();
+            // Tìm kiếm với giá từ 0 đến 5 triệu
+            searchRoomsFromDatabase(null, 0L, 5000000L, null);
+        });
+
+        // Nút Gần tôi - lọc theo vị trí (tạm thời hiển thị tất cả)
+        btnNearbyFilter.setOnClickListener(v -> {
+            Toast.makeText(this, "Chức năng đang phát triển", Toast.LENGTH_SHORT).show();
+            // TODO: Implement location-based filtering
+        });
+
+        // Nút Đánh giá - lọc phòng có rating cao
+        btnRatingFilter.setOnClickListener(v -> {
+            Toast.makeText(this, "Lọc theo đánh giá cao", Toast.LENGTH_SHORT).show();
+            // Load tất cả và filter theo rating trong adapter
+            loadRoomsFromDatabase();
+        });
+
+        // Nút Mới nhất - load phòng mới nhất
+        btnNewestFilter.setOnClickListener(v -> {
+            Toast.makeText(this, "Hiển thị phòng mới nhất", Toast.LENGTH_SHORT).show();
+            loadRoomsFromDatabase();
+        });
+    }
+
+    /**
+     * Tìm kiếm phòng với filter
+     */
+    private void searchRoomsFromDatabase(String keyword, Long minPrice, Long maxPrice, String quanHuyen) {
+        new SearchPhongTask().execute(keyword,
+            minPrice != null ? String.valueOf(minPrice) : null,
+            maxPrice != null ? String.valueOf(maxPrice) : null,
+            quanHuyen);
+    }
+
+    /**
+     * AsyncTask để tìm kiếm phòng
+     */
+    private class SearchPhongTask extends AsyncTask<String, Void, List<Phong>> {
+        private String errorMsg = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if (progressBar != null) {
+                progressBar.setVisibility(View.VISIBLE);
+            }
+        }
+
+        @Override
+        protected List<Phong> doInBackground(String... params) {
+            Connection conn = null;
+            try {
+                conn = DatabaseHelper.getConnection();
+                PhongDao dao = new PhongDao();
+
+                String keyword = params[0];
+                Long minPrice = params[1] != null ? Long.parseLong(params[1]) : null;
+                Long maxPrice = params[2] != null ? Long.parseLong(params[2]) : null;
+                String quanHuyen = params[3];
+
+                // Xử lý tên quận (bỏ "Quận " ở đầu nếu có)
+                if (quanHuyen != null && quanHuyen.startsWith("Quận ")) {
+                    quanHuyen = quanHuyen.substring(5);
+                } else if (quanHuyen != null && quanHuyen.startsWith("Huyện ")) {
+                    quanHuyen = quanHuyen.substring(6);
+                }
+
+                return dao.searchPhong(conn, keyword, minPrice, maxPrice, quanHuyen);
+            } catch (Exception e) {
+                errorMsg = e.getMessage();
+                return null;
+            } finally {
+                DatabaseHelper.closeConnection(conn);
+            }
+        }
+
+        @Override
+        protected void onPostExecute(List<Phong> phongList) {
+            super.onPostExecute(phongList);
+            if (progressBar != null) {
+                progressBar.setVisibility(View.GONE);
+            }
+
+            if (phongList != null) {
+                roomList.clear();
+                for (Phong phong : phongList) {
+                    Room room = convertPhongToRoom(phong);
+                    roomList.add(room);
+                }
+                roomAdapter.notifyDataSetChanged();
+
+                if (phongList.isEmpty()) {
+                    Toast.makeText(MainActivity.this,
+                        "Không tìm thấy phòng phù hợp",
+                        Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this,
+                        "Tìm thấy " + phongList.size() + " phòng",
+                        Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(MainActivity.this,
+                    "Lỗi tìm kiếm: " + errorMsg,
+                    Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
     private void setupRoleDropdown() {
         roleSwitcher.setOnClickListener(v -> {
-            // Kiểm tra đã đăng nhập chưa
             if (!sessionManager.isLoggedIn()) {
                 new AlertDialog.Builder(this)
                         .setTitle("Chọn giao diện")
@@ -298,29 +612,20 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            // Nếu đã đăng nhập
             boolean landlordAccount = "landlord".equals(sessionManager.getUserRole());
 
-            // Tạo danh sách tùy chọn
-            // Nếu là chủ trọ: ["Người thuê", "Chủ trọ"]
-            // Nếu chỉ là người thuê: ["Người thuê", "Đăng nhập Chủ trọ"]
             String[] options = landlordAccount
                     ? new String[]{"Người thuê", "Chủ trọ"}
                     : new String[]{"Người thuê", "Đăng nhập Chủ trọ"};
 
-            // Hiển thị dialog chọn vai trò
             new AlertDialog.Builder(this)
                     .setTitle("Chọn giao diện")
                     .setItems(options, (dialog, which) -> {
-                        // which == 0: Chọn Người thuê
                         if (which == 0) {
                             sessionManager.setDisplayRole("tenant");
-                            applyRoleUI(); // Cập nhật giao diện
-                        }
-                        // which == 1: Chuyển đổi vai trò
-                        else if (which == 1) {
+                            applyRoleUI();
+                        } else if (which == 1) {
                             if (landlordAccount) {
-                                // Nếu người dùng là chủ trọ: Chuyển sang giao diện chủ trọ
                                 sessionManager.setDisplayRole("landlord");
                                 Intent intent = new Intent(this,
                                         com.example.QuanLyPhongTro_App.ui.landlord.LandlordHomeActivity.class);
@@ -328,7 +633,6 @@ public class MainActivity extends AppCompatActivity {
                                 startActivity(intent);
                                 finish();
                             } else {
-                                // Nếu người dùng chỉ là Người thuê: Mở trang đăng nhập Chủ trọ
                                 Intent i = new Intent(this, LoginActivity.class);
                                 i.putExtra("targetRole", "landlord");
                                 startActivity(i);
@@ -340,12 +644,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * PHƯƠNG THỨC: applyRoleUI()
-     * CHỨC NĂNG: Cập nhật giao diện dựa trên vai trò hiện tại
-     * - Hiển thị tên vai trò (Người thuê hoặc Chủ trọ)
-     * - Cập nhật icon phù hợp
-     */
     private void applyRoleUI() {
         if (!sessionManager.isLoggedIn()) {
             txtRolePrimary.setText("Khách");
@@ -357,15 +655,13 @@ public class MainActivity extends AppCompatActivity {
         String display = sessionManager.getDisplayRole();
 
         if (display.equals("landlord")) {
-            // Nếu là Chủ trọ
             txtRolePrimary.setText("Chủ trọ");
             txtRoleSecondary.setText("Chuyển vai trò");
-            iconRole.setImageResource(R.drawable.ic_home); // Icon nhà
+            iconRole.setImageResource(R.drawable.ic_home);
         } else {
-            // Nếu là Người thuê
             txtRolePrimary.setText("Người thuê");
             txtRoleSecondary.setText("Chuyển vai trò");
-            iconRole.setImageResource(R.drawable.ic_user); // Icon người dùng
+            iconRole.setImageResource(R.drawable.ic_user);
         }
     }
 
@@ -715,7 +1011,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Cập nhật lại giao diện vai trò khi quay trở lại
         applyRoleUI();
+        // Refresh data khi quay lại màn hình
+        loadRoomsFromDatabase();
     }
 }

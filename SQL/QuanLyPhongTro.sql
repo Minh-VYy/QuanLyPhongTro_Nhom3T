@@ -1,13 +1,11 @@
-<<<<<<< HEAD
     /**********************************************************************
-=======
-﻿    /**********************************************************************
->>>>>>> 014f4b5b9a34234d29111cf03b5798a78a58e161
     Fixed full init script for DB "QuanLyPhongTro"
     - Ensure admin-related columns exist BEFORE creating stored procedures
     - Idempotent: checks existence before CREATE / ALTER
     **********************************************************************/
     -- Create DB if missing
+	use master;
+	go
     IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = N'QuanLyPhongTro')
     BEGIN
         CREATE DATABASE [QuanLyPhongTro];
@@ -74,7 +72,6 @@ BEGIN
     );
 END;
 GO
-
 ------------------------------------------------------------
 -- 2. BẢNG NGƯỜI DÙNG & HỒ SƠ
 ------------------------------------------------------------
@@ -268,7 +265,8 @@ BEGIN
         KetThuc          DATETIMEOFFSET NULL,
         ThoiGianTao      DATETIMEOFFSET NOT NULL DEFAULT SYSDATETIMEOFFSET(),
         TrangThaiId      INT NOT NULL,
-        TapTinBienLaiId  UNIQUEIDENTIFIER NULL
+        TapTinBienLaiId  UNIQUEIDENTIFIER NULL,
+		GhiChu nvarchar(255) NULL
         -- SoDatPhong (INT auto) sẽ được thêm phía dưới bằng ALTER để idempotent
     );
 END;
