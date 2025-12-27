@@ -11,19 +11,37 @@
         android:id="@+id/toolbar_chat_list"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@color/color_primary"
-        android:elevation="4dp"
-        android:paddingTop="15dp">
+        android:background="@color/primary"
+        android:elevation="4dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tin nhắn"
-            android:textSize="20sp"
-            android:textColor="@android:color/white"
-            android:textStyle="bold"
-            android:layout_gravity="center_vertical|start"
-            android:layout_marginStart="16dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <ImageButton
+                android:id="@+id/btn_back_chat_list"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_arrow_back"
+                android:contentDescription="Quay lại"
+                app:tint="@color/text_on_primary" />
+
+            <TextView
+                android:id="@+id/tv_chat_list_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tin nhắn"
+                android:textSize="20sp"
+                android:textColor="@color/text_on_primary"
+                android:textStyle="bold"
+                android:layout_marginStart="12dp" />
+        </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
 
     <!-- Chat List RecyclerView -->
@@ -34,4 +52,3 @@
         android:padding="8dp"
         android:clipToPadding="false" />
 </LinearLayout>
-

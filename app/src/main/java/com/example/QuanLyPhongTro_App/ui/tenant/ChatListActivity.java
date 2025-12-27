@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.example.QuanLyPhongTro_App.R;
@@ -25,6 +26,7 @@ public class ChatListActivity extends AppCompatActivity {
     private String userRole;
     private SessionManager sessionManager;
     private ChatThreadRepository chatThreadRepository;
+    private ImageButton btnBackChatList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +42,12 @@ public class ChatListActivity extends AppCompatActivity {
     private void initViews() {
         recyclerViewChatList = findViewById(R.id.recycler_view_chat_list);
         recyclerViewChatList.setLayoutManager(new LinearLayoutManager(this));
+
+        // ✅ Back button on header
+        btnBackChatList = findViewById(R.id.btn_back_chat_list);
+        if (btnBackChatList != null) {
+            btnBackChatList.setOnClickListener(v -> finish());
+        }
 
         // ✅ Đăng nhập hợp lệ nên dựa vào TOKEN + userId(GUID), không dựa vào email
         String token = sessionManager.getToken();

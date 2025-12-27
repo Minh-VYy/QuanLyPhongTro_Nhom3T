@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.example.QuanLyPhongTro_App.R;
@@ -15,7 +16,6 @@ import com.example.QuanLyPhongTro_App.data.repository.ChatThreadRepository;
 import com.example.QuanLyPhongTro_App.ui.tenant.ChatThreadListAdapter;
 import com.example.QuanLyPhongTro_App.utils.SessionManager;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class LandlordChatListActivity extends AppCompatActivity {
@@ -26,6 +26,7 @@ public class LandlordChatListActivity extends AppCompatActivity {
     private String currentUserEmail;
     private SessionManager sessionManager;
     private ChatThreadRepository chatThreadRepository;
+    private ImageButton btnBackChatList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +42,12 @@ public class LandlordChatListActivity extends AppCompatActivity {
     private void initViews() {
         recyclerViewChatList = findViewById(R.id.recycler_view_chat_list);
         recyclerViewChatList.setLayoutManager(new LinearLayoutManager(this));
+
+        // ✅ Back button on header
+        btnBackChatList = findViewById(R.id.btn_back_chat_list);
+        if (btnBackChatList != null) {
+            btnBackChatList.setOnClickListener(v -> finish());
+        }
 
         // ✅ Do NOT rely on email to determine login.
         // Chat APIs use GUID userId from token.
