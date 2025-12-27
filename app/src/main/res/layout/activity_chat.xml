@@ -11,7 +11,7 @@
         android:id="@+id/toolbar_chat"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@color/color_primary"
+        android:background="@color/primary"
         android:elevation="8dp">
 
         <LinearLayout
@@ -19,6 +19,7 @@
             android:layout_height="match_parent"
             android:orientation="horizontal"
             android:gravity="center_vertical"
+            android:paddingStart="16dp"
             android:paddingEnd="16dp">
 
             <!-- Back Button -->
@@ -30,7 +31,7 @@
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_arrow_back"
                 android:contentDescription="Quay lại"
-                android:tint="@android:color/white" />
+                app:tint="@color/text_on_primary" />
 
             <!-- User Name -->
             <TextView
@@ -40,7 +41,7 @@
                 android:layout_weight="1"
                 android:text="Tên người dùng"
                 android:textSize="18sp"
-                android:textColor="@android:color/white"
+                android:textColor="@color/text_on_primary"
                 android:textStyle="bold"
                 android:layout_marginStart="12dp" />
         </LinearLayout>
@@ -112,8 +113,7 @@
             android:scaleType="centerInside"
             android:src="@drawable/ic_arrow_forward"
             android:contentDescription="Gửi tin nhắn"
-            android:tint="@android:color/white"
+            app:tint="@android:color/white"
             android:elevation="4dp" />
     </LinearLayout>
 </LinearLayout>
-

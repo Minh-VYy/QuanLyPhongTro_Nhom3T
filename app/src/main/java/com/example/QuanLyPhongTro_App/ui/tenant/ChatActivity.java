@@ -21,6 +21,7 @@ import com.example.QuanLyPhongTro_App.utils.UserCache;
 import com.example.QuanLyPhongTro_App.utils.ApiClient;
 import com.example.QuanLyPhongTro_App.utils.ApiService;
 import com.example.QuanLyPhongTro_App.data.response.GenericResponse;
+import com.example.QuanLyPhongTro_App.utils.ChatTimeParser;
 
 import java.util.List;
 
@@ -133,11 +134,18 @@ public class ChatActivity extends AppCompatActivity {
         // ✅ Fetch HoSoNguoiDung/me to update current user's HoTen
         fetchAndCacheMyProfileName();
 
-        if (currentUserName != null && !currentUserName.isEmpty()) {
-            UserCache.addUser(currentUserId, currentUserName);
+        // ✅ Ensure cache has correct current user name (ưu tiên HoTen từ profile, nếu chưa có thì dùng session)
+        String cachedMe = UserCache.getUserName(currentUserId);
+        if (cachedMe != null && cachedMe.equals(currentUserId)) {
+            // nghĩa là cache chưa có tên thật, chỉ đang fallback về userId
+            if (currentUserName != null && !currentUserName.trim().isEmpty()) {
+                UserCache.addUser(currentUserId, currentUserName.trim());
+            }
         }
-        if (otherUserName != null && !otherUserName.isEmpty()) {
-            UserCache.addUser(otherUserId, otherUserName);
+
+        // ✅ Ensure cache has other user name (nếu intent có name thì cache lại)
+        if (otherUserId != null && !otherUserId.trim().isEmpty() && otherUserName != null && !otherUserName.trim().isEmpty()) {
+            UserCache.addUser(otherUserId.trim(), otherUserName.trim());
         }
 
         if (otherUserId == null || otherUserId.isEmpty()) {
@@ -147,10 +155,25 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
 
-        String headerText = (otherUserName != null && !otherUserName.isEmpty()) ? otherUserName : otherUserId;
+        // Nếu Intent không truyền name, thử lấy từ cache trước khi fallback sang userId
+        if ((otherUserName == null || otherUserName.isEmpty()) && otherUserId != null) {
+            String cached = UserCache.getUserName(otherUserId.trim());
+            if (cached != null && !cached.trim().isEmpty()) {
+                otherUserName = cached.trim();
+            }
+        }
+
+        String headerText = (otherUserName != null && !otherUserName.isEmpty()) ? otherUserName : shortId(otherUserId);
         tvChatHeader.setText(headerText);
 
         Log.d(TAG, "✅ Chat initialized - Current User: " + currentUserId + " (" + currentUserName + "), Other User: " + otherUserId + " (" + otherUserName + ")");
+    }
+
+    private String shortId(String id) {
+        if (id == null) return "";
+        String s = id.trim();
+        if (s.length() <= 8) return s;
+        return s.substring(0, 8) + "...";
     }
 
     private boolean isUuid(String s) {
@@ -305,13 +328,30 @@ public class ChatActivity extends AppCompatActivity {
 
         btnSendMessage.setEnabled(false);
 
-        String displayName = (currentUserName != null && !currentUserName.isEmpty()) ? currentUserName : finalCurrentUserId;
+        // ✅ Optimistic bubble phải luôn nằm phía "sent" (senderId = currentUserId)
+        // ChatAdapter quyết định sent/received dựa trên senderId == currentUserId.
+        // Vì vậy: senderId bắt buộc là finalCurrentUserId.
+        // Đồng thời: không dùng userId làm senderName nếu cache có tên.
+        String cachedMyName = UserCache.getUserName(finalCurrentUserId);
+        String displayName = (cachedMyName != null && !cachedMyName.trim().isEmpty() && !cachedMyName.trim().equals(finalCurrentUserId))
+                ? cachedMyName.trim()
+                : (currentUserName != null && !currentUserName.trim().isEmpty())
+                    ? currentUserName.trim()
+                    : shortId(finalCurrentUserId);
+
+        // ensure cache for me
+        if (displayName != null && !displayName.equals(shortId(finalCurrentUserId))) {
+            UserCache.addUser(finalCurrentUserId, displayName);
+        }
+
+        // ✅ fromLandlord ở UI model không được dùng để quyết định cột, nhưng vẫn set đúng nghĩa: false = tin của mình
         ChatMessage optimisticMessage = new ChatMessage(
-            finalCurrentUserId,
-            displayName,
-            false,
-            messageContent
+                finalCurrentUserId,
+                displayName,
+                false,
+                messageContent
         );
+
         chatAdapter.addMessage(optimisticMessage);
         recyclerViewChat.scrollToPosition(chatAdapter.getItemCount() - 1);
 
@@ -373,43 +413,40 @@ public class ChatActivity extends AppCompatActivity {
                     java.util.List<ChatMessage> chatMessages = new java.util.ArrayList<>();
                     for (com.example.QuanLyPhongTro_App.data.model.ChatMessage msg : messages) {
                         try {
-                            // ✅ CRITICAL: Trim both IDs before comparison
                             String msgFromUser = msg.fromUser != null ? msg.fromUser.trim() : "";
                             String currUserId = currentUserId != null ? currentUserId.trim() : "";
 
-                            // Get user name from cache or use ID as fallback
-                            String senderName = UserCache.getUserName(msgFromUser);
-                            String displayName = (senderName != null && !senderName.isEmpty()) ? senderName : msgFromUser;
+                            // ✅ senderId phải luôn là FromUserId
+                            String senderId = msgFromUser;
 
-                            // ✅ FIX: isFromLandlord = tin nhắn được gửi từ người KHÁC (không phải currentUserId)
-                            // Nếu fromUser != currentUserId, thì nó là từ landlord/người khác
-                            boolean isFromLandlord = !msgFromUser.equals(currUserId);
+                            // ✅ Prefer cached name; nếu cache chỉ trả về userId thì rút gọn
+                            String cachedName = UserCache.getUserName(senderId);
+                            String displayName = (cachedName != null && !cachedName.trim().isEmpty() && !cachedName.trim().equals(senderId))
+                                    ? cachedName.trim()
+                                    : shortId(senderId);
 
-                            Log.d(TAG, "✏️ Converting: from=" + msgFromUser + " current=" + currUserId + " isFromLandlord=" + isFromLandlord + " content=" + msg.noiDung);
-                            Log.d(TAG, "   Sender display name: " + displayName + " (cached=" + senderName + ")");
+                            // ✅ FIX: parse thời gian từ backend (ThoiGian). Nếu parse fail thì fallback now.
+                            long ts = ChatTimeParser.parseToMillis(msg.thoiGian);
+                            if (ts <= 0L) ts = System.currentTimeMillis();
 
-                            ChatMessage chatMsg = new ChatMessage(
-                                msgFromUser,
-                                displayName,
-                                isFromLandlord,
-                                msg.noiDung
-                            );
-                            chatMessages.add(chatMsg);
+                            boolean isFromOther = !senderId.equals(currUserId);
+
+                            chatMessages.add(new ChatMessage(
+                                    ts,
+                                    senderId,
+                                    displayName,
+                                    isFromOther,
+                                    msg.noiDung
+                            ));
                         } catch (Exception e) {
                             Log.e(TAG, "❌ Error converting message: " + e.getMessage(), e);
                         }
                     }
 
-                    Log.d(TAG, "✅ Converted " + chatMessages.size() + " messages successfully");
-
-                    // Update adapter
                     chatAdapter.updateMessages(chatMessages);
                     lastMessageCount = messages.size();
 
-                    Log.d(TAG, "✅ Adapter updated, itemCount = " + chatAdapter.getItemCount());
-
                     if (chatAdapter.getItemCount() > 0) {
-                        Log.d(TAG, "🔽 Scrolling to position " + (chatAdapter.getItemCount() - 1));
                         recyclerViewChat.scrollToPosition(chatAdapter.getItemCount() - 1);
                     }
                 });
@@ -456,21 +493,26 @@ public class ChatActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     java.util.List<ChatMessage> chatMessages = new java.util.ArrayList<>();
                     for (com.example.QuanLyPhongTro_App.data.model.ChatMessage msg : messages) {
-                        // ✅ CRITICAL: Trim both IDs before comparison
-                        String msgFromUser = msg.fromUser != null ? msg.fromUser.trim() : "";
+                        String senderId = msg.fromUser != null ? msg.fromUser.trim() : "";
                         String currUserId = currentUserId != null ? currentUserId.trim() : "";
 
-                        String senderName = UserCache.getUserName(msgFromUser);
-                        String displayName = (senderName != null && !senderName.isEmpty()) ? senderName : msgFromUser;
-                        boolean isFromLandlord = !msgFromUser.equals(currUserId);
+                        String cachedName = UserCache.getUserName(senderId);
+                        String displayName = (cachedName != null && !cachedName.trim().isEmpty() && !cachedName.trim().equals(senderId))
+                                ? cachedName.trim()
+                                : shortId(senderId);
 
-                        ChatMessage chatMsg = new ChatMessage(
-                            msgFromUser,
-                            displayName,
-                            isFromLandlord,
-                            msg.noiDung
-                        );
-                        chatMessages.add(chatMsg);
+                        long ts = ChatTimeParser.parseToMillis(msg.thoiGian);
+                        if (ts <= 0L) ts = System.currentTimeMillis();
+
+                        boolean isFromOther = !senderId.equals(currUserId);
+
+                        chatMessages.add(new ChatMessage(
+                                ts,
+                                senderId,
+                                displayName,
+                                isFromOther,
+                                msg.noiDung
+                        ));
                     }
 
                     chatAdapter.updateMessages(chatMessages);
@@ -518,30 +560,28 @@ public class ChatActivity extends AppCompatActivity {
                 }
 
                 runOnUiThread(() -> {
-                    // Convert API ChatMessage to local ChatMessage format
                     java.util.List<ChatMessage> chatMessages = new java.util.ArrayList<>();
                     for (com.example.QuanLyPhongTro_App.data.model.ChatMessage msg : messages) {
-                        // ✅ CRITICAL: Trim both IDs before comparison
-                        String msgFromUser = msg.fromUser != null ? msg.fromUser.trim() : "";
+                        String senderId = msg.fromUser != null ? msg.fromUser.trim() : "";
                         String currUserId = currentUserId != null ? currentUserId.trim() : "";
 
-                        // Get user name from cache or use ID as fallback
-                        String senderName = UserCache.getUserName(msgFromUser);
-                        String displayName = (senderName != null && !senderName.isEmpty()) ? senderName : msgFromUser;
+                        String cachedName = UserCache.getUserName(senderId);
+                        String displayName = (cachedName != null && !cachedName.trim().isEmpty() && !cachedName.trim().equals(senderId))
+                                ? cachedName.trim()
+                                : shortId(senderId);
 
-                        // ✅ FIX: isFromLandlord = tin nhắn được gửi từ người KHÁC
-                        boolean isFromLandlord = !msgFromUser.equals(currUserId);
+                        long ts = ChatTimeParser.parseToMillis(msg.thoiGian);
+                        if (ts <= 0L) ts = System.currentTimeMillis();
 
-                        Log.d(TAG, "🔄 Auto-load converting: from=" + msgFromUser + " current=" + currUserId + " isFromLandlord=" + isFromLandlord);
-                        Log.d(TAG, "   Display name: " + displayName + " (content: " + msg.noiDung + ")");
+                        boolean isFromOther = !senderId.equals(currUserId);
 
-                        ChatMessage chatMsg = new ChatMessage(
-                            msgFromUser,
-                            displayName,
-                            isFromLandlord,
-                            msg.noiDung
-                        );
-                        chatMessages.add(chatMsg);
+                        chatMessages.add(new ChatMessage(
+                                ts,
+                                senderId,
+                                displayName,
+                                isFromOther,
+                                msg.noiDung
+                        ));
                     }
 
                     chatAdapter.updateMessages(chatMessages);

@@ -33,15 +33,28 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
     @Override
     public int getItemViewType(int position) {
         ChatMessage message = messages.get(position);
-        // ✅ CRITICAL: Trim both IDs to avoid whitespace comparison issues
+
         String msgSenderId = message.getSenderId() != null ? message.getSenderId().trim() : "";
         String currUserId = currentUserId != null ? currentUserId.trim() : "";
 
-        boolean isSent = msgSenderId.equals(currUserId);
+        // ✅ GUID so sánh không phân biệt hoa/thường
+        String msgSenderNorm = msgSenderId.toLowerCase(Locale.US);
+        String currUserNorm = currUserId.toLowerCase(Locale.US);
 
-        // ✅ DEBUG: Log for troubleshooting message display issues
-        if (position < 5) {  // Only log first 5 messages to avoid spam
-            android.util.Log.d("ChatAdapter", "Message " + position + ": msgSender='" + msgSenderId + "' current='" + currUserId + "' isSent=" + isSent + " content=" + message.getContent().substring(0, Math.min(20, message.getContent().length())));
+        boolean isSentById = !currUserNorm.isEmpty() && msgSenderNorm.equals(currUserNorm);
+
+        boolean isSent;
+        if (!currUserNorm.isEmpty()) {
+            isSent = isSentById;
+        } else {
+            isSent = !message.isFromLandlord();
+        }
+
+        if (position < 10) {
+            android.util.Log.d("ChatAdapter", "Message " + position
+                    + ": msgSender='" + msgSenderId + "' current='" + currUserId
+                    + "' senderNorm='" + msgSenderNorm + "' currentNorm='" + currUserNorm
+                    + "' => isSent=" + isSent);
         }
 
         return isSent ? VIEW_TYPE_SENT : VIEW_TYPE_RECEIVED;
@@ -113,9 +126,10 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
             String timeString = sdf.format(new Date(message.getTimestamp()));
             tvMessageTime.setText(timeString);
 
-            // Hiển thị tên người gửi nếu có
+            // ✅ Theo yêu cầu: KHÔNG hiển thị userId/tên trong bubble.
+            // Chỉ hiển thị tên ở tiêu đề (tv_chat_header) trong ChatActivity.
             if (tvSenderName != null) {
-                tvSenderName.setText(message.getSenderName());
+                tvSenderName.setVisibility(View.GONE);
             }
         }
     }
